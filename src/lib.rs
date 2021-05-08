@@ -9,7 +9,7 @@ use bevy::{
     render::{camera::Camera, camera::CameraProjection, camera::PerspectiveProjection, render_graph::base::camera::CAMERA_3D},
 };
 
-use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin, KeyMap};
+use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin, CamKeyMap};
 pub struct PlayerMove;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -26,21 +26,55 @@ enum ScrollType {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum CameraState {
+pub enum CameraState {
     LookAt,
     FollowStatic,
+    TopDown,
     FollowBehind,
     FPS,
     Free,
 }
 
-pub struct MultiCamSettings {
-    pub sensitivity: f32,
-    pub cam_speed: f32,
-    pub player_speed: f32,
-    pub map: KeyMap,
-    pub disable_move: bool,
-    pub disable_look: bool,
+pub struct PlayerKeyMap { 
+    pub forward: &'static[KeyCode],
+    pub backward: &'static[KeyCode],
+    pub left: &'static[KeyCode],
+    pub right: &'static[KeyCode],
+    pub up: &'static[KeyCode],
+    pub down: &'static[KeyCode],
+    pub rot_left: &'static[KeyCode],
+    pub rot_right: &'static[KeyCode],
+}
+
+pub struct PlayerSettings {
+    pub speed: f32,
+    pub map: PlayerKeyMap,
+    pub pos: Vec3,
+}
+
+impl Default for PlayerKeyMap {
+    fn default() -> Self {
+        Self {
+            forward:  &[KeyCode::Up],
+            backward: &[KeyCode::Down],
+            left:     &[KeyCode::Comma],
+            right:    &[KeyCode::Period],
+            up:       &[KeyCode::RShift],
+            down:     &[KeyCode::Minus],
+            rot_left: &[KeyCode::Left],
+            rot_right:&[KeyCode::Right],
+        }
+    }
+}
+
+impl Default for PlayerSettings {
+    fn default() -> Self {
+        Self {
+            speed: 12.0,
+            map: PlayerKeyMap::default(),
+            pos: Default::default()
+        }
+    }
 }
 
 pub struct MultiCam;
@@ -54,6 +88,7 @@ impl Plugin for MultiCam {
             speed: 12.0, // default: 12.0
             ..Default::default()
         })
+        .init_resource::<PlayerSettings>()
         .add_state(PluginState::Enabled)
         .add_state(CameraState::LookAt)
         .add_state(ScrollType::MovementSpeed)
@@ -73,18 +108,16 @@ impl Plugin for MultiCam {
 }
 
 #[derive(Default)]
-struct Player {
+pub struct Player {
     entity: Option<Entity>,
-    i: usize,
-    j: usize,
 }
 
 #[derive(Default)]
-struct CamLogic {
+pub struct CamLogic {
     player: Player,
     camera_should_focus: Vec3,
     camera_is_focus: Vec3,
-    target: Option<Entity>,
+    pub target: Option<Entity>,
 }
 
 const RESET_FOCUS: [f32; 3] = [
@@ -95,10 +128,11 @@ const RESET_FOCUS: [f32; 3] = [
 
 #[allow(unused_must_use)]
 fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, keyboard_input: Res<Input<KeyCode>>){
-    if keyboard_input.just_pressed(KeyCode::E){
+    if keyboard_input.just_pressed(KeyCode::C){
         let result = match cam_state.current() {
             CameraState::LookAt => CameraState::FollowStatic,
-            CameraState::FollowStatic => CameraState::FollowBehind,
+            CameraState::FollowStatic => CameraState::TopDown,
+            CameraState::TopDown => CameraState::FollowBehind,
             CameraState::FollowBehind => CameraState::FPS,
             CameraState::FPS => CameraState::Free,
             CameraState::Free => CameraState::LookAt,
@@ -109,21 +143,14 @@ fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, keyboard_input: Re
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut cl: ResMut<CamLogic>) {
-    // reset the cam logic state
-
-    let base_height = 0.2;
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut cl: ResMut<CamLogic>, settings: Res<PlayerSettings>) {
 
     // spawn the cam logic character
     cl.player.entity = Some(
         commands
             .spawn_bundle((
                 Transform {
-                    translation: Vec3::new(
-                        cl.player.i as f32,
-                        base_height,
-                        cl.player.j as f32,
-                    ),
+                    translation: settings.pos,
                     rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
                     ..Default::default()
                 },
@@ -147,10 +174,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut cl: ResMut<
 
 // control the cam logic character
 fn move_player(
-    mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
-    mut cl: ResMut<CamLogic>,
+    settings: Res<PlayerSettings>,
     mut transforms: Query<(&PlayerMove, &mut Transform)>,
 ) {
     for (_player, mut transform) in transforms.iter_mut() {
@@ -161,17 +187,14 @@ fn move_player(
         let right = Vec3::new(local_z.z, 0., -local_z.x);
 
         for key in keys.get_pressed() {
-            match key {
-                KeyCode::W => velocity += forward,
-                KeyCode::S => velocity -= forward,
-                KeyCode::A => velocity -= right,
-                KeyCode::D => velocity += right,
-                KeyCode::Space => velocity += Vec3::Y,
-                KeyCode::LShift => velocity -= Vec3::Y,
-                KeyCode::Left => {if rotation > std::f32::consts::FRAC_PI_2*4.0-0.05 {rotation = 0.0;} rotation += 0.1 },
-                KeyCode::Right => {if rotation < 0.05 {rotation = std::f32::consts::FRAC_PI_2*4.0;} rotation -= 0.1},
-                _ => (),
-            }
+            if bevy_flycam::validate_key(settings.map.forward,   key) { velocity += forward }
+            if bevy_flycam::validate_key(settings.map.backward,  key) { velocity -= forward }
+            if bevy_flycam::validate_key(settings.map.left,      key) { velocity -= right   }
+            if bevy_flycam::validate_key(settings.map.right,     key) { velocity += right   }
+            if bevy_flycam::validate_key(settings.map.up,        key) { velocity += Vec3::Y }
+            if bevy_flycam::validate_key(settings.map.down,      key) { velocity -= Vec3::Y }
+            if bevy_flycam::validate_key(settings.map.rot_left,  key) { if rotation > std::f32::consts::FRAC_PI_2*4.0-0.05 {rotation = 0.0;} rotation += 0.1 }
+            if bevy_flycam::validate_key(settings.map.rot_right, key) { if rotation < 0.05 {rotation = std::f32::consts::FRAC_PI_2*4.0;} rotation -= 0.1 }      
         }
 
         velocity = velocity.normalize();
@@ -195,18 +218,46 @@ fn focus_camera(
     let mut delta_trans = Transform::identity();
     settings.disable_look = true;
     settings.disable_move = false;
+
+    /*
+    match *state.current() {
+        CameraState::FollowStatic => {}
+        CameraState::TopDown => {}
+        CameraState::FollowBehind => {}
+        CameraState::FPS => {}
+        CameraState::Free => {
+            settings.disable_look = false;
+            return;
+        }
+        CameraState::LookAt => {}
+    }
+    */
+
     if *state.current() == CameraState::Free {
         settings.disable_look = false;
         return;
-    } else if *state.current() == CameraState::FollowStatic || *state.current() == CameraState::FollowBehind || *state.current() == CameraState::FPS  {
+    } else if 
+        *state.current() == CameraState::FollowStatic 
+        || *state.current() == CameraState::TopDown 
+        || *state.current() == CameraState::FollowBehind 
+        || *state.current() == CameraState::FPS  {
         if let Some(player_entity) = cl.player.entity {
             if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                if *state.current() == CameraState::FollowBehind || *state.current() == CameraState::FPS {
+                if *state.current() == CameraState::FollowBehind || *state.current() == CameraState::FPS || *state.current() == CameraState::TopDown {
                     settings.disable_move = true;
                     if *state.current() == CameraState::FPS {settings.disable_look = false;}
                     delta_trans.translation = player_transform.translation;
-                    delta_trans.rotation = player_transform.rotation;
-                    delta_trans.translation += Vec3::new(/*-4.*/0.,1.,0.);
+                    if *state.current() == CameraState::TopDown {
+                        delta_trans.translation += Vec3::new(/*-4.*/0.,settings.dist,0.);
+                        delta_trans.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
+                    } else if *state.current() == CameraState::FollowBehind {
+                        delta_trans.rotation = Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2);
+                        delta_trans.translation += Vec3::new(/*-4.*/-4.,1.,0.);
+                        //println!("{:?}",player_transform.rotation);
+                    } else {
+                        delta_trans.rotation = player_transform.rotation;
+                        delta_trans.translation += Vec3::new(/*-4.*/0.,1.,0.);
+                    }
                 }
                 cl.camera_should_focus = player_transform.translation;
             }
@@ -256,13 +307,13 @@ fn focus_camera(
     }
 }
 
-// Listens for Z key being pressed and toggles between the two scroll-type states
+// Listens for Z key being pressed and toggles between the scroll-type states
 #[allow(unused_must_use)]
 fn switch_scroll_type(
     mut scroll_type: ResMut<State<ScrollType>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Z) {
+    if keyboard_input.just_pressed(KeyCode::X) {
         let result = match scroll_type.current() {
             ScrollType::Sensitivity => ScrollType::Zoom,
             ScrollType::Zoom => ScrollType::MovementSpeed,

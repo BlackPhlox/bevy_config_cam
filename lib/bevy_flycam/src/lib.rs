@@ -10,36 +10,24 @@ struct InputState {
     yaw: f32,
 }
 
-pub struct KeyMap { 
-    pub cam_forward: &'static[KeyCode],
-    pub cam_backward: &'static[KeyCode],
-    pub cam_left: &'static[KeyCode],
-    pub cam_right: &'static[KeyCode],
-    pub cam_up: &'static[KeyCode],
-    pub cam_down: &'static[KeyCode],
-    pub player_forward: &'static[KeyCode],
-    pub player_backward: &'static[KeyCode],
-    pub player_left: &'static[KeyCode],
-    pub player_right: &'static[KeyCode],
-    pub player_up: &'static[KeyCode],
-    pub player_down: &'static[KeyCode],
+pub struct CamKeyMap { 
+    pub forward: &'static[KeyCode],
+    pub backward: &'static[KeyCode],
+    pub left: &'static[KeyCode],
+    pub right: &'static[KeyCode],
+    pub up: &'static[KeyCode],
+    pub down: &'static[KeyCode],
 }
 
-impl Default for KeyMap {
+impl Default for CamKeyMap {
     fn default() -> Self {
         Self {
-            cam_forward:    &[KeyCode::I],
-            cam_backward:   &[KeyCode::K],
-            cam_left:       &[KeyCode::J],
-            cam_right:      &[KeyCode::L],
-            cam_up:         &[KeyCode::U],
-            cam_down:       &[KeyCode::O],
-            player_forward: &[KeyCode::Up],
-            player_backward:&[KeyCode::Down],
-            player_left:    &[KeyCode::Left],
-            player_right:   &[KeyCode::Right],
-            player_up:      &[KeyCode::Space],
-            player_down:    &[KeyCode::LShift],
+            forward:  &[KeyCode::W],
+            backward: &[KeyCode::S],
+            left:     &[KeyCode::A],
+            right:    &[KeyCode::D],
+            up:       &[KeyCode::Space],
+            down:     &[KeyCode::LShift],
         }
     }
 }
@@ -48,7 +36,9 @@ impl Default for KeyMap {
 pub struct MovementSettings {
     pub sensitivity: f32,
     pub speed: f32,
-    pub map: KeyMap,
+    pub dist: f32,
+    pub map: CamKeyMap,
+    //pub force_cam: &'static[CameraState],
     pub disable_move: bool,
     pub disable_look: bool,
 }
@@ -58,7 +48,8 @@ impl Default for MovementSettings {
         Self {
             sensitivity: 0.00012,
             speed: 12.,
-            map: KeyMap::default(),
+            dist: 10.,
+            map: CamKeyMap::default(),
             disable_move: false,
             disable_look: false,
         }
@@ -107,12 +98,12 @@ fn player_move(
 
         for key in keys.get_pressed() {
             if window.cursor_locked() {
-                if validate_key(settings.map.cam_forward,  key) {velocity += forward }
-                if validate_key(settings.map.cam_backward, key) {velocity -= forward }
-                if validate_key(settings.map.cam_left,     key) {velocity -= right   }
-                if validate_key(settings.map.cam_right,    key) {velocity += right   }
-                if validate_key(settings.map.cam_up,       key) {velocity += Vec3::Y }
-                if validate_key(settings.map.cam_down,     key) {velocity -= Vec3::Y }            
+                if validate_key(settings.map.forward,  key) {velocity += forward }
+                if validate_key(settings.map.backward, key) {velocity -= forward }
+                if validate_key(settings.map.left,     key) {velocity -= right   }
+                if validate_key(settings.map.right,    key) {velocity += right   }
+                if validate_key(settings.map.up,       key) {velocity += Vec3::Y }
+                if validate_key(settings.map.down,     key) {velocity -= Vec3::Y }            
             }
         }
 
@@ -124,7 +115,7 @@ fn player_move(
     }
 }
 
-fn validate_key<T>(codes:&'static[T], key: &T) -> bool where T: PartialEq<T> {
+pub fn validate_key<T>(codes:&'static[T], key: &T) -> bool where T: PartialEq<T> {
     codes.iter().any(|m| m == key)
 }
 
