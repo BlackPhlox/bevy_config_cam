@@ -25,14 +25,28 @@ enum ScrollType {
     Sensitivity,
 }
 
+
+//Plan:
+// Merge LookAt and FollowStatic into FollowFree 
+// Change rotation of TopDown cam, either a rotation or aligned with player rotation
+// Make FollowBehind actually work, make parenting work
+// Merge FPS and Free into one called FPS and have a no-clip and different control-scheme setting (rotation with arrows or mouse etc.)
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum CameraState {
+    //Look at player and other targets if set
     LookAt,
+    //Follow the player only
     FollowStatic,
+    //Camera is moved above and pointed down, rotation bound to one axis
     TopDown,
+    //Follows behind the player a certain distance
     FollowBehind,
+    //Camera at same position as player, enables to use the mouse to look
     FPS,
+    //Use the mouse to look and move the camera freely
     Free,
+    //Same as Free, but going forward is base on where your looking
+    //FreeFPS
 }
 
 pub struct PlayerKeyMap { 
@@ -83,11 +97,6 @@ impl Plugin for MultiCam {
         app//.add_plugins(DefaultPlugins)
         .init_resource::<CamLogic>()
         .add_plugin(NoCameraPlayerPlugin)
-        .insert_resource(MovementSettings {
-            sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0, // default: 12.0
-            ..Default::default()
-        })
         .init_resource::<PlayerSettings>()
         .add_state(PluginState::Enabled)
         .add_state(CameraState::LookAt)
@@ -313,7 +322,7 @@ fn switch_scroll_type(
     mut scroll_type: ResMut<State<ScrollType>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::X) {
+    if keyboard_input.just_pressed(KeyCode::E) {
         let result = match scroll_type.current() {
             ScrollType::Sensitivity => ScrollType::Zoom,
             ScrollType::Zoom => ScrollType::MovementSpeed,
