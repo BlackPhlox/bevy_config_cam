@@ -8,7 +8,7 @@ your player entity or the default spaceship entity.
 
 # Caveman-Introduction
 
-Me had no cam in default bevy, me look for cam lib, me found many.</br>
+Me had no cam in default bevy, me look for cam lib, me found a few.</br>
 Me liked [bevy_flycam](https://github.com/sburris0/bevy_flycam), me contributed examples and CI.</br>
 But me wanted more flexiblity, so me made my own with many different types of cameras.</br>
 Got something working but me no good at rust, if you have time and passion, plz help.
