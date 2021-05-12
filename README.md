@@ -2,7 +2,7 @@
 One-stop-shop to finding the right type of camera for your project
 
 # Use-case
-_I've don't got time to program a camera to find out its not what I'm looking for._</br></br>
+_I've don't got time to program a camera-controller to find out its not what I'm looking for._</br></br>
 Adding a few lines of code allows you to test a wide variety of cameras by attaching it to
 your player entity or the default spaceship entity. 
 
