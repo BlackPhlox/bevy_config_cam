@@ -10,24 +10,24 @@ struct InputState {
     yaw: f32,
 }
 
-pub struct CamKeyMap { 
-    pub forward: &'static[KeyCode],
-    pub backward: &'static[KeyCode],
-    pub left: &'static[KeyCode],
-    pub right: &'static[KeyCode],
-    pub up: &'static[KeyCode],
-    pub down: &'static[KeyCode],
+pub struct CamKeyMap {
+    pub forward: &'static [KeyCode],
+    pub backward: &'static [KeyCode],
+    pub left: &'static [KeyCode],
+    pub right: &'static [KeyCode],
+    pub up: &'static [KeyCode],
+    pub down: &'static [KeyCode],
 }
 
 impl Default for CamKeyMap {
     fn default() -> Self {
         Self {
-            forward:  &[KeyCode::W],
+            forward: &[KeyCode::W],
             backward: &[KeyCode::S],
-            left:     &[KeyCode::A],
-            right:    &[KeyCode::D],
-            up:       &[KeyCode::Space],
-            down:     &[KeyCode::LShift],
+            left: &[KeyCode::A],
+            right: &[KeyCode::D],
+            up: &[KeyCode::Space],
+            down: &[KeyCode::LShift],
         }
     }
 }
@@ -88,7 +88,9 @@ fn player_move(
     settings: Res<MovementSettings>,
     mut query: Query<(&FlyCam, &mut Transform)>,
 ) {
-    if settings.disable_move {return}
+    if settings.disable_move {
+        return;
+    }
     let window = windows.get_primary().unwrap();
     for (_camera, mut transform) in query.iter_mut() {
         let mut velocity = Vec3::ZERO;
@@ -98,12 +100,24 @@ fn player_move(
 
         for key in keys.get_pressed() {
             if window.cursor_locked() {
-                if validate_key(settings.map.forward,  key) {velocity += forward }
-                if validate_key(settings.map.backward, key) {velocity -= forward }
-                if validate_key(settings.map.left,     key) {velocity -= right   }
-                if validate_key(settings.map.right,    key) {velocity += right   }
-                if validate_key(settings.map.up,       key) {velocity += Vec3::Y }
-                if validate_key(settings.map.down,     key) {velocity -= Vec3::Y }            
+                if validate_key(settings.map.forward, key) {
+                    velocity += forward
+                }
+                if validate_key(settings.map.backward, key) {
+                    velocity -= forward
+                }
+                if validate_key(settings.map.left, key) {
+                    velocity -= right
+                }
+                if validate_key(settings.map.right, key) {
+                    velocity += right
+                }
+                if validate_key(settings.map.up, key) {
+                    velocity += Vec3::Y
+                }
+                if validate_key(settings.map.down, key) {
+                    velocity -= Vec3::Y
+                }
             }
         }
 
@@ -115,7 +129,10 @@ fn player_move(
     }
 }
 
-pub fn validate_key<T>(codes:&'static[T], key: &T) -> bool where T: PartialEq<T> {
+pub fn validate_key<T>(codes: &'static [T], key: &T) -> bool
+where
+    T: PartialEq<T>,
+{
     codes.iter().any(|m| m == key)
 }
 
@@ -127,7 +144,9 @@ fn player_look(
     motion: Res<Events<MouseMotion>>,
     mut query: Query<(&FlyCam, &mut Transform)>,
 ) {
-    if settings.disable_look {return}
+    if settings.disable_look {
+        return;
+    }
     let window = windows.get_primary().unwrap();
     for (_camera, mut transform) in query.iter_mut() {
         for ev in state.reader_motion.iter(&motion) {

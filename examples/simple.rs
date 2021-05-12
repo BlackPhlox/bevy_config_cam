@@ -1,9 +1,7 @@
 extern crate bevy_multicam;
 
 //Base
-use bevy::{
-    prelude::*,
-};
+use bevy::prelude::*;
 
 use bevy_flycam::MovementSettings;
 use bevy_multicam::*;
@@ -15,11 +13,11 @@ fn main() {
         .add_plugin(MultiCam)
         .insert_resource(MovementSettings {
             sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0, // default: 12.0
+            speed: 12.0,          // default: 12.0
             ..Default::default()
         })
         .insert_resource(PlayerSettings {
-            pos : Vec3::new(2., 0., 0.),
+            pos: Vec3::new(2., 0., 0.),
             ..Default::default()
         })
         .add_startup_system(setup.system())
@@ -31,7 +29,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cl: ResMut<CamLogic>
+    mut cl: ResMut<CamLogic>,
 ) {
     // plane
     commands.spawn_bundle(PbrBundle {
@@ -41,12 +39,16 @@ fn setup(
     });
 
     // cube, set as target
-    cl.target = Some (commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
-        ..Default::default()
-    }).id());
+    cl.target = Some(
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                transform: Transform::from_xyz(0.0, 0.5, 0.0),
+                ..Default::default()
+            })
+            .id(),
+    );
 
     // light
     commands.spawn_bundle(LightBundle {
@@ -54,4 +56,3 @@ fn setup(
         ..Default::default()
     });
 }
-

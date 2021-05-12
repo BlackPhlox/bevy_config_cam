@@ -1,15 +1,18 @@
 //Base
 use bevy::{
     core::FixedTimestep,
-    ecs::schedule::SystemSet,
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    ecs::schedule::SystemSet,
     input::mouse::{MouseButtonInput, MouseMotion, MouseWheel},
     prelude::*,
+    render::{
+        camera::Camera, camera::CameraProjection, camera::PerspectiveProjection,
+        render_graph::base::camera::CAMERA_3D,
+    },
     window::{CursorMoved, Windows},
-    render::{camera::Camera, camera::CameraProjection, camera::PerspectiveProjection, render_graph::base::camera::CAMERA_3D},
 };
 
-use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin, CamKeyMap};
+use bevy_flycam::{CamKeyMap, FlyCam, MovementSettings, NoCameraPlayerPlugin};
 pub struct PlayerMove;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -25,9 +28,8 @@ enum ScrollType {
     Sensitivity,
 }
 
-
 //Plan:
-// Merge LookAt and FollowStatic into FollowFree 
+// Merge LookAt and FollowStatic into FollowFree
 // Change rotation of TopDown cam, either a rotation or aligned with player rotation
 // Make FollowBehind actually work, make parenting work
 // Merge FPS and Free into one called FPS and have a no-clip and different control-scheme setting (rotation with arrows or mouse etc.)
@@ -49,15 +51,15 @@ pub enum CameraState {
     //FreeFPS
 }
 
-pub struct PlayerKeyMap { 
-    pub forward: &'static[KeyCode],
-    pub backward: &'static[KeyCode],
-    pub left: &'static[KeyCode],
-    pub right: &'static[KeyCode],
-    pub up: &'static[KeyCode],
-    pub down: &'static[KeyCode],
-    pub rot_left: &'static[KeyCode],
-    pub rot_right: &'static[KeyCode],
+pub struct PlayerKeyMap {
+    pub forward: &'static [KeyCode],
+    pub backward: &'static [KeyCode],
+    pub left: &'static [KeyCode],
+    pub right: &'static [KeyCode],
+    pub up: &'static [KeyCode],
+    pub down: &'static [KeyCode],
+    pub rot_left: &'static [KeyCode],
+    pub rot_right: &'static [KeyCode],
 }
 
 pub struct PlayerSettings {
@@ -69,14 +71,14 @@ pub struct PlayerSettings {
 impl Default for PlayerKeyMap {
     fn default() -> Self {
         Self {
-            forward:  &[KeyCode::Up],
+            forward: &[KeyCode::Up],
             backward: &[KeyCode::Down],
-            left:     &[KeyCode::Comma],
-            right:    &[KeyCode::Period],
-            up:       &[KeyCode::RShift],
-            down:     &[KeyCode::Minus],
+            left: &[KeyCode::Comma],
+            right: &[KeyCode::Period],
+            up: &[KeyCode::RShift],
+            down: &[KeyCode::Minus],
             rot_left: &[KeyCode::Left],
-            rot_right:&[KeyCode::Right],
+            rot_right: &[KeyCode::Right],
         }
     }
 }
@@ -86,7 +88,7 @@ impl Default for PlayerSettings {
         Self {
             speed: 12.0,
             map: PlayerKeyMap::default(),
-            pos: Default::default()
+            pos: Default::default(),
         }
     }
 }
@@ -94,25 +96,22 @@ impl Default for PlayerSettings {
 pub struct MultiCam;
 impl Plugin for MultiCam {
     fn build(&self, app: &mut AppBuilder) {
-        app//.add_plugins(DefaultPlugins)
-        .init_resource::<CamLogic>()
-        .add_plugin(NoCameraPlayerPlugin)
-        .init_resource::<PlayerSettings>()
-        .add_state(PluginState::Enabled)
-        .add_state(CameraState::LookAt)
-        .add_state(ScrollType::MovementSpeed)
-
-        .add_system(switch_scroll_type.system())
-        .add_system(scroll.system())
-
-        .add_system(cycle_cam_state.system())
-
-        .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
-        .add_system_set(
-            SystemSet::on_update(PluginState::Enabled)
-                .with_system(move_player.system())
-                .with_system(focus_camera.system()),
-        );
+        app //.add_plugins(DefaultPlugins)
+            .init_resource::<CamLogic>()
+            .add_plugin(NoCameraPlayerPlugin)
+            .init_resource::<PlayerSettings>()
+            .add_state(PluginState::Enabled)
+            .add_state(CameraState::LookAt)
+            .add_state(ScrollType::MovementSpeed)
+            .add_system(switch_scroll_type.system())
+            .add_system(scroll.system())
+            .add_system(cycle_cam_state.system())
+            .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
+            .add_system_set(
+                SystemSet::on_update(PluginState::Enabled)
+                    .with_system(move_player.system())
+                    .with_system(focus_camera.system()),
+            );
     }
 }
 
@@ -129,15 +128,11 @@ pub struct CamLogic {
     pub target: Option<Entity>,
 }
 
-const RESET_FOCUS: [f32; 3] = [
-    0.,
-    0.,
-    0.,
-];
+const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
 
 #[allow(unused_must_use)]
-fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, keyboard_input: Res<Input<KeyCode>>){
-    if keyboard_input.just_pressed(KeyCode::C){
+fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, keyboard_input: Res<Input<KeyCode>>) {
+    if keyboard_input.just_pressed(KeyCode::C) {
         let result = match cam_state.current() {
             CameraState::LookAt => CameraState::FollowStatic,
             CameraState::FollowStatic => CameraState::TopDown,
@@ -152,8 +147,12 @@ fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, keyboard_input: Re
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut cl: ResMut<CamLogic>, settings: Res<PlayerSettings>) {
-
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut cl: ResMut<CamLogic>,
+    settings: Res<PlayerSettings>,
+) {
     // spawn the cam logic character
     cl.player.entity = Some(
         commands
@@ -164,7 +163,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut cl: ResMut<
                     ..Default::default()
                 },
                 GlobalTransform::identity(),
-            )).insert(PlayerMove)
+            ))
+            .insert(PlayerMove)
             .with_children(|cell| {
                 cell.spawn_scene(asset_server.load("models/AlienCake/craft_speederA.glb#Scene0"));
             })
@@ -189,21 +189,43 @@ fn move_player(
     mut transforms: Query<(&PlayerMove, &mut Transform)>,
 ) {
     for (_player, mut transform) in transforms.iter_mut() {
-        let (_ , mut rotation) = transform.rotation.to_axis_angle();
+        let (_, mut rotation) = transform.rotation.to_axis_angle();
         let mut velocity = Vec3::ZERO;
         let local_z = transform.local_z();
         let forward = -Vec3::new(local_z.x, 0., local_z.z);
         let right = Vec3::new(local_z.z, 0., -local_z.x);
 
         for key in keys.get_pressed() {
-            if bevy_flycam::validate_key(settings.map.forward,   key) { velocity += forward }
-            if bevy_flycam::validate_key(settings.map.backward,  key) { velocity -= forward }
-            if bevy_flycam::validate_key(settings.map.left,      key) { velocity -= right   }
-            if bevy_flycam::validate_key(settings.map.right,     key) { velocity += right   }
-            if bevy_flycam::validate_key(settings.map.up,        key) { velocity += Vec3::Y }
-            if bevy_flycam::validate_key(settings.map.down,      key) { velocity -= Vec3::Y }
-            if bevy_flycam::validate_key(settings.map.rot_left,  key) { if rotation > std::f32::consts::FRAC_PI_2*4.0-0.05 {rotation = 0.0;} rotation += 0.1 }
-            if bevy_flycam::validate_key(settings.map.rot_right, key) { if rotation < 0.05 {rotation = std::f32::consts::FRAC_PI_2*4.0;} rotation -= 0.1 }      
+            if bevy_flycam::validate_key(settings.map.forward, key) {
+                velocity += forward
+            }
+            if bevy_flycam::validate_key(settings.map.backward, key) {
+                velocity -= forward
+            }
+            if bevy_flycam::validate_key(settings.map.left, key) {
+                velocity -= right
+            }
+            if bevy_flycam::validate_key(settings.map.right, key) {
+                velocity += right
+            }
+            if bevy_flycam::validate_key(settings.map.up, key) {
+                velocity += Vec3::Y
+            }
+            if bevy_flycam::validate_key(settings.map.down, key) {
+                velocity -= Vec3::Y
+            }
+            if bevy_flycam::validate_key(settings.map.rot_left, key) {
+                if rotation > std::f32::consts::FRAC_PI_2 * 4.0 - 0.05 {
+                    rotation = 0.0;
+                }
+                rotation += 0.1
+            }
+            if bevy_flycam::validate_key(settings.map.rot_right, key) {
+                if rotation < 0.05 {
+                    rotation = std::f32::consts::FRAC_PI_2 * 4.0;
+                }
+                rotation -= 0.1
+            }
         }
 
         velocity = velocity.normalize();
@@ -245,27 +267,32 @@ fn focus_camera(
     if *state.current() == CameraState::Free {
         settings.disable_look = false;
         return;
-    } else if 
-        *state.current() == CameraState::FollowStatic 
-        || *state.current() == CameraState::TopDown 
-        || *state.current() == CameraState::FollowBehind 
-        || *state.current() == CameraState::FPS  {
+    } else if *state.current() == CameraState::FollowStatic
+        || *state.current() == CameraState::TopDown
+        || *state.current() == CameraState::FollowBehind
+        || *state.current() == CameraState::FPS
+    {
         if let Some(player_entity) = cl.player.entity {
             if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                if *state.current() == CameraState::FollowBehind || *state.current() == CameraState::FPS || *state.current() == CameraState::TopDown {
+                if *state.current() == CameraState::FollowBehind
+                    || *state.current() == CameraState::FPS
+                    || *state.current() == CameraState::TopDown
+                {
                     settings.disable_move = true;
-                    if *state.current() == CameraState::FPS {settings.disable_look = false;}
+                    if *state.current() == CameraState::FPS {
+                        settings.disable_look = false;
+                    }
                     delta_trans.translation = player_transform.translation;
                     if *state.current() == CameraState::TopDown {
-                        delta_trans.translation += Vec3::new(/*-4.*/0.,settings.dist,0.);
+                        delta_trans.translation += Vec3::new(/*-4.*/ 0., settings.dist, 0.);
                         delta_trans.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
                     } else if *state.current() == CameraState::FollowBehind {
                         delta_trans.rotation = Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2);
-                        delta_trans.translation += Vec3::new(/*-4.*/-4.,1.,0.);
+                        delta_trans.translation += Vec3::new(/*-4.*/ -4., 1., 0.);
                         //println!("{:?}",player_transform.rotation);
                     } else {
                         delta_trans.rotation = player_transform.rotation;
-                        delta_trans.translation += Vec3::new(/*-4.*/0.,1.,0.);
+                        delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
                     }
                 }
                 cl.camera_should_focus = player_transform.translation;
@@ -274,7 +301,7 @@ fn focus_camera(
         } else {
             cl.camera_should_focus = Vec3::from(RESET_FOCUS);
         }
-    } else {   
+    } else {
         // if there is both a player and a bonus, target the mid-point of them
         if let (Some(player_entity), Some(bonus_entity)) = (cl.player.entity, cl.target) {
             if let (Ok(player_transform), Ok(bonus_transform)) = (
@@ -310,8 +337,11 @@ fn focus_camera(
     // look at that new camera's actual focus
     for (mut transform, camera) in transforms.q0_mut().iter_mut() {
         if camera.name == Some(CAMERA_3D.to_string()) {
-            if delta_trans.translation != Vec3::ZERO { *transform = delta_trans }
-            else { *transform = transform.looking_at(cl.camera_is_focus, Vec3::Y) }
+            if delta_trans.translation != Vec3::ZERO {
+                *transform = delta_trans
+            } else {
+                *transform = transform.looking_at(cl.camera_is_focus, Vec3::Y)
+            }
         }
     }
 }
@@ -356,14 +386,14 @@ fn scroll(
                 for (_camera, mut camera, mut project) in query.iter_mut() {
                     project.fov = (project.fov - event.y * 0.01).abs();
                     let prim = windows.get_primary().unwrap();
-    
+
                     //Calculate projection with new fov
                     project.update(prim.width(), prim.height());
-    
+
                     //Update camera with the new fov
                     camera.projection_matrix = project.get_projection_matrix();
                     camera.depth_calculation = project.depth_calculation();
-    
+
                     println!("FOV: {:?}", project.fov);
                 }
             }
