@@ -17,6 +17,8 @@ pub struct CamKeyMap {
     pub right: &'static [KeyCode],
     pub up: &'static [KeyCode],
     pub down: &'static [KeyCode],
+    pub next_cam: &'static [KeyCode],
+    pub next_setting: &'static [KeyCode],
 }
 
 impl Default for CamKeyMap {
@@ -28,6 +30,8 @@ impl Default for CamKeyMap {
             right: &[KeyCode::D],
             up: &[KeyCode::Space],
             down: &[KeyCode::LShift],
+            next_cam: &[KeyCode::C],
+            next_setting: &[KeyCode::E],
         }
     }
 }
@@ -41,6 +45,7 @@ pub struct MovementSettings {
     //pub force_cam: &'static[CameraState],
     pub disable_move: bool,
     pub disable_look: bool,
+    pub lerp: f32,
 }
 
 impl Default for MovementSettings {
@@ -52,6 +57,7 @@ impl Default for MovementSettings {
             map: CamKeyMap::default(),
             disable_move: false,
             disable_look: false,
+            lerp: 0.5,
         }
     }
 }

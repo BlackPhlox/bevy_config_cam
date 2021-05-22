@@ -26,6 +26,7 @@ enum ScrollType {
     MovementSpeed,
     Zoom,
     Sensitivity,
+    Lerp
 }
 
 //Plan:
@@ -96,7 +97,7 @@ impl Default for PlayerSettings {
 pub struct MultiCam;
 impl Plugin for MultiCam {
     fn build(&self, app: &mut AppBuilder) {
-        app //.add_plugins(DefaultPlugins)
+        app 
             .init_resource::<CamLogic>()
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
@@ -131,8 +132,8 @@ pub struct CamLogic {
 const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
 
 #[allow(unused_must_use)]
-fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, keyboard_input: Res<Input<KeyCode>>) {
-    if keyboard_input.just_pressed(KeyCode::C) {
+fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, settings: Res<MovementSettings>, keyboard_input: Res<Input<KeyCode>>) {
+    if keyboard_input.get_just_pressed().any(|m| settings.map.next_cam.iter().any(|nc| m == nc)) {
         let result = match cam_state.current() {
             CameraState::LookAt => CameraState::FollowStatic,
             CameraState::FollowStatic => CameraState::TopDown,
@@ -215,12 +216,14 @@ fn move_player(
                 velocity -= Vec3::Y
             }
             if bevy_flycam::validate_key(settings.map.rot_left, key) {
+                //Wrapping around
                 if rotation > std::f32::consts::FRAC_PI_2 * 4.0 - 0.05 {
                     rotation = 0.0;
                 }
                 rotation += 0.1
             }
             if bevy_flycam::validate_key(settings.map.rot_right, key) {
+                //Wrapping around
                 if rotation < 0.05 {
                     rotation = std::f32::consts::FRAC_PI_2 * 4.0;
                 }
@@ -249,21 +252,7 @@ fn focus_camera(
     let mut delta_trans = Transform::identity();
     settings.disable_look = true;
     settings.disable_move = false;
-
-    /*
-    match *state.current() {
-        CameraState::FollowStatic => {}
-        CameraState::TopDown => {}
-        CameraState::FollowBehind => {}
-        CameraState::FPS => {}
-        CameraState::Free => {
-            settings.disable_look = false;
-            return;
-        }
-        CameraState::LookAt => {}
-    }
-    */
-
+    
     if *state.current() == CameraState::Free {
         settings.disable_look = false;
         return;
@@ -287,8 +276,11 @@ fn focus_camera(
                         delta_trans.translation += Vec3::new(/*-4.*/ 0., settings.dist, 0.);
                         delta_trans.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
                     } else if *state.current() == CameraState::FollowBehind {
+                        //TODO Bind rotation to player and not to an axis
                         delta_trans.rotation = Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2);
+                        
                         delta_trans.translation += Vec3::new(/*-4.*/ -4., 1., 0.);
+
                         //println!("{:?}",player_transform.rotation);
                     } else {
                         delta_trans.rotation = player_transform.rotation;
@@ -310,7 +302,7 @@ fn focus_camera(
             ) {
                 cl.camera_should_focus = player_transform
                     .translation
-                    .lerp(bonus_transform.translation, 0.5);
+                    .lerp(bonus_transform.translation, settings.lerp);
             }
         // otherwise, if there is only a player, target the player
         } else if let Some(player_entity) = cl.player.entity {
@@ -356,7 +348,8 @@ fn switch_scroll_type(
         let result = match scroll_type.current() {
             ScrollType::Sensitivity => ScrollType::Zoom,
             ScrollType::Zoom => ScrollType::MovementSpeed,
-            ScrollType::MovementSpeed => ScrollType::Sensitivity,
+            ScrollType::MovementSpeed => ScrollType::Lerp,
+            ScrollType::Lerp => ScrollType::Sensitivity,
         };
 
         println!("{:?}", result);
@@ -382,7 +375,7 @@ fn scroll(
                 settings.sensitivity = (settings.sensitivity + event.y * 0.000001).abs();
                 println!("Sensitivity: {:?}", settings.sensitivity);
             }
-            _ => {
+            ScrollType::Zoom => {
                 for (_camera, mut camera, mut project) in query.iter_mut() {
                     project.fov = (project.fov - event.y * 0.01).abs();
                     let prim = windows.get_primary().unwrap();
@@ -396,6 +389,10 @@ fn scroll(
 
                     println!("FOV: {:?}", project.fov);
                 }
+            }
+            ScrollType::Lerp => {                
+                settings.lerp = (settings.lerp + event.y * 0.01).abs();
+                println!("Lerp: {:?}", settings.lerp);
             }
         }
     }
