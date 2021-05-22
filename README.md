@@ -1,5 +1,5 @@
 # bevy_multicam
-An easy plug-n-play multifunctional camera that allows for easy setup of camera for a scene.
+An easy plug-n-play multifunctional camera that allows for easy setup of a camera for a scene.
 
 Add a few lines of code to your existing project allows you to test a wide variety of cameras by attaching it to
 your player entity or the default spaceship entity. 
