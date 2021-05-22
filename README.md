@@ -1,17 +1,13 @@
 # bevy_multicam
-One-stop-shop to finding the right type of camera for your project
+An easy plug-n-play multifunctional camera that allows for easy setup of camera for a scene.
 
-# Use-case
-_I've don't got time to program a camera-controller to find out its not what I'm looking for._</br></br>
-Adding a few lines of code allows you to test a wide variety of cameras by attaching it to
+Add a few lines of code to your existing project allows you to test a wide variety of cameras by attaching it to
 your player entity or the default spaceship entity. 
 
-# Caveman-Introduction
+Inspired by [bevy_flycam](https://github.com/sburris0/bevy_flycam), this camera is fairly simple but should be a neat help for developers looking for a camera implementation without going the hassle of reinventing the wheel.
 
-Me had no cam in default bevy, me look for cam lib, me found a few.</br>
-Me liked [bevy_flycam](https://github.com/sburris0/bevy_flycam), me contributed examples and CI.</br>
-But me wanted more flexiblity, so me made my own with many different types of cameras.</br>
-Got something working but me no good at rust, if you have time and passion, plz help.
+# Licensing
+The project is under the MIT license, so joink to your hearts content, just remember the license agreements.
 
 # Contributing
 Yes, PRs are very welcome
