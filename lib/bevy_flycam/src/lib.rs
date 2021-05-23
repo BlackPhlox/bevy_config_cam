@@ -64,6 +64,7 @@ impl Default for MovementSettings {
 
 /// Used in queries when you want flycams and not other cameras
 pub struct FlyCam;
+pub struct PlayerCam;
 
 /// Grabs/ungrabs mouse cursor
 fn toggle_grab_cursor(window: &mut Window) {

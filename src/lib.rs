@@ -12,7 +12,7 @@ use bevy::{
     window::{CursorMoved, Windows},
 };
 
-use bevy_flycam::{CamKeyMap, FlyCam, MovementSettings, NoCameraPlayerPlugin};
+use bevy_flycam::{CamKeyMap, FlyCam, MovementSettings, NoCameraPlayerPlugin, PlayerCam};
 pub struct PlayerMove;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -26,7 +26,7 @@ enum ScrollType {
     MovementSpeed,
     Zoom,
     Sensitivity,
-    Lerp
+    Lerp,
 }
 
 //Plan:
@@ -97,8 +97,7 @@ impl Default for PlayerSettings {
 pub struct MultiCam;
 impl Plugin for MultiCam {
     fn build(&self, app: &mut AppBuilder) {
-        app 
-            .init_resource::<CamLogic>()
+        app.init_resource::<CamLogic>()
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
@@ -132,8 +131,15 @@ pub struct CamLogic {
 const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
 
 #[allow(unused_must_use)]
-fn cycle_cam_state(mut cam_state: ResMut<State<CameraState>>, settings: Res<MovementSettings>, keyboard_input: Res<Input<KeyCode>>) {
-    if keyboard_input.get_just_pressed().any(|m| settings.map.next_cam.iter().any(|nc| m == nc)) {
+fn cycle_cam_state(
+    mut cam_state: ResMut<State<CameraState>>,
+    settings: Res<MovementSettings>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input
+        .get_just_pressed()
+        .any(|m| settings.map.next_cam.iter().any(|nc| m == nc))
+    {
         let result = match cam_state.current() {
             CameraState::LookAt => CameraState::FollowStatic,
             CameraState::FollowStatic => CameraState::TopDown,
@@ -168,6 +174,15 @@ fn setup(
             .insert(PlayerMove)
             .with_children(|cell| {
                 cell.spawn_scene(asset_server.load("models/AlienCake/craft_speederA.glb#Scene0"));
+            })
+            .with_children(|parent| {
+                parent
+                    .spawn_bundle(PerspectiveCameraBundle {
+                        transform: Transform::from_xyz(-2.0, 5.0, 5.0)
+                            .looking_at(Vec3::ZERO, Vec3::Y),
+                        ..Default::default()
+                    })
+                    .insert(PlayerCam);
             })
             .id(),
     );
@@ -252,73 +267,82 @@ fn focus_camera(
     let mut delta_trans = Transform::identity();
     settings.disable_look = true;
     settings.disable_move = false;
-    
-    if *state.current() == CameraState::Free {
-        settings.disable_look = false;
-        return;
-    } else if *state.current() == CameraState::FollowStatic
-        || *state.current() == CameraState::TopDown
-        || *state.current() == CameraState::FollowBehind
-        || *state.current() == CameraState::FPS
-    {
-        if let Some(player_entity) = cl.player.entity {
-            if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                if *state.current() == CameraState::FollowBehind
-                    || *state.current() == CameraState::FPS
-                    || *state.current() == CameraState::TopDown
-                {
-                    settings.disable_move = true;
-                    if *state.current() == CameraState::FPS {
-                        settings.disable_look = false;
-                    }
-                    delta_trans.translation = player_transform.translation;
-                    if *state.current() == CameraState::TopDown {
-                        delta_trans.translation += Vec3::new(/*-4.*/ 0., settings.dist, 0.);
-                        delta_trans.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
-                    } else if *state.current() == CameraState::FollowBehind {
-                        //TODO Bind rotation to player and not to an axis
-                        delta_trans.rotation = Quat::from_rotation_y(std::f32::consts::FRAC_PI_2);
-                        delta_trans.translation += Vec3::new(/*-4.*/ 4., 1., 0.);
-                        /*
-                        let (_, current_rot) = player_transform.rotation.to_axis_angle();
-                        let x = (current_rot * std::f32::consts::PI / 180.).cos()*5.;
-                        let y = (current_rot * std::f32::consts::PI / 180.).sin()*5.;
-                        
-                        delta_trans.translation += Vec3::new(x, y, 0.);
-                        delta_trans.rotation = player_transform.rotation;
-                        */
-                        
-                        //println!("{:?}",player_transform.rotation);
-                    } else {
-                        delta_trans.rotation = player_transform.rotation;
-                        delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
-                    }
-                }
-                cl.camera_should_focus = player_transform.translation;
-            }
-        // otherwise, target the middle
-        } else {
-            cl.camera_should_focus = Vec3::from(RESET_FOCUS);
+
+    match *state.current() {
+        CameraState::Free => {
+            settings.disable_look = false;
+            return;
         }
-    } else {
-        // if there is both a player and a bonus, target the mid-point of them
-        if let (Some(player_entity), Some(bonus_entity)) = (cl.player.entity, cl.target) {
-            if let (Ok(player_transform), Ok(bonus_transform)) = (
-                transforms.q1().get(player_entity),
-                transforms.q1().get(bonus_entity),
-            ) {
-                cl.camera_should_focus = player_transform
-                    .translation
-                    .lerp(bonus_transform.translation, settings.lerp);
+        CameraState::LookAt => {
+            // if there is both a player and a bonus, target the mid-point of them
+            if let (Some(player_entity), Some(bonus_entity)) = (cl.player.entity, cl.target) {
+                if let (Ok(player_transform), Ok(bonus_transform)) = (
+                    transforms.q1().get(player_entity),
+                    transforms.q1().get(bonus_entity),
+                ) {
+                    cl.camera_should_focus = player_transform
+                        .translation
+                        .lerp(bonus_transform.translation, settings.lerp);
+                }
+            // otherwise, if there is only a player, target the player
+            } else if let Some(player_entity) = cl.player.entity {
+                if let Ok(player_transform) = transforms.q1().get(player_entity) {
+                    cl.camera_should_focus = player_transform.translation;
+                }
+            // otherwise, target the middle
+            } else {
+                cl.camera_should_focus = Vec3::from(RESET_FOCUS);
             }
-        // otherwise, if there is only a player, target the player
-        } else if let Some(player_entity) = cl.player.entity {
-            if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                cl.camera_should_focus = player_transform.translation;
+        }
+        _ => {
+            if let Some(player_entity) = cl.player.entity {
+                if let Ok(player_transform) = transforms.q1().get(player_entity) {
+                    match *state.current() {
+                        CameraState::FPS => {
+                            delta_trans.translation = player_transform.translation;
+                            settings.disable_move = true;
+
+                            settings.disable_look = false;
+                            delta_trans.rotation = player_transform.rotation;
+                            delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
+                        }
+                        CameraState::TopDown => {
+                            delta_trans.translation = player_transform.translation;
+                            settings.disable_move = true;
+
+                            delta_trans.translation +=
+                                Vec3::new(/*-4.*/ 0., settings.dist, 0.);
+                            delta_trans.rotation =
+                                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
+                        }
+                        CameraState::FollowBehind => {
+                            delta_trans.translation = player_transform.translation;
+                            settings.disable_move = true;
+
+                            //TODO Bind rotation to player and not to an axis
+
+                            delta_trans.rotation =
+                                Quat::from_rotation_y(std::f32::consts::FRAC_PI_2);
+                            delta_trans.translation += Vec3::new(/*-4.*/ 4., 1., 0.);
+                            /*
+                            let (_, current_rot) = player_transform.rotation.to_axis_angle();
+                            let x = (current_rot * std::f32::consts::PI / 180.).cos()*5.;
+                            let y = (current_rot * std::f32::consts::PI / 180.).sin()*5.;
+
+                            delta_trans.translation += Vec3::new(x, y, 0.);
+                            delta_trans.rotation = player_transform.rotation;
+                            */
+
+                            //println!("{:?}",player_transform.rotation);
+                        }
+                        _ => {}
+                    }
+                    cl.camera_should_focus = player_transform.translation;
+                }
+            // otherwise, target the middle
+            } else {
+                cl.camera_should_focus = Vec3::from(RESET_FOCUS);
             }
-        // otherwise, target the middle
-        } else {
-            cl.camera_should_focus = Vec3::from(RESET_FOCUS);
         }
     }
 
@@ -397,7 +421,7 @@ fn scroll(
                     println!("FOV: {:?}", project.fov);
                 }
             }
-            ScrollType::Lerp => {                
+            ScrollType::Lerp => {
                 settings.lerp = (settings.lerp + event.y * 0.01).abs();
                 println!("Lerp: {:?}", settings.lerp);
             }
