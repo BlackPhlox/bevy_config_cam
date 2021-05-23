@@ -277,9 +277,16 @@ fn focus_camera(
                         delta_trans.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
                     } else if *state.current() == CameraState::FollowBehind {
                         //TODO Bind rotation to player and not to an axis
-                        delta_trans.rotation = Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2);
+                        //delta_trans.rotation = Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2);
                         
-                        delta_trans.translation += Vec3::new(/*-4.*/ -4., 1., 0.);
+                        let (_, current_rot) = player_transform.rotation.to_axis_angle();
+                        let x = (current_rot * std::f32::consts::PI / 180.).cos()*5.;
+                        let y = (current_rot * std::f32::consts::PI / 180.).sin()*5.;
+                        
+                        delta_trans.translation += Vec3::new(x, y, 0.);
+                        delta_trans.rotation = player_transform.rotation;
+
+                        //delta_trans.translation += Vec3::new(/*-4.*/ -4., 1., 0.);
 
                         //println!("{:?}",player_transform.rotation);
                     } else {

@@ -2,9 +2,19 @@
 name = "bevy_multicam"
 version = "0.1.0"
 authors = ["Black Phlox <bphlox@gmail.com>"]
+license = "MIT"
 edition = "2018"
+readme = "README.md"
+repository = "https://github.com/BlackPhlox/bevy_multicam"
+documentation = "https://docs.rs/bevy_multicam"
+description = "A Swiss Army knife of a camera plugin that allows for easy setup of a moveable camera for a scene."
+keywords = ["gamedev", "bevy", "camera", "fps", "3d", ]
+categories = ["game-development", "game-engines", ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "bevy_multicam"
 
 [dependencies]
 rand = "0.8.0"
