@@ -6,7 +6,9 @@ use bevy::{
     input::mouse::{MouseButtonInput, MouseMotion, MouseWheel},
     prelude::*,
     render::{
-        camera::Camera, camera::CameraProjection, camera::PerspectiveProjection,
+        camera::Camera,
+        camera::CameraProjection,
+        camera::{ActiveCameras, PerspectiveProjection},
         render_graph::base::camera::CAMERA_3D,
     },
     window::{CursorMoved, Windows},
@@ -103,6 +105,7 @@ impl Plugin for MultiCam {
             .add_state(PluginState::Enabled)
             .add_state(CameraState::LookAt)
             .add_state(ScrollType::MovementSpeed)
+            .add_system(toggle_camera_parent.system())
             .add_system(switch_scroll_type.system())
             .add_system(scroll.system())
             .add_system(cycle_cam_state.system())
@@ -160,6 +163,9 @@ fn setup(
     mut cl: ResMut<CamLogic>,
     settings: Res<PlayerSettings>,
 ) {
+    let mut c2 : Camera = Camera::default();
+    c2.name = Some("player".to_string());
+
     // spawn the cam logic character
     cl.player.entity = Some(
         commands
@@ -178,6 +184,7 @@ fn setup(
             .with_children(|parent| {
                 parent
                     .spawn_bundle(PerspectiveCameraBundle {
+                        camera: c2,
                         transform: Transform::from_xyz(-2.0, 5.0, 5.0)
                             .looking_at(Vec3::ZERO, Vec3::Y),
                         ..Default::default()
@@ -187,11 +194,18 @@ fn setup(
             .id(),
     );
 
+
+    let mut c : Camera = Camera::default();
+    c.name = Some("Camera3d".to_string());
+
     // camera
     let camera = PerspectiveCameraBundle {
+        camera: c,
         transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     };
+
+    println!("{:?}", camera.camera);
 
     // add plugin
     commands.spawn_bundle(camera).insert(FlyCam);
@@ -259,7 +273,7 @@ fn move_player(
 // change the focus of the camera
 fn focus_camera(
     time: Res<Time>,
-    mut state: ResMut<State<CameraState>>,
+    state: Res<State<CameraState>>,
     mut cl: ResMut<CamLogic>,
     mut settings: ResMut<MovementSettings>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
@@ -267,10 +281,12 @@ fn focus_camera(
     let mut delta_trans = Transform::identity();
     settings.disable_look = true;
     settings.disable_move = false;
+    settings.locked_to_player = false;
 
     match *state.current() {
         CameraState::Free => {
             settings.disable_look = false;
+
             return;
         }
         CameraState::LookAt => {
@@ -316,24 +332,11 @@ fn focus_camera(
                                 Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
                         }
                         CameraState::FollowBehind => {
-                            delta_trans.translation = player_transform.translation;
                             settings.disable_move = true;
 
-                            //TODO Bind rotation to player and not to an axis
+                            settings.locked_to_player = true;
 
-                            delta_trans.rotation =
-                                Quat::from_rotation_y(std::f32::consts::FRAC_PI_2);
-                            delta_trans.translation += Vec3::new(/*-4.*/ 4., 1., 0.);
-                            /*
-                            let (_, current_rot) = player_transform.rotation.to_axis_angle();
-                            let x = (current_rot * std::f32::consts::PI / 180.).cos()*5.;
-                            let y = (current_rot * std::f32::consts::PI / 180.).sin()*5.;
-
-                            delta_trans.translation += Vec3::new(x, y, 0.);
-                            delta_trans.rotation = player_transform.rotation;
-                            */
-
-                            //println!("{:?}",player_transform.rotation);
+                            delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 4.);
                         }
                         _ => {}
                     }
@@ -366,6 +369,65 @@ fn focus_camera(
                 *transform = transform.looking_at(cl.camera_is_focus, Vec3::Y)
             }
         }
+    }
+}
+
+/*
+fn toggle_camera_parent(
+    mut commands: Commands,
+    mut settings: ResMut<MovementSettings>,
+    q_child: Query<&Entity, With<FlyCam>>,
+    q_parent: Query<&Entity, With<PlayerMove>>,
+){
+    if settings.locked_to_player && !settings.ltp {
+        for &child in q_child.iter() {
+            for &parent in q_parent.iter(){
+                commands.entity(parent).push_children(&[child]);
+            }
+        }
+        settings.ltp = true;
+    } else if !settings.locked_to_player && settings.ltp {
+        for &child in q_child.iter() {
+            for &parent in q_parent.iter(){
+                commands.entity(parent).push_children(&[child]);
+            }
+        }
+        settings.ltp = false;
+    }
+}
+*/
+
+fn toggle_camera_parent(
+    mut act_cams: ResMut<ActiveCameras>,
+    mut settings: ResMut<MovementSettings>,
+    mut query: QuerySet<(Query<(&FlyCam, &mut Camera)>, Query<(&PlayerCam, &mut Camera)>)>,
+) {
+    if settings.locked_to_player && !settings.ltp {   
+        
+        act_cams.remove("Camera3d");
+
+        let (_, mut b) = query.q1_mut().single_mut().unwrap();
+        b.name = Some("Camera3d".to_string());
+
+        act_cams.add("Camera3d");
+
+        let (_, mut b) = query.q0_mut().single_mut().unwrap();
+        b.name = Some("Test".to_string());
+
+        settings.ltp = true;
+    } else if !settings.locked_to_player && settings.ltp {
+
+        act_cams.remove("Camera3d");
+
+        let (_, mut b) = query.q0_mut().single_mut().unwrap();
+        b.name = Some("Camera3d".to_string());
+
+        act_cams.add("Camera3d");
+
+        let (_, mut b) = query.q1_mut().single_mut().unwrap();
+        b.name = Some("Test".to_string());
+
+        settings.ltp = false;
     }
 }
 
@@ -408,6 +470,7 @@ fn scroll(
             }
             ScrollType::Zoom => {
                 for (_camera, mut camera, mut project) in query.iter_mut() {
+                    println!("{:?}", camera.name);
                     project.fov = (project.fov - event.y * 0.01).abs();
                     let prim = windows.get_primary().unwrap();
 

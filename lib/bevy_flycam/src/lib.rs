@@ -45,7 +45,10 @@ pub struct MovementSettings {
     //pub force_cam: &'static[CameraState],
     pub disable_move: bool,
     pub disable_look: bool,
+    pub locked_to_player: bool,
     pub lerp: f32,
+
+    pub ltp: bool,
 }
 
 impl Default for MovementSettings {
@@ -57,7 +60,9 @@ impl Default for MovementSettings {
             map: CamKeyMap::default(),
             disable_move: false,
             disable_look: false,
+            locked_to_player: false,
             lerp: 0.5,
+            ltp: false,
         }
     }
 }
