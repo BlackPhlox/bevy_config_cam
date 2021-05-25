@@ -232,7 +232,6 @@ name = "bevy_config_cam"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_flycam",
  "rand",
  "ron",
  "serde",
@@ -311,13 +310,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "bevy_flycam"
-version = "0.5.0"
-dependencies = [
- "bevy",
 ]
 
 [[package]]

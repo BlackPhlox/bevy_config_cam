@@ -2,9 +2,7 @@ extern crate bevy_config_cam;
 
 //Base
 use bevy::prelude::*;
-
 use bevy_config_cam::*;
-use bevy_flycam::MovementSettings;
 
 fn main() {
     App::build()
