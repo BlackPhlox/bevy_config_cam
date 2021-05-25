@@ -30,7 +30,7 @@ Adding this plugin is *fairly* simple.
 ### Step 1. - Setup
     
 Add the correct version to your `Cargo.toml`, you can find the version you looking for under the support section. The thing you should be adding should look like this (only add the line marked by `# <--`):
-```
+```toml
 [dependencies]
 bevy = { version = "0.5"}
 # ...

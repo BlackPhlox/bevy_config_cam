@@ -17,7 +17,7 @@ pub struct PlayerMove;
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum PluginState {
     Enabled,
-    Disabled,
+    //Disabled,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -157,7 +157,10 @@ fn setup(
     mut cl: ResMut<CamLogic>,
     settings: Res<PlayerSettings>,
 ) {
-    let c2: Camera = Camera { name: Some("player".to_string()), ..Default::default() };
+    let c2: Camera = Camera {
+        name: Some("player".to_string()),
+        ..Default::default()
+    };
 
     // spawn the cam logic character
     cl.player.entity = Some(
@@ -187,7 +190,10 @@ fn setup(
             .id(),
     );
 
-    let c: Camera = Camera { name: Some("Camera3d".to_string()), ..Default::default() };
+    let c: Camera = Camera {
+        name: Some("Camera3d".to_string()),
+        ..Default::default()
+    };
 
     // camera
     let camera = PerspectiveCameraBundle {
@@ -374,7 +380,6 @@ fn focus_camera(
         }
     }
 }
-
 
 fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCameras>,
