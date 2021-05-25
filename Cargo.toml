@@ -22,7 +22,6 @@ bevy = { version = "0.5", default-features = false, features = ["render"] }
 
 [dev-dependencies]
 bevy = { version = "0.5", default-features = false, features = ["render", "bevy_winit", "bevy_wgpu", "bevy_gltf"] }
-ron = "*"
 serde = { version = "1.0.60", features = ["serde_derive"] }
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
