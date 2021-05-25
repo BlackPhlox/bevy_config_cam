@@ -11,7 +11,7 @@ Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam),
 
 ## Test the project
 
-Before I using a plugin, I all ways like to run the examples prior to setting it up for my own project. Just to see if the plugin satisfy my needs. 
+Before I start using a plugin, I all ways like to run the examples prior to setting it up for my own project. Just to see if the plugin satisfy my needs. 
 If you're like me then this is for you.
 
 1. Clone this repo to your local machine
