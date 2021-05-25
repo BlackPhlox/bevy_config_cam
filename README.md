@@ -1,4 +1,4 @@
-# bevy_multicam
+# bevy_config_cam
 
 An easy plug-n-play multifunctional camera that allows for easy setup of a camera for a scene.
 

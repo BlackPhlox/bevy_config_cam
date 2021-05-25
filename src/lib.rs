@@ -29,6 +29,7 @@ enum ScrollType {
     Zoom,
     Sensitivity,
     Lerp,
+    CamFwd,
 }
 
 //Plan:
@@ -44,6 +45,7 @@ pub enum CameraState {
     FollowStatic,
     //Camera is moved above and pointed down, rotation bound to one axis
     TopDown,
+    TopDownDirection,
     //Follows behind the player a certain distance
     FollowBehind,
     //Camera at same position as player, enables to use the mouse to look
@@ -69,6 +71,7 @@ pub struct PlayerSettings {
     pub speed: f32,
     pub map: PlayerKeyMap,
     pub pos: Vec3,
+    pub cam_fwd: bool,
 }
 
 impl Default for PlayerKeyMap {
@@ -92,12 +95,13 @@ impl Default for PlayerSettings {
             speed: 12.0,
             map: PlayerKeyMap::default(),
             pos: Default::default(),
+            cam_fwd: false,
         }
     }
 }
 
-pub struct MultiCam;
-impl Plugin for MultiCam {
+pub struct ConfigCam;
+impl Plugin for ConfigCam {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<CamLogic>()
             .add_plugin(NoCameraPlayerPlugin)
@@ -146,7 +150,8 @@ fn cycle_cam_state(
         let result = match cam_state.current() {
             CameraState::LookAt => CameraState::FollowStatic,
             CameraState::FollowStatic => CameraState::TopDown,
-            CameraState::TopDown => CameraState::FollowBehind,
+            CameraState::TopDown => CameraState::TopDownDirection,
+            CameraState::TopDownDirection => CameraState::FollowBehind,
             CameraState::FollowBehind => CameraState::FPS,
             CameraState::FPS => CameraState::Free,
             CameraState::Free => CameraState::LookAt,
@@ -163,7 +168,7 @@ fn setup(
     mut cl: ResMut<CamLogic>,
     settings: Res<PlayerSettings>,
 ) {
-    let mut c2 : Camera = Camera::default();
+    let mut c2: Camera = Camera::default();
     c2.name = Some("player".to_string());
 
     // spawn the cam logic character
@@ -194,8 +199,7 @@ fn setup(
             .id(),
     );
 
-
-    let mut c : Camera = Camera::default();
+    let mut c: Camera = Camera::default();
     c.name = Some("Camera3d".to_string());
 
     // camera
@@ -204,8 +208,6 @@ fn setup(
         transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     };
-
-    println!("{:?}", camera.camera);
 
     // add plugin
     commands.spawn_bundle(camera).insert(FlyCam);
@@ -222,7 +224,13 @@ fn move_player(
         let (_, mut rotation) = transform.rotation.to_axis_angle();
         let mut velocity = Vec3::ZERO;
         let local_z = transform.local_z();
-        let forward = -Vec3::new(local_z.x, 0., local_z.z);
+        //Forward should be togglable either xyz or cam direction xyz
+        let forward = if settings.cam_fwd {
+            Vec3::new(local_z.x, 0., local_z.z)
+        } else {
+            -Vec3::new(local_z.x, 0., local_z.z)
+        };
+
         let right = Vec3::new(local_z.z, 0., -local_z.x);
 
         for key in keys.get_pressed() {
@@ -286,7 +294,6 @@ fn focus_camera(
     match *state.current() {
         CameraState::Free => {
             settings.disable_look = false;
-
             return;
         }
         CameraState::LookAt => {
@@ -331,6 +338,15 @@ fn focus_camera(
                             delta_trans.rotation =
                                 Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
                         }
+                        CameraState::TopDownDirection => {
+                            settings.disable_move = true;
+                            settings.locked_to_player = true;
+
+                            delta_trans.translation +=
+                                Vec3::new(/*-4.*/ 0., settings.dist, 0.);
+                            delta_trans.rotation =
+                                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
+                        }
                         CameraState::FollowBehind => {
                             settings.disable_move = true;
 
@@ -372,38 +388,15 @@ fn focus_camera(
     }
 }
 
-/*
-fn toggle_camera_parent(
-    mut commands: Commands,
-    mut settings: ResMut<MovementSettings>,
-    q_child: Query<&Entity, With<FlyCam>>,
-    q_parent: Query<&Entity, With<PlayerMove>>,
-){
-    if settings.locked_to_player && !settings.ltp {
-        for &child in q_child.iter() {
-            for &parent in q_parent.iter(){
-                commands.entity(parent).push_children(&[child]);
-            }
-        }
-        settings.ltp = true;
-    } else if !settings.locked_to_player && settings.ltp {
-        for &child in q_child.iter() {
-            for &parent in q_parent.iter(){
-                commands.entity(parent).push_children(&[child]);
-            }
-        }
-        settings.ltp = false;
-    }
-}
-*/
-
 fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCameras>,
     mut settings: ResMut<MovementSettings>,
-    mut query: QuerySet<(Query<(&FlyCam, &mut Camera)>, Query<(&PlayerCam, &mut Camera)>)>,
+    mut query: QuerySet<(
+        Query<(&FlyCam, &mut Camera)>,
+        Query<(&PlayerCam, &mut Camera)>,
+    )>,
 ) {
-    if settings.locked_to_player && !settings.ltp {   
-        
+    if settings.locked_to_player && !settings.ltp {
         act_cams.remove("Camera3d");
 
         let (_, mut b) = query.q1_mut().single_mut().unwrap();
@@ -416,7 +409,6 @@ fn toggle_camera_parent(
 
         settings.ltp = true;
     } else if !settings.locked_to_player && settings.ltp {
-
         act_cams.remove("Camera3d");
 
         let (_, mut b) = query.q0_mut().single_mut().unwrap();
@@ -442,7 +434,8 @@ fn switch_scroll_type(
             ScrollType::Sensitivity => ScrollType::Zoom,
             ScrollType::Zoom => ScrollType::MovementSpeed,
             ScrollType::MovementSpeed => ScrollType::Lerp,
-            ScrollType::Lerp => ScrollType::Sensitivity,
+            ScrollType::Lerp => ScrollType::CamFwd,
+            ScrollType::CamFwd => ScrollType::Sensitivity,
         };
 
         println!("{:?}", result);
@@ -453,6 +446,7 @@ fn switch_scroll_type(
 // Depending on the state, the mouse-scroll changes either the movement speed or the field-of-view of the camera
 fn scroll(
     mut settings: ResMut<MovementSettings>,
+    mut p_settings: ResMut<PlayerSettings>,
     scroll_type: Res<State<ScrollType>>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
     windows: Res<Windows>,
@@ -487,6 +481,12 @@ fn scroll(
             ScrollType::Lerp => {
                 settings.lerp = (settings.lerp + event.y * 0.01).abs();
                 println!("Lerp: {:?}", settings.lerp);
+            }
+            ScrollType::CamFwd => {
+                if event.y > 0.01 {
+                    p_settings.cam_fwd = !p_settings.cam_fwd;
+                }
+                println!("CamFwd: {:?}", p_settings.cam_fwd);
             }
         }
     }

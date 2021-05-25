@@ -1,16 +1,16 @@
-extern crate bevy_multicam;
+extern crate bevy_config_cam;
 
 //Base
 use bevy::prelude::*;
 
 use bevy_flycam::MovementSettings;
-use bevy_multicam::*;
+use bevy_config_cam::*;
 
 fn main() {
     App::build()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
-        .add_plugin(MultiCam)
+        .add_plugin(ConfigCam)
         .insert_resource(MovementSettings {
             sensitivity: 0.00015, // default: 0.00012
             speed: 12.0,          // default: 12.0
