@@ -272,6 +272,7 @@ fn move_player(
 }
 
 // change the focus of the camera
+#[allow(type_complexity)]
 fn focus_camera(
     time: Res<Time>,
     state: Res<State<CameraState>>,
@@ -381,6 +382,7 @@ fn focus_camera(
     }
 }
 
+#[allow(type_complexity)]
 fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCameras>,
     mut settings: ResMut<MovementSettings>,
