@@ -48,7 +48,7 @@ pub enum CameraState {
     TopDownDirection,
     //Follows behind the player a certain distance
     FollowBehind,
-    //Camera at same position as player, enables to use the mouse to look
+    //Camera at same position as player, enables to use the mouse to look (WIP)
     FPS,
     //Use the mouse to look and move the camera freely
     Free,

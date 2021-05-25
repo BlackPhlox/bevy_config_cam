@@ -18,4 +18,4 @@ Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam),
 The project is under the MIT license, so joink to your hearts content, just remember the license agreements.
 
 # Contributing
-Yes, PRs are very welcome
+Yes this project is still very much WIP, so PRs are very welcome
