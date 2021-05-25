@@ -1,9 +1,7 @@
 //Base
 use bevy::{
-    core::FixedTimestep,
-    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     ecs::schedule::SystemSet,
-    input::mouse::{MouseButtonInput, MouseMotion, MouseWheel},
+    input::mouse::MouseWheel,
     prelude::*,
     render::{
         camera::Camera,
@@ -11,12 +9,11 @@ use bevy::{
         camera::{ActiveCameras, PerspectiveProjection},
         render_graph::base::camera::CAMERA_3D,
     },
-    window::{CursorMoved, Windows},
+    window::Windows,
 };
 
-use bevy_flycam::{CamKeyMap, FlyCam, MovementSettings, NoCameraPlayerPlugin, PlayerCam};
+use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin, PlayerCam};
 pub struct PlayerMove;
-
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum PluginState {
     Enabled,
@@ -31,12 +28,6 @@ enum ScrollType {
     Lerp,
     CamFwd,
 }
-
-//Plan:
-// Merge LookAt and FollowStatic into FollowFree
-// Change rotation of TopDown cam, either a rotation or aligned with player rotation
-// Make FollowBehind actually work, make parenting work
-// Merge FPS and Free into one called FPS and have a no-clip and different control-scheme setting (rotation with arrows or mouse etc.)
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum CameraState {
     //Look at player and other targets if set
@@ -49,11 +40,9 @@ pub enum CameraState {
     //Follows behind the player a certain distance
     FollowBehind,
     //Camera at same position as player, enables to use the mouse to look (WIP)
-    FPS,
+    Fps,
     //Use the mouse to look and move the camera freely
     Free,
-    //Same as Free, but going forward is base on where your looking
-    //FreeFPS
 }
 
 pub struct PlayerKeyMap {
@@ -152,8 +141,8 @@ fn cycle_cam_state(
             CameraState::FollowStatic => CameraState::TopDown,
             CameraState::TopDown => CameraState::TopDownDirection,
             CameraState::TopDownDirection => CameraState::FollowBehind,
-            CameraState::FollowBehind => CameraState::FPS,
-            CameraState::FPS => CameraState::Free,
+            CameraState::FollowBehind => CameraState::Fps,
+            CameraState::Fps => CameraState::Free,
             CameraState::Free => CameraState::LookAt,
         };
 
@@ -168,8 +157,7 @@ fn setup(
     mut cl: ResMut<CamLogic>,
     settings: Res<PlayerSettings>,
 ) {
-    let mut c2: Camera = Camera::default();
-    c2.name = Some("player".to_string());
+    let c2: Camera = Camera { name: Some("player".to_string()), ..Default::default() };
 
     // spawn the cam logic character
     cl.player.entity = Some(
@@ -184,7 +172,7 @@ fn setup(
             ))
             .insert(PlayerMove)
             .with_children(|cell| {
-                cell.spawn_scene(asset_server.load("models/AlienCake/craft_speederA.glb#Scene0"));
+                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
             })
             .with_children(|parent| {
                 parent
@@ -199,8 +187,7 @@ fn setup(
             .id(),
     );
 
-    let mut c: Camera = Camera::default();
-    c.name = Some("Camera3d".to_string());
+    let c: Camera = Camera { name: Some("Camera3d".to_string()), ..Default::default() };
 
     // camera
     let camera = PerspectiveCameraBundle {
@@ -321,7 +308,7 @@ fn focus_camera(
             if let Some(player_entity) = cl.player.entity {
                 if let Ok(player_transform) = transforms.q1().get(player_entity) {
                     match *state.current() {
-                        CameraState::FPS => {
+                        CameraState::Fps => {
                             delta_trans.translation = player_transform.translation;
                             settings.disable_move = true;
 
@@ -387,6 +374,7 @@ fn focus_camera(
         }
     }
 }
+
 
 fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCameras>,
