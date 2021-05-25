@@ -2,7 +2,7 @@
 use bevy::{
     app::{Events, ManualEventReader},
     ecs::schedule::SystemSet,
-    input::mouse::{MouseWheel,MouseMotion},
+    input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
     render::{
         camera::Camera,
@@ -695,4 +695,3 @@ impl Plugin for NoCameraPlayerPlugin {
             .add_system(cursor_grab.system());
     }
 }
-
