@@ -9,16 +9,6 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
-        .insert_resource(MovementSettings {
-            sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0,          // default: 12.0
-            ..Default::default()
-        })
-        .insert_resource(PlayerSettings {
-            pos: Vec3::new(2., 0., 0.),
-            player_asset: "models/craft_speederA.glb#Scene0",
-            ..Default::default()
-        })
         .add_startup_system(setup.system())
         .run();
 }

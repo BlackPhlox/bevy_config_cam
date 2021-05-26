@@ -1,6 +1,6 @@
 [package]
 name = "bevy_config_cam"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Black Phlox <bphlox@gmail.com>"]
 license = "MIT OR ISC"
 edition = "2018"
@@ -10,6 +10,10 @@ documentation = "https://docs.rs/bevy_config_cam"
 description = "A Swiss Army knife of a camera plugin that allows for easy setup and configuration of a wide variety of types of moveable camera for a scene."
 keywords = ["gamedev", "bevy", "camera", "fps", "3d", ]
 categories = ["game-development", "game-engines", ]
+exclude = [
+    "assets/*",
+    ".github/*",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -22,7 +26,7 @@ bevy = { version = "0.5", default-features = false, features = ["render"] }
 
 [dev-dependencies]
 bevy = { version = "0.5", default-features = false, features = ["render", "bevy_winit", "bevy_wgpu", "bevy_gltf"] }
-serde = { version = "1.0.60", features = ["serde_derive"] }
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
 bevy = { version = "0.5", default-features = false, features = [ "x11", "wayland" ] }
+

@@ -229,11 +229,10 @@ dependencies = [
 
 [[package]]
 name = "bevy_config_cam"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bevy",
  "rand",
- "serde",
 ]
 
 [[package]]

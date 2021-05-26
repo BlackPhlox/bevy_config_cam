@@ -27,7 +27,7 @@ Settings: <kbd>E</kbd> and use the mouse-scroll to change the selected settings 
 
 ## Add to your own project
 
-Adding this plugin is *fairly* simple. 
+Adding this plugin to your project is *very* simple, it only requires you to write 2 lines of code. 
 
 ### Step 1. - Setup
     
@@ -36,13 +36,10 @@ Add the correct version to your `Cargo.toml`, you can find the version you looki
 [dependencies]
 bevy = { version = "0.5"}
 # ...
-bevy_config_cam = { version = "0.1"} # <-- 
+bevy_config_cam = { version = "0.1.1"} # <-- 
 ```
 
-### Step 2. - Install
-And then run the cargo command `cargo install` to install the plugin.
-
-### Step 3. - Add to project
+### Step 2. - Add to project
 
 ```rust
 fn main() {
@@ -57,7 +54,7 @@ fn main() {
 }
 ```
 
-### Step 4. - Config (Optional)
+### Step 3. - Config (Optional)
 
 Now, there is a reason for the name `bevy_config_cam`. It is most likely that you want something more than just the default behavior. You might want to toggle between 2 types of cameras or allow the user to change the fov using a slider. Currently I haven't gotten far with creating a user-friendly api you can access but is something I will look into. For now you can insert two recourses to override the default behavior of the plugin, as seen in the example:
 
@@ -70,6 +67,7 @@ Now, there is a reason for the name `bevy_config_cam`. It is most likely that yo
     })
     .insert_resource(PlayerSettings {
         pos: Vec3::new(2., 0., 0.),//Initial position of the player
+        player_asset: "models/craft_speederA.glb#Scene0", //Model of the player, default is a red cube
         ..Default::default()
     })
 ```
@@ -80,7 +78,7 @@ Note: That some of them are overwritten by accessing the settings or the changin
 
 |bevy|bevy_multicam|
 |---|---|
-|0.5|0.1|
+|0.5|0.1.X|
 
 # Licensing
 The project is under dual license MIT and ISC (functionally equivalent, though ISC removing some language that is no longer necessary), so joink to your hearts content, just remember the license agreements.

@@ -1,4 +1,3 @@
-//Base
 use bevy::{
     app::{Events, ManualEventReader},
     ecs::schedule::SystemSet,
@@ -57,6 +56,7 @@ pub struct PlayerKeyMap {
 }
 
 pub struct PlayerSettings {
+    pub player_asset: &'static str,
     pub speed: f32,
     pub map: PlayerKeyMap,
     pub pos: Vec3,
@@ -81,6 +81,7 @@ impl Default for PlayerKeyMap {
 impl Default for PlayerSettings {
     fn default() -> Self {
         Self {
+            player_asset: "",
             speed: 12.0,
             map: PlayerKeyMap::default(),
             pos: Default::default(),
@@ -156,27 +157,42 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut cl: ResMut<CamLogic>,
     settings: Res<PlayerSettings>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let c2: Camera = Camera {
         name: Some("player".to_string()),
         ..Default::default()
     };
 
-    // spawn the cam logic character
+    let mut a = if settings.player_asset.is_empty() {
+        commands.spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Color::rgb(0.7, 0.3, 0.3).into()),
+            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            ..Default::default()
+        })
+    } else {
+        commands.spawn_bundle((
+            Transform {
+                translation: settings.pos,
+                rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
+                ..Default::default()
+            },
+            GlobalTransform::identity(),
+        ))
+    };
+
+    let b = if settings.player_asset.is_empty() {
+        a.with_children(|_| {})
+    } else {
+        a.with_children(|cell| {
+            cell.spawn_scene(asset_server.load(settings.player_asset));
+        })
+    };
+
     cl.player.entity = Some(
-        commands
-            .spawn_bundle((
-                Transform {
-                    translation: settings.pos,
-                    rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
-                    ..Default::default()
-                },
-                GlobalTransform::identity(),
-            ))
-            .insert(PlayerMove)
-            .with_children(|cell| {
-                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
-            })
+        b.insert(PlayerMove)
             .with_children(|parent| {
                 parent
                     .spawn_bundle(PerspectiveCameraBundle {
