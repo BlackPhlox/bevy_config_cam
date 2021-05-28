@@ -27,14 +27,14 @@ FollowBehind | Fps
 
 Free | ?
 :-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" alt="Free" >  |  Any surgestions on other camera modes you want? Let me know by creating an issue :)
+<img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" alt="Free" >  |  Any suggestions on other camera modes you want? Let me know by creating an issue :)
 
 ## Settings
 
 | Camera Mode | Disc. | Demo |
 | --- | --- | --- |
 | MovementSpeed (Camera) | Change the speed of there cameras movement | |
-| Sensitivity | Change the sensitivyty of the cameras mouse movement | |
+| Sensitivity | Change the sensitivity of the cameras mouse movement | |
 | Lerp | Change the linera interpolation between the target and the player (LookAt cameramode only)||
 | Zoom/FOV| Change the FOV of the camera | <img src="https://user-images.githubusercontent.com/25123512/119991256-8d9adb80-bfc9-11eb-9e1d-5d763ec150a2.png" alt="LowFOV" width="250"> |
 | CamFwd (Unused) | Toggle between xyz movement relative to world coords or camera local coords and rotation (Free cameramode only)||
