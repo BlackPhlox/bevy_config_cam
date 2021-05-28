@@ -11,7 +11,7 @@ Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam),
 
 # Showcase
 
-## Camera Types
+## Camera Modes
 
 LookAt | FollowStatic
 :-------------------------:|:-------------------------:
