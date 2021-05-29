@@ -1,4 +1,6 @@
-# bevy_config_cam
+<div align="left">
+<a href="https://github.com/BlackPhlox/bevy_config_cam"><img src="https://raw.githubusercontent.com/BlackPhlox/BlackPhlox/master/config_cam.svg" width="970" height="300" alt="bevy config cam"></a>
+</div>
 
 [![crates.io](https://img.shields.io/crates/v/bevy_config_cam)](https://crates.io/crates/bevy_config_cam)</br>[![docs.rs](https://docs.rs/bevy_config_cam/badge.svg)](https://docs.rs/bevy_config_cam)
 
