@@ -1,13 +1,45 @@
-# bevy_config_cam
+<div align="left">
+<a href="https://github.com/BlackPhlox/bevy_config_cam"><img src="https://raw.githubusercontent.com/BlackPhlox/BlackPhlox/master/config_cam.svg" width="970" height="200" alt="bevy config cam"></a>
+</div>
 
 [![crates.io](https://img.shields.io/crates/v/bevy_config_cam)](https://crates.io/crates/bevy_config_cam)</br>[![docs.rs](https://docs.rs/bevy_config_cam/badge.svg)](https://docs.rs/bevy_config_cam)
 
-An easy plug-n-play multifunctional camera that allows for easy setup of a camera for a scene.
+An easy plug-n-play multifunctional camera that allows for easy setup of a camera and player for a scene.
 
 Add a few lines of code to your existing project allows you to test a wide variety of cameras by attaching it to
-your player entity or the default spaceship entity. 
+your player asset or the default red player entity. 
 
 Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam), this plugin is fairly simple but should be a neat help for developers looking for a camera implementation without going the hassle of reinventing the wheel.
+
+# Showcase
+
+## Camera Modes
+
+LookAt | FollowStatic
+:-------------------------:|:-------------------------:
+<img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" alt="LookAt">  |  <img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" alt="FollowStatic">
+
+TopDown | TopDownDirection
+:-------------------------:|:-------------------------:
+<img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" alt="TopDown"> |  <img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" alt="TopDownDirection">
+
+FollowBehind | Fps
+:-------------------------:|:-------------------------:
+<img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" alt="FollowBehind">  |  <img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" alt="Fps">
+
+Free | ?
+:-------------------------:|:-------------------------:
+<img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" alt="Free" >  |  Any suggestions on other camera modes you want? Let me know by creating an issue :)
+
+## Settings
+
+| Camera Mode | Disc. | Demo |
+| --- | --- | --- |
+| MovementSpeed (Camera) | Change the speed of there cameras movement | |
+| Sensitivity | Change the sensitivity of the cameras mouse movement | |
+| Lerp | Change the linera interpolation between the target and the player (LookAt cameramode only)||
+| Zoom/FOV| Change the FOV of the camera | <img src="https://user-images.githubusercontent.com/25123512/119991256-8d9adb80-bfc9-11eb-9e1d-5d763ec150a2.png" alt="LowFOV" width="250"> |
+| CamFwd (Unused) | Toggle between xyz movement relative to world coords or camera local coords and rotation (Free cameramode only)||
 
 # Getting started
 
