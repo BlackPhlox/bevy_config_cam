@@ -4,6 +4,7 @@ extern crate bevy_config_cam;
 use bevy::prelude::*;
 use bevy_config_cam::*;
 
+
 fn main() {
     App::build()
         .insert_resource(Msaa { samples: 4 })

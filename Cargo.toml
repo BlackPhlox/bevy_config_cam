@@ -22,6 +22,8 @@ name = "bevy_config_cam"
 
 [dependencies]
 rand = "0.8.0"
+strum = "0.21.0"
+strum_macros = "0.21.1"
 bevy = { version = "0.5", default-features = false, features = ["render"] }
 
 [dev-dependencies]

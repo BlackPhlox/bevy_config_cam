@@ -107,7 +107,7 @@ impl Plugin for ConfigCam {
             .add_system_set(
                 SystemSet::on_update(PluginState::Enabled)
                     .with_system(move_player.system())
-                    .with_system(focus_camera.system()),
+                    .with_system(move_camera.system()),
             );
     }
 }
@@ -289,7 +289,7 @@ fn move_player(
 
 // change the focus of the camera
 #[allow(clippy::type_complexity)]
-fn focus_camera(
+fn move_camera(
     time: Res<Time>,
     state: Res<State<CameraState>>,
     mut cl: ResMut<CamLogic>,
