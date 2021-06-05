@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use strum::IntoEnumIterator;
-use strum_macros::EnumIter; 
+use strum_macros::EnumIter;
 
 // Used in queries when you want filter between cameras
 #[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
@@ -57,9 +57,7 @@ fn setup(
         ..Default::default()
     };
 
-    commands
-        .spawn_bundle(cube_cam)
-        .insert(Cameras::CubeCam);
+    commands.spawn_bundle(cube_cam).insert(Cameras::CubeCam);
 
     // topdown camera
     let topdown_cam = PerspectiveCameraBundle {
@@ -79,16 +77,13 @@ fn setup(
 fn debug_stats_change(
     query: Query<
         // components
-        (&Cameras, & Camera),
+        (&Cameras, &Camera),
         // filters
-        Changed<State<Cameras>>, 
+        Changed<State<Cameras>>,
     >,
 ) {
     for (cams, cam) in query.iter() {
-        println!(
-            "Cam Enum: {:?}, Cam Name: {:?}",
-            cams, cam.name
-        );
+        println!("Cam Enum: {:?}, Cam Name: {:?}", cams, cam.name);
     }
 }
 
@@ -125,17 +120,25 @@ fn switch_camera(
 
 #[macro_export]
 macro_rules! next_enum {
-    ($l:ident, $k:expr) => { 
-        $l::iter().enumerate().nth(
-            $l::iter().enumerate().find(|a| a.1 == *$k.current()).map(|(i, _)| 
-                if i + 1 > $l::iter().count()-1 {
-                    0usize
-                } else {
-                    i + 1
-                }
-            ).unwrap()
-        ).unwrap().1
-    }
+    ($l:ident, $k:expr) => {
+        $l::iter()
+            .enumerate()
+            .nth(
+                $l::iter()
+                    .enumerate()
+                    .find(|a| a.1 == *$k.current())
+                    .map(|(i, _)| {
+                        if i + 1 > $l::iter().count() - 1 {
+                            0usize
+                        } else {
+                            i + 1
+                        }
+                    })
+                    .unwrap(),
+            )
+            .unwrap()
+            .1
+    };
 }
 
 #[allow(unused_must_use)]
