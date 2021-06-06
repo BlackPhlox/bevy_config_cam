@@ -12,6 +12,46 @@ use bevy::{
     window::Windows,
 };
 
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
+/*
+pub trait NextEnum: IntoEnumIterator {
+    fn next_enum<E>(pred: S)
+    where
+    E: IntoEnumIterator,
+    S: ResMut<State<E>>,
+    {
+        let a = E::iter().enumerate();
+        a.nth(
+            a.find(|a| a.1 == *pred.current())
+        )
+    }
+}
+*/
+
+#[macro_export]
+macro_rules! next_enum {
+    ($l:ident, $k:expr) => {
+        $l::iter()
+            .enumerate()
+            .nth(
+                $l::iter()
+                    .enumerate()
+                    .find(|a| a.1 == *$k.current())
+                    .map(|(i, _)| {
+                        if i + 1 > $l::iter().count() - 1 {
+                            0usize
+                        } else {
+                            i + 1
+                        }
+                    })
+                    .unwrap(),
+            )
+            .unwrap()
+            .1
+    };
+}
 pub struct PlayerMove;
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum PluginState {
@@ -19,7 +59,7 @@ enum PluginState {
     //Disabled,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
 enum ScrollType {
     MovementSpeed,
     Zoom,
@@ -27,7 +67,7 @@ enum ScrollType {
     Lerp,
     CamFwd,
 }
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
 pub enum CameraState {
     //Look at player and other targets if set
     LookAt,
@@ -137,15 +177,7 @@ fn cycle_cam_state(
         .get_just_pressed()
         .any(|m| settings.map.next_cam.iter().any(|nc| m == nc))
     {
-        let result = match cam_state.current() {
-            CameraState::LookAt => CameraState::FollowStatic,
-            CameraState::FollowStatic => CameraState::TopDown,
-            CameraState::TopDown => CameraState::TopDownDirection,
-            CameraState::TopDownDirection => CameraState::FollowBehind,
-            CameraState::FollowBehind => CameraState::Fps,
-            CameraState::Fps => CameraState::Free,
-            CameraState::Free => CameraState::LookAt,
-        };
+        let result = next_enum!(CameraState, cam_state);
 
         println!("Camera: {:?}", result);
         cam_state.set(result);
@@ -160,11 +192,6 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let c2: Camera = Camera {
-        name: Some("player".to_string()),
-        ..Default::default()
-    };
-
     let mut a = if settings.player_asset.is_empty() {
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -196,7 +223,10 @@ fn setup(
             .with_children(|parent| {
                 parent
                     .spawn_bundle(PerspectiveCameraBundle {
-                        camera: c2,
+                        camera: Camera {
+                            name: Some("player".to_string()),
+                            ..Default::default()
+                        },
                         transform: Transform::from_xyz(-2.0, 5.0, 5.0)
                             .looking_at(Vec3::ZERO, Vec3::Y),
                         ..Default::default()
@@ -206,20 +236,17 @@ fn setup(
             .id(),
     );
 
-    let c: Camera = Camera {
-        name: Some("Camera3d".to_string()),
-        ..Default::default()
-    };
-
     // camera
-    let camera = PerspectiveCameraBundle {
-        camera: c,
-        transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    };
-
-    // add plugin
-    commands.spawn_bundle(camera).insert(FlyCam);
+    commands
+        .spawn_bundle(PerspectiveCameraBundle {
+            camera: Camera {
+                name: Some("Camera3d".to_string()),
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        })
+        .insert(FlyCam);
 }
 
 // control the cam logic character
@@ -441,13 +468,7 @@ fn switch_scroll_type(
     keyboard_input: Res<Input<KeyCode>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::E) {
-        let result = match scroll_type.current() {
-            ScrollType::Sensitivity => ScrollType::Zoom,
-            ScrollType::Zoom => ScrollType::MovementSpeed,
-            ScrollType::MovementSpeed => ScrollType::Lerp,
-            ScrollType::Lerp => ScrollType::CamFwd,
-            ScrollType::CamFwd => ScrollType::Sensitivity,
-        };
+        let result = next_enum!(ScrollType, scroll_type);
 
         println!("{:?}", result);
         scroll_type.set(result);
@@ -570,8 +591,8 @@ impl Default for MovementSettings {
 }
 
 /// Used in queries when you want flycams and not other cameras
-pub struct FlyCam;
-pub struct PlayerCam;
+struct FlyCam;
+struct PlayerCam;
 
 /// Grabs/ungrabs mouse cursor
 fn toggle_grab_cursor(window: &mut Window) {

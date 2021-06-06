@@ -3,6 +3,7 @@ use bevy::{
     render::camera::{ActiveCameras, Camera},
 };
 
+use bevy_config_cam::next_enum;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
@@ -21,7 +22,6 @@ fn main() {
         .add_startup_system(setup.system())
         .add_system(change_selected_camera.system())
         .add_system(change_detection.system())
-        //.add_system(switch_camera.system())
         .add_system(debug_stats_change.system())
         .run();
 }
@@ -52,25 +52,23 @@ fn setup(
     });
 
     // cube camera
-    let cube_cam = PerspectiveCameraBundle {
-        transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    };
-
-    commands.spawn_bundle(cube_cam).insert(Cameras::CubeCam);
+    commands
+        .spawn_bundle(PerspectiveCameraBundle {
+            transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        })
+        .insert(Cameras::CubeCam);
 
     // topdown camera
-    let topdown_cam = PerspectiveCameraBundle {
-        camera: Camera {
-            name: Some("Inactive".to_string()),
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(-2.0, 10.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    };
-
     commands
-        .spawn_bundle(topdown_cam)
+        .spawn_bundle(PerspectiveCameraBundle {
+            camera: Camera {
+                name: Some("Inactive".to_string()),
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(-2.0, 10.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        })
         .insert(Cameras::TopDownCam);
 }
 
@@ -95,57 +93,34 @@ fn change_detection(query: Query<(Entity, &Cameras), Changed<Cameras>>) {
 
 fn switch_camera(
     mut act_cams: ResMut<ActiveCameras>,
-    camera_state: Res<State<Cameras>>,
-    mut query: Query<(&Cameras, &mut Camera), Changed<State<Cameras>>>,
+    camera_state: ResMut<State<Cameras>>,
+    mut query: Query<(&Cameras, &mut Camera)>,
 ) {
     act_cams.remove("Camera3d");
-    for (c, mut b) in query.iter_mut() {
-        println!("{:?}", camera_state.current());
-        println!("{:?}", c);
-        println!("{:?}", "Setting to test");
-        println!("{:?}", b);
-
+    for (_, mut b) in query.iter_mut() {
         b.name = Some("Inactive".to_string());
     }
     for (_, mut b) in query
         .iter_mut()
         .filter(|(c, _)| camera_state.current().eq(c))
     {
-        println!("{:?}", "Setting to main");
-        println!("{:?}", b);
         b.name = Some("Camera3d".to_string());
     }
     act_cams.add("Camera3d");
 }
 
-#[macro_export]
-macro_rules! next_enum {
-    ($l:ident, $k:expr) => {
-        $l::iter()
-            .enumerate()
-            .nth(
-                $l::iter()
-                    .enumerate()
-                    .find(|a| a.1 == *$k.current())
-                    .map(|(i, _)| {
-                        if i + 1 > $l::iter().count() - 1 {
-                            0usize
-                        } else {
-                            i + 1
-                        }
-                    })
-                    .unwrap(),
-            )
-            .unwrap()
-            .1
-    };
-}
-
 #[allow(unused_must_use)]
-fn change_selected_camera(mut selected_cam: ResMut<State<Cameras>>, keys: Res<Input<KeyCode>>) {
+fn change_selected_camera(
+    mut selected_cam: ResMut<State<Cameras>>,
+    keys: Res<Input<KeyCode>>,
+    act_cams: ResMut<ActiveCameras>,
+    query: Query<(&Cameras, &mut Camera)>,
+) {
     if keys.just_pressed(KeyCode::E) {
         let result = next_enum!(Cameras, selected_cam);
         println!("Camera: {:?}", result);
         selected_cam.set(result);
+
+        switch_camera(act_cams, selected_cam, query);
     }
 }
