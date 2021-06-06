@@ -42,21 +42,23 @@ fn setup(
 
     //Target 1
     commands
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                transform: Transform::from_xyz(-5.0, 0.5, 0.0),
-                ..Default::default()
-            }).insert(T1);
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+            transform: Transform::from_xyz(-5.0, 0.5, 0.0),
+            ..Default::default()
+        })
+        .insert(T1);
 
     //Target 2
     commands
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                transform: Transform::from_xyz(5.0, 0.5, 0.0),
-                ..Default::default()
-            }).insert(T2);
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+            transform: Transform::from_xyz(5.0, 0.5, 0.0),
+            ..Default::default()
+        })
+        .insert(T2);
 
     // light
     commands.spawn_bundle(LightBundle {
@@ -72,21 +74,23 @@ fn set_closest_target(
         Query<(&T1, Entity, &Transform)>,
         Query<(&T2, Entity, &Transform)>,
     )>,
-){
+) {
     //Check to prevent panic on first loop
-    if transforms.iter().count() == 0 {return}
-    let (_t1, e1, t1 ) = query.q0().single().unwrap();
-    let (_t2, e2, t2 ) = query.q1().single().unwrap();
+    if transforms.iter().count() == 0 {
+        return;
+    }
+    let (_t1, e1, t1) = query.q0().single().unwrap();
+    let (_t2, e2, t2) = query.q1().single().unwrap();
     let (_, t) = transforms.single_mut().unwrap();
-    
+
     let t1dist = t.translation.distance(t1.translation);
     let t2dist = t.translation.distance(t2.translation);
-    
+
     if t1dist < t2dist && t1dist < 5. {
         cl.target = Some(e1);
     } else if t1dist > t2dist && t2dist < 5. {
         cl.target = Some(e2);
     } else {
-    cl.target = None;
+        cl.target = None;
     }
 }
