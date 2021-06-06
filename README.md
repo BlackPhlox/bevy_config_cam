@@ -63,7 +63,7 @@ Adding this plugin to your project is *very* simple, it only requires you to wri
 
 ### Step 1. - Setup
     
-Add the correct version to your `Cargo.toml`, you can find the version you looking for under the support section. The thing you should be adding should look like this (only add the line marked by `# <--`):
+Add the correct version to your `Cargo.toml`, you can find the version you are looking for under the support section. The thing you should be adding should look like this (only add the line marked by `# <--`):
 ```toml
 [dependencies]
 bevy = { version = "0.5"}
@@ -88,7 +88,7 @@ fn main() {
 
 ### Step 3. - Config (Optional)
 
-Now, there is a reason for the name `bevy_config_cam`. It is most likely that you want something more than just the default behavior. You might want to toggle between 2 types of cameras or allow the user to change the fov using a slider. Currently I haven't gotten far with creating a user-friendly api you can access but is something I will look into. For now you can insert two recourses to override the default behavior of the plugin, as seen in the example:
+Now, there is a reason for the name `bevy_config_cam`. It is most likely that you want something more than just the default behavior. You might want to toggle between 2 types of cameras or allow the user to change the fov using a slider. Currently I haven't gotten far with creating a user-friendly api you can access but is something I will look into. For now you can insert two resources to override the default behavior of the plugin, as seen in the example:
 
 ```rust
     .insert_resource(MovementSettings {
@@ -113,7 +113,7 @@ Note: That some of them are overwritten by accessing the settings or the changin
 |0.5|0.1.X|
 
 # Licensing
-The project is under dual license MIT and ISC (functionally equivalent, though ISC removing some language that is no longer necessary), so joink to your hearts content, just remember the license agreements.
+The project is under dual license MIT and ISC (functionally equivalent, though ISC removing some language that is no longer necessary), so yoink to your hearts content, just remember the license agreements.
 
 # Contributing
 Yes this project is still very much WIP, so PRs are very welcome
