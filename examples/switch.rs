@@ -21,8 +21,6 @@ fn main() {
         .add_state(Cameras::CubeCam)
         .add_startup_system(setup.system())
         .add_system(change_selected_camera.system())
-        .add_system(change_detection.system())
-        .add_system(debug_stats_change.system())
         .run();
 }
 
@@ -70,25 +68,6 @@ fn setup(
             ..Default::default()
         })
         .insert(Cameras::TopDownCam);
-}
-
-fn debug_stats_change(
-    query: Query<
-        // components
-        (&Cameras, &Camera),
-        // filters
-        Changed<State<Cameras>>,
-    >,
-) {
-    for (cams, cam) in query.iter() {
-        println!("Cam Enum: {:?}, Cam Name: {:?}", cams, cam.name);
-    }
-}
-
-fn change_detection(query: Query<(Entity, &Cameras), Changed<Cameras>>) {
-    for (entity, component) in query.iter() {
-        info!("{:?} changed: {:?}", entity, component,);
-    }
 }
 
 fn switch_camera(
