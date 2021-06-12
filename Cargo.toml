@@ -1,6 +1,6 @@
 [package]
 name = "bevy_config_cam"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Black Phlox <bphlox@gmail.com>"]
 license = "MIT OR ISC"
 edition = "2018"
@@ -12,6 +12,7 @@ keywords = ["gamedev", "bevy", "camera", "fps", "3d", ]
 categories = ["game-development", "game-engines", ]
 exclude = [
     "assets/*",
+    "credits/*",
     ".github/*",
 ]
 
@@ -24,11 +25,18 @@ name = "bevy_config_cam"
 rand = "0.8.0"
 strum = "0.21.0"
 strum_macros = "0.21.1"
-bevy = { version = "0.5", default-features = false, features = ["render"] }
 
-[dev-dependencies]
-bevy = { version = "0.5", default-features = false, features = ["render", "bevy_winit", "bevy_wgpu", "bevy_gltf"] }
+[dependencies.bevy]
+version = "0.5"
+features = ["render"]
+default-features = false
 
-[target.'cfg(target_os = "linux")'.dev-dependencies]
-bevy = { version = "0.5", default-features = false, features = [ "x11", "wayland" ] }
+[dev-dependencies.bevy]
+version = "0.5"
+features = ["bevy_winit", "bevy_wgpu", "bevy_gltf"]
+default-features = false
 
+[target.'cfg(target_os = "linux")'.dev-dependencies.bevy]
+version = "0.5"
+features = ["x11", "wayland"]
+default-features = false
