@@ -37,9 +37,9 @@ Free | ?
 | --- | --- | --- |
 | MovementSpeed (Camera) | Change the speed of there cameras movement | |
 | Sensitivity | Change the sensitivity of the cameras mouse movement | |
-| Lerp | Change the linera interpolation between the target and the player (LookAt cameramode only)||
+| Lerp | Change the linear interpolation between the target and the player (LookAt camera-mode only)||
 | Zoom/FOV| Change the FOV of the camera | <img src="https://user-images.githubusercontent.com/25123512/119991256-8d9adb80-bfc9-11eb-9e1d-5d763ec150a2.png" alt="LowFOV" width="250"> |
-| CamFwd (Unused) | Toggle between xyz movement relative to world coords or camera local coords and rotation (Free cameramode only)||
+| CamFwd (Unused) | Toggle between xyz movement relative to world coords or camera local coords and rotation (Free camera-mode only)||
 
 # Getting started
 
