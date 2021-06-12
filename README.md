@@ -108,7 +108,7 @@ Note: That some of them are overwritten by accessing the settings or the changin
 # Support
 [![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
 
-|bevy|bevy_multicam|
+|bevy|bevy_config_cam|
 |---|---|
 |0.5|0.1.X|
 
