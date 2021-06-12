@@ -52,6 +52,7 @@ macro_rules! next_enum {
             .1
     };
 }
+
 pub struct PlayerMove;
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum PluginState {

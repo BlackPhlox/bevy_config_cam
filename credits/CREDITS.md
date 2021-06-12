@@ -7,8 +7,9 @@
 
 ## Libraries
 
-* [bevy](https://github.com/bevyengine/bevy): [MIT License](licenses/bevy_MIT.md); Copyright (c) 2021 Carter Anderson
-* [bevy_flycam](https://github.com/sburris0/bevy_flycam): [ISC License](licenses/bevy_flycam_ISC.md); Copyright (c) 2021 Spencer Burris
+* [bevy](https://github.com/bevyengine/bevy): [MIT License](licenses/bevy_MIT.md); Copyright (c) 2020 Carter Anderson
+* [bevy_flycam](https://github.com/sburris0/bevy_flycam): [ISC License](licenses/bevy_flycam_ISC.md); Copyright (c) 2020 Spencer Burris
+* [strum](https://github.com/Peternator7/strum): [MIT License](licenses/strum_MIT.md); Copyright (c) 2019 Peter Glotfelty
 
 ## Assets
 
