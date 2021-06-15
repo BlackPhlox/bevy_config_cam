@@ -68,7 +68,7 @@ Add the correct version to your `Cargo.toml`, you can find the version you are l
 [dependencies]
 bevy = { version = "0.5"}
 # ...
-bevy_config_cam = { version = "0.1.1"} # <-- 
+bevy_config_cam = { version = "0.1.2"} # <-- 
 ```
 
 ### Step 2. - Add to project
