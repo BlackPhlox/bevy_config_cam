@@ -4,7 +4,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/bevy_config_cam)](https://crates.io/crates/bevy_config_cam)</br>[![docs.rs](https://docs.rs/bevy_config_cam/badge.svg)](https://docs.rs/bevy_config_cam)
 
-An easy plug-n-play multifunctional camera that allows for easy setup of a camera and player for a scene.
+An easy plug-n-play multifunctional camera controller that allows for easy setup of a camera and player for a scene.
 
 Add a few lines of code to your existing project allows you to test a wide variety of cameras by attaching it to
 your player asset or the default red player entity. 
