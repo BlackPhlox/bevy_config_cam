@@ -1,9 +1,17 @@
 <div align="left">
 <a href="https://github.com/BlackPhlox/bevy_config_cam"><img src="https://raw.githubusercontent.com/BlackPhlox/BlackPhlox/master/config_cam.svg" width="970" height="200" alt="bevy config cam"></a>
 </div>
-
-[![crates.io](https://img.shields.io/crates/v/bevy_config_cam)](https://crates.io/crates/bevy_config_cam)</br>[![docs.rs](https://docs.rs/bevy_config_cam/badge.svg)](https://docs.rs/bevy_config_cam)
-
+</br>
+<div align="center">
+<a href="https://crates.io/crates/bevy_config_cam"><img src="https://img.shields.io/crates/v/bevy_config_cam" alt="link to crates.io"></a>
+<a href="https://docs.rs/bevy_config_cam"><img src="https://docs.rs/bevy_config_cam/badge.svg" alt="link to docs.rs"></a>
+<a href="https://github.com/BlackPhlox/bevy_config_cam/blob/master/credits/CREDITS.md"><img src="https://img.shields.io/crates/l/bevy_config_cam" alt="link to license"></a>
+<a href="https://crates.io/crates/bevy_config_cam"><img src="https://img.shields.io/crates/d/bevy_config_cam" alt="downloads/link to crates.io"></a>   
+<a href="https://github.com/BlackPhlox/bevy_config_cam"><img src="https://img.shields.io/github/stars/BlackPhlox/bevy_config_cam" alt="stars/github repo"></a>
+<a href="https://github.com/BlackPhlox/bevy_config_cam/actions/workflows/master.yml"><img src="https://github.com/BlackPhlox/bevy_config_cam/actions/workflows/master.yml/badge.svg" alt="github actions"></a>
+<a href="https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking"><img src="https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue" alt="tracking bevy release branch"></a>
+</div>
+</br>
 An easy plug-n-play multifunctional camera controller that allows for easy setup of a camera and player for a scene.
 
 Add a few lines of code to your existing project allows you to test a wide variety of cameras by attaching it to
