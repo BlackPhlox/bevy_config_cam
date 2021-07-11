@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_config_cam::*;
 use bevy_mod_picking::{
     DebugCursorPickingPlugin, DebugEventsPickingPlugin, HighlightablePickingPlugin,
-    InteractablePickingPlugin, PickableBundle, PickingCameraBundle, PickingPlugin,
+    InteractablePickingPlugin, PickableBundle, PickingCameraBundle, PickingEvent, PickingPlugin,
 };
 
 fn main() {
@@ -16,6 +16,7 @@ fn main() {
         .add_plugin(HighlightablePickingPlugin)
         .add_plugin(DebugCursorPickingPlugin)
         .add_plugin(DebugEventsPickingPlugin)
+        .add_system_to_stage(CoreStage::PostUpdate, print_events.system())
         .add_plugin(ConfigCam)
         .add_startup_system(setup.system())
         .run();
@@ -35,18 +36,15 @@ fn setup(
         ..Default::default()
     });
 
-    // cube, set as selectable external target
-    config.external_target = Some(
-        commands
-            .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                transform: Transform::from_xyz(0.0, 0.5, 0.0),
-                ..Default::default()
-            })
-            .insert_bundle(PickableBundle::default())
-            .id(),
-    );
+    // cube, set as selectable external target when clicked
+    commands
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            ..Default::default()
+        })
+        .insert_bundle(PickableBundle::default());
 
     config.camera_settings.camera = Some(
         commands
@@ -63,4 +61,22 @@ fn setup(
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
+}
+
+pub fn print_events(mut events: EventReader<PickingEvent>, mut config: ResMut<Config>) {
+    for event in events.iter() {
+        match event {
+            PickingEvent::Selection(se) => match se {
+                bevy_mod_picking::SelectionEvent::JustSelected(e) => {
+                    config.external_target = Some(*e);
+                    println!("Clicked cube, focusing! {:?}", se);
+                }
+                bevy_mod_picking::SelectionEvent::JustDeselected(_) => {
+                    config.external_target = None;
+                    println!("Unclicked cube, defocusing! {:?}", se);
+                }
+            },
+            PickingEvent::Hover(_) => (),
+        }
+    }
 }
