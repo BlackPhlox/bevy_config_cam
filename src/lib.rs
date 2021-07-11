@@ -12,23 +12,14 @@ use bevy::{
     window::Windows,
 };
 
+mod cam;
+use cam::{MovementSettings};
+
+mod player;
+use player::{Player, PlayerSettings};
+
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-
-/*
-pub trait NextEnum: IntoEnumIterator {
-    fn next_enum<E>(pred: S)
-    where
-    E: IntoEnumIterator,
-    S: ResMut<State<E>>,
-    {
-        let a = E::iter().enumerate();
-        a.nth(
-            a.find(|a| a.1 == *pred.current())
-        )
-    }
-}
-*/
 
 #[macro_export]
 macro_rules! next_enum {
@@ -85,85 +76,12 @@ pub enum CameraState {
     Free,
 }
 
-pub struct PlayerKeyMap {
-    pub forward: &'static [KeyCode],
-    pub backward: &'static [KeyCode],
-    pub left: &'static [KeyCode],
-    pub right: &'static [KeyCode],
-    pub up: &'static [KeyCode],
-    pub down: &'static [KeyCode],
-    pub rot_left: &'static [KeyCode],
-    pub rot_right: &'static [KeyCode],
-}
-
-pub struct PlayerSettings {
-    pub player_asset: &'static str,
-    pub speed: f32,
-    pub map: PlayerKeyMap,
-    pub pos: Vec3,
-    pub cam_fwd: bool,
-}
-
-impl Default for PlayerKeyMap {
-    fn default() -> Self {
-        Self {
-            forward: &[KeyCode::Up],
-            backward: &[KeyCode::Down],
-            left: &[KeyCode::Comma],
-            right: &[KeyCode::Period],
-            up: &[KeyCode::RShift],
-            down: &[KeyCode::Minus],
-            rot_left: &[KeyCode::Left],
-            rot_right: &[KeyCode::Right],
-        }
-    }
-}
-
-impl Default for PlayerSettings {
-    fn default() -> Self {
-        Self {
-            player_asset: "",
-            speed: 12.0,
-            map: PlayerKeyMap::default(),
-            pos: Default::default(),
-            cam_fwd: false,
-        }
-    }
-}
-
-pub struct ConfigCam;
-impl Plugin for ConfigCam {
-    fn build(&self, app: &mut AppBuilder) {
-        app.init_resource::<CamLogic>()
-            .add_plugin(NoCameraPlayerPlugin)
-            .init_resource::<PlayerSettings>()
-            .add_state(PluginState::Enabled)
-            .add_state(CameraState::LookAt)
-            .add_state(ScrollType::MovementSpeed)
-            .add_system(toggle_camera_parent.system())
-            .add_system(switch_scroll_type.system())
-            .add_system(scroll.system())
-            .add_system(cycle_cam_state.system())
-            .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
-            .add_system_set(
-                SystemSet::on_update(PluginState::Enabled)
-                    .with_system(move_player.system())
-                    .with_system(move_camera.system()),
-            );
-    }
-}
-
-#[derive(Default)]
-pub struct Player {
-    entity: Option<Entity>,
-}
-
 #[derive(Default)]
 pub struct CamLogic {
-    player: Player,
+    pub player: Player,
+    pub target: Option<Entity>,
     camera_should_focus: Vec3,
     camera_is_focus: Vec3,
-    pub target: Option<Entity>,
 }
 
 const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
@@ -257,6 +175,7 @@ fn move_player(
     settings: Res<PlayerSettings>,
     mut transforms: Query<(&PlayerMove, &mut Transform)>,
 ) {
+    if settings.disable_default { return; }
     for (_player, mut transform) in transforms.iter_mut() {
         let (_, mut rotation) = transform.rotation.to_axis_angle();
         let mut velocity = Vec3::ZERO;
@@ -534,63 +453,6 @@ struct InputState {
     yaw: f32,
 }
 
-pub struct CamKeyMap {
-    pub forward: &'static [KeyCode],
-    pub backward: &'static [KeyCode],
-    pub left: &'static [KeyCode],
-    pub right: &'static [KeyCode],
-    pub up: &'static [KeyCode],
-    pub down: &'static [KeyCode],
-    pub next_cam: &'static [KeyCode],
-    pub next_setting: &'static [KeyCode],
-}
-
-impl Default for CamKeyMap {
-    fn default() -> Self {
-        Self {
-            forward: &[KeyCode::W],
-            backward: &[KeyCode::S],
-            left: &[KeyCode::A],
-            right: &[KeyCode::D],
-            up: &[KeyCode::Space],
-            down: &[KeyCode::LShift],
-            next_cam: &[KeyCode::C],
-            next_setting: &[KeyCode::E],
-        }
-    }
-}
-
-/// Mouse sensitivity and movement speed
-pub struct MovementSettings {
-    pub sensitivity: f32,
-    pub speed: f32,
-    pub dist: f32,
-    pub map: CamKeyMap,
-    //pub force_cam: &'static[CameraState],
-    pub disable_move: bool,
-    pub disable_look: bool,
-    pub locked_to_player: bool,
-    pub lerp: f32,
-
-    pub ltp: bool,
-}
-
-impl Default for MovementSettings {
-    fn default() -> Self {
-        Self {
-            sensitivity: 0.00012,
-            speed: 12.,
-            dist: 10.,
-            map: CamKeyMap::default(),
-            disable_move: false,
-            disable_look: false,
-            locked_to_player: false,
-            lerp: 0.5,
-            ltp: false,
-        }
-    }
-}
-
 /// Used in queries when you want flycams and not other cameras
 struct FlyCam;
 struct PlayerCam;
@@ -707,20 +569,27 @@ fn cursor_grab(keys: Res<Input<KeyCode>>, mut windows: ResMut<Windows>) {
     }
 }
 
-/// Contains everything needed to add first-person fly camera behavior to your game
-pub struct PlayerPlugin;
-impl Plugin for PlayerPlugin {
+pub struct ConfigCam;
+impl Plugin for ConfigCam {
     fn build(&self, app: &mut AppBuilder) {
-        app.init_resource::<InputState>()
-            .init_resource::<MovementSettings>()
-            .add_startup_system(setup_player.system())
-            .add_startup_system(initial_grab_cursor.system())
-            .add_system(player_move.system())
-            .add_system(player_look.system())
-            .add_system(cursor_grab.system());
+        app.init_resource::<CamLogic>()
+            .add_plugin(NoCameraPlayerPlugin)
+            .init_resource::<PlayerSettings>()
+            .add_state(PluginState::Enabled)
+            .add_state(CameraState::LookAt)
+            .add_state(ScrollType::MovementSpeed)
+            .add_system(toggle_camera_parent.system())
+            .add_system(switch_scroll_type.system())
+            .add_system(scroll.system())
+            .add_system(cycle_cam_state.system())
+            .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
+            .add_system_set(
+                SystemSet::on_update(PluginState::Enabled)
+                    .with_system(move_player.system())
+                    .with_system(move_camera.system()),
+            );
     }
 }
-
 /// Same as `PlayerPlugin` but does not spawn a camera
 pub struct NoCameraPlayerPlugin;
 impl Plugin for NoCameraPlayerPlugin {

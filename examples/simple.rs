@@ -4,6 +4,7 @@ use bevy_config_cam::*;
 
 fn main() {
     App::build()
+        .insert_resource(ClearColor(Color::rgb(0.1058, 0.1058, 0.1058)))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
