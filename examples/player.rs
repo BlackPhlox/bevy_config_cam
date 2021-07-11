@@ -18,7 +18,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cl: ResMut<CamLogic>,
+    mut cl: ResMut<Config>,
     mut settings: ResMut<PlayerSettings>,
 ) {
     // plane
@@ -40,7 +40,7 @@ fn setup(
         .id();
     
     settings.disable_default = true;
-    cl.player = Player { entity: Some(p) };
+    cl.target = Some(p);
 
     // light
     commands.spawn_bundle(LightBundle {

@@ -61,7 +61,7 @@ enum ScrollType {
     CamFwd,
 }
 #[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
-pub enum CameraState {
+pub enum CameraMode {
     //Look at player and other targets if set
     LookAt,
     //Follow the player only
@@ -79,10 +79,10 @@ pub enum CameraState {
 }
 
 pub struct Config {
-    pub current_camera_mode: CameraState,
-    pub allowed_camera_modes: &'static [CameraState],
+    pub current_camera_mode: usize,
+    pub allowed_camera_modes: &'static [CameraMode],
     pub target: Option<Entity>,
-    pub ext_targets: Vec<Entity>,
+    pub ext_targets: Option<Entity>,
     pub camera_settings: CameraSettings,
     pub controller_settings: Option<Controller>,
 }
@@ -90,23 +90,25 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            current_camera_mode: CameraState::LookAt,
+            current_camera_mode: 0,
             allowed_camera_modes: &[
-                CameraState::LookAt,
-                CameraState::FollowStatic,
-                CameraState::TopDown,
-                CameraState::FollowBehind,
-                CameraState::Fps,
-                CameraState::Free,
+                CameraMode::LookAt,
+                CameraMode::FollowStatic,
+                CameraMode::TopDown,
+                CameraMode::FollowBehind,
+                CameraMode::Fps,
+                CameraMode::Free,
             ],
             target: None,
-            ext_targets: vec!(),
+            ext_targets: None,
             camera_settings: CameraSettings {
                 mouse_sensitivity: 0.00012,
                 speed: 12.,
                 pos: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
                 map: 0.,
                 camera: None,
+                camera_should_focus: Vec3::default(),
+                camera_is_focus: Vec3::default(),
                 attached_camera: None,
             },
             controller_settings: Some(Controller {
@@ -124,6 +126,8 @@ pub struct CameraSettings {
     pub pos: Transform,
     pub map: f32,
     pub camera: Option<Entity>,
+    camera_should_focus: Vec3,
+    camera_is_focus: Vec3,
     pub attached_camera: Option<Entity>,
 }
 
@@ -152,8 +156,7 @@ fn setup_camera(
         );
     } else {
         let mut e = commands.entity(config.camera_settings.camera.unwrap());
-        //Might have to re-insert into camera_settings
-        e.insert(FlyCam);
+        config.camera_settings.camera = Some (e.insert(FlyCam).id());
     } 
 }
 
@@ -195,104 +198,43 @@ fn setup_controller(
     config.target = Some(a);
 }
 
-#[derive(Default)]
-pub struct CamLogic {
-    pub player: Player,
-    pub target: Option<Entity>,
-    camera_should_focus: Vec3,
-    camera_is_focus: Vec3,
-}
-
 const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
 
 #[allow(unused_must_use)]
 fn cycle_cam_state(
-    mut cam_state: ResMut<State<CameraState>>,
+    mut cam_state: ResMut<State<CameraMode>>,
     settings: Res<MovementSettings>,
     keyboard_input: Res<Input<KeyCode>>,
+    mut config: ResMut<Config>,
 ) {
     if keyboard_input
         .get_just_pressed()
         .any(|m| settings.map.next_cam.iter().any(|nc| m == nc))
     {
-        let result = next_enum!(CameraState, cam_state);
+        let current = &config.current_camera_mode;
+        let available = config.allowed_camera_modes;
+        let next = if available.len() - 1 > *current  {
+            current + 1
+        } else {
+            0
+        };
+        
+        config.current_camera_mode = next;        
+        let result = available.get(next).unwrap().clone();
+        
+        //let result = next_enum!(CameraMode, cam_state);
 
         println!("Camera: {:?}", result);
         cam_state.set(result);
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut cl: ResMut<CamLogic>,
-    settings: Res<PlayerSettings>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let mut a = if settings.player_asset.is_empty() {
-        commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.7, 0.3, 0.3).into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
-            ..Default::default()
-        })
-    } else {
-        commands.spawn_bundle((
-            Transform {
-                translation: settings.pos,
-                rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
-                ..Default::default()
-            },
-            GlobalTransform::identity(),
-        ))
-    };
-
-    let b = if settings.player_asset.is_empty() {
-        a.with_children(|_| {})
-    } else {
-        a.with_children(|cell| {
-            cell.spawn_scene(asset_server.load(settings.player_asset));
-        })
-    };
-
-    cl.player.entity = Some(
-        b.insert(PlayerMove)
-            .with_children(|parent| {
-                parent
-                    .spawn_bundle(PerspectiveCameraBundle {
-                        camera: Camera {
-                            name: Some("player".to_string()),
-                            ..Default::default()
-                        },
-                        transform: Transform::from_xyz(-2.0, 5.0, 5.0)
-                            .looking_at(Vec3::ZERO, Vec3::Y),
-                        ..Default::default()
-                    })
-                    .insert(PlayerCam);
-            })
-            .id(),
-    );
-
-    // camera
-    commands
-        .spawn_bundle(PerspectiveCameraBundle {
-            camera: Camera {
-                name: Some("Camera3d".to_string()),
-                ..Default::default()
-            },
-            transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..Default::default()
-        })
-        .insert(FlyCam);
-}
-
 // change the focus of the camera
 #[allow(clippy::type_complexity)]
 fn move_camera(
     time: Res<Time>,
-    state: Res<State<CameraState>>,
-    mut cl: ResMut<CamLogic>,
+    state: Res<State<CameraMode>>,
+    mut config: ResMut<Config>,
     mut settings: ResMut<MovementSettings>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
 ) {
@@ -302,36 +244,36 @@ fn move_camera(
     settings.locked_to_player = false;
 
     match *state.current() {
-        CameraState::Free => {
+        CameraMode::Free => {
             settings.disable_look = false;
             return;
         }
-        CameraState::LookAt => {
+        CameraMode::LookAt => {
             // if there is both a player and a bonus, target the mid-point of them
-            if let (Some(player_entity), Some(bonus_entity)) = (cl.player.entity, cl.target) {
+            if let (Some(player_entity), Some(bonus_entity)) = (config.target, config.ext_targets) {
                 if let (Ok(player_transform), Ok(bonus_transform)) = (
                     transforms.q1().get(player_entity),
                     transforms.q1().get(bonus_entity),
                 ) {
-                    cl.camera_should_focus = player_transform
+                    config.camera_settings.camera_should_focus = player_transform
                         .translation
                         .lerp(bonus_transform.translation, settings.lerp);
                 }
             // otherwise, if there is only a player, target the player
-            } else if let Some(player_entity) = cl.player.entity {
+            } else if let Some(player_entity) = config.target {
                 if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                    cl.camera_should_focus = player_transform.translation;
+                    config.camera_settings.camera_should_focus = player_transform.translation;
                 }
             // otherwise, target the middle
             } else {
-                cl.camera_should_focus = Vec3::from(RESET_FOCUS);
+                config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
             }
         }
         _ => {
-            if let Some(player_entity) = cl.player.entity {
+            if let Some(player_entity) = config.target {
                 if let Ok(player_transform) = transforms.q1().get(player_entity) {
                     match *state.current() {
-                        CameraState::Fps => {
+                        CameraMode::Fps => {
                             delta_trans.translation = player_transform.translation;
                             settings.disable_move = true;
 
@@ -339,7 +281,7 @@ fn move_camera(
                             delta_trans.rotation = player_transform.rotation;
                             delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
                         }
-                        CameraState::TopDown => {
+                        CameraMode::TopDown => {
                             delta_trans.translation = player_transform.translation;
                             settings.disable_move = true;
 
@@ -348,7 +290,7 @@ fn move_camera(
                             delta_trans.rotation =
                                 Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
                         }
-                        CameraState::TopDownDirection => {
+                        CameraMode::TopDownDirection => {
                             settings.disable_move = true;
                             settings.locked_to_player = true;
 
@@ -357,7 +299,7 @@ fn move_camera(
                             delta_trans.rotation =
                                 Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
                         }
-                        CameraState::FollowBehind => {
+                        CameraMode::FollowBehind => {
                             settings.disable_move = true;
 
                             settings.locked_to_player = true;
@@ -366,11 +308,11 @@ fn move_camera(
                         }
                         _ => {}
                     }
-                    cl.camera_should_focus = player_transform.translation;
+                    config.camera_settings.camera_should_focus = player_transform.translation;
                 }
             // otherwise, target the middle
             } else {
-                cl.camera_should_focus = Vec3::from(RESET_FOCUS);
+                config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
             }
         }
     }
@@ -380,11 +322,11 @@ fn move_camera(
     // calculate the camera motion based on the difference between where the camera is looking
     // and where it should be looking; the greater the distance, the faster the motion;
     // smooth out the camera movement using the frame time
-    let mut camera_motion = cl.camera_should_focus - cl.camera_is_focus;
+    let mut camera_motion = config.camera_settings.camera_should_focus - config.camera_settings.camera_is_focus;
     if camera_motion.length() > 0.2 {
         camera_motion *= SPEED * time.delta_seconds();
         // set the new camera's actual focus
-        cl.camera_is_focus += camera_motion;
+        config.camera_settings.camera_is_focus += camera_motion;
     }
     // look at that new camera's actual focus
     for (mut transform, camera) in transforms.q0_mut().iter_mut() {
@@ -392,7 +334,7 @@ fn move_camera(
             if delta_trans.translation != Vec3::ZERO {
                 *transform = delta_trans
             } else {
-                *transform = transform.looking_at(cl.camera_is_focus, Vec3::Y)
+                *transform = transform.looking_at(config.camera_settings.camera_is_focus, Vec3::Y)
             }
         }
     }
@@ -521,16 +463,6 @@ fn initial_grab_cursor(mut windows: ResMut<Windows>) {
     toggle_grab_cursor(windows.get_primary_mut().unwrap());
 }
 
-/// Spawns the `Camera3dBundle` to be controlled
-fn setup_player(mut commands: Commands) {
-    commands
-        .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..Default::default()
-        })
-        .insert(FlyCam);
-}
-
 pub fn validate_key<T>(codes: &'static [T], key: &T) -> bool
 where
     T: PartialEq<T>,
@@ -576,22 +508,25 @@ fn cursor_grab(keys: Res<Input<KeyCode>>, mut windows: ResMut<Windows>) {
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
     fn build(&self, app: &mut AppBuilder) {
-        app.init_resource::<CamLogic>()
-            .init_resource::<Config>()
+        app .init_resource::<Config>()
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
-            .add_state(CameraState::LookAt)
+            .add_state(CameraMode::LookAt)
             .add_state(ScrollType::MovementSpeed)
             .add_system(toggle_camera_parent.system())
             .add_system(switch_scroll_type.system())
             .add_system(scroll.system())
             .add_system(cycle_cam_state.system())
-            .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
+            .add_system_set(
+                SystemSet::on_enter(PluginState::Enabled)
+                .with_system(setup_camera.system())
+                .with_system(setup_controller.system())
+            )
             .add_system_set(
                 SystemSet::on_update(PluginState::Enabled)
                     .with_system(move_player.system())
-                    .with_system(move_camera.system()),
+                    .with_system(move_camera.system())
             );
     }
 }

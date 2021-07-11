@@ -28,7 +28,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cl: ResMut<CamLogic>,
+    mut cl: ResMut<Config>,
 ) {
     // plane
     commands.spawn_bundle(PbrBundle {

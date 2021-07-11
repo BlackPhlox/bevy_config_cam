@@ -28,7 +28,7 @@ fn setup(
     });
 
     // cube, set as target
-    config.ext_targets.push(
+    config.ext_targets = Some(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -38,6 +38,7 @@ fn setup(
             })
             .id()
     );
+
 
     // light
     commands.spawn_bundle(LightBundle {

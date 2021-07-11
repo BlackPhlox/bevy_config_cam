@@ -16,7 +16,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cl: ResMut<CamLogic>,
+    mut cl: ResMut<Config>,
 ) {
     // plane
     commands.spawn_bundle(PbrBundle {
@@ -26,7 +26,7 @@ fn setup(
     });
 
     // cube, set as target
-    cl.target = Some(
+    cl.ext_targets = Some(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),

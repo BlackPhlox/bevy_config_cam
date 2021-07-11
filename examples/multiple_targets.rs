@@ -67,7 +67,7 @@ fn setup(
 }
 
 fn set_closest_target(
-    mut cl: ResMut<CamLogic>,
+    mut cl: ResMut<Config>,
     mut transforms: Query<(&PlayerMove, &Transform)>,
     query: QuerySet<(
         Query<(&T1, Entity, &Transform)>,
