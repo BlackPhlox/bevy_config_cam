@@ -1,5 +1,5 @@
 use bevy::{prelude::*, text::Text2dSize};
-use bevy_config_cam::{ConfigCam, MovementSettings};
+use bevy_config_cam::{ConfigCam, cam::MovementSettings};
 
 fn main() {
     App::build()

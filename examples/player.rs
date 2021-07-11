@@ -1,5 +1,6 @@
 //Base
 use bevy::prelude::*;
+use bevy_config_cam::player::{Player,PlayerSettings};
 use bevy_config_cam::*;
 
 fn main() {

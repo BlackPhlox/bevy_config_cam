@@ -1,4 +1,6 @@
-use bevy::prelude::KeyCode;
+use bevy::{core::Time, input::Input, math::Vec3, prelude::{KeyCode, Query, Res, Transform}, window::Windows};
+
+use crate::{FlyCam, validate_key};
 
 /// Mouse sensitivity and movement speed
 pub struct MovementSettings {
@@ -53,6 +55,55 @@ impl Default for CamKeyMap {
             down: &[KeyCode::LShift],
             next_cam: &[KeyCode::C],
             next_setting: &[KeyCode::E],
+        }
+    }
+}
+
+/// Handles keyboard input and movement
+pub fn player_move(
+    keys: Res<Input<KeyCode>>,
+    time: Res<Time>,
+    windows: Res<Windows>,
+    settings: Res<MovementSettings>,
+    mut query: Query<(&FlyCam, &mut Transform)>,
+) {
+    if settings.disable_move {
+        return;
+    }
+    let window = windows.get_primary().unwrap();
+    for (_camera, mut transform) in query.iter_mut() {
+        let mut velocity = Vec3::ZERO;
+        let local_z = transform.local_z();
+        let forward = -Vec3::new(local_z.x, 0., local_z.z);
+        let right = Vec3::new(local_z.z, 0., -local_z.x);
+
+        for key in keys.get_pressed() {
+            if window.cursor_locked() {
+                if validate_key(settings.map.forward, key) {
+                    velocity += forward
+                }
+                if validate_key(settings.map.backward, key) {
+                    velocity -= forward
+                }
+                if validate_key(settings.map.left, key) {
+                    velocity -= right
+                }
+                if validate_key(settings.map.right, key) {
+                    velocity += right
+                }
+                if validate_key(settings.map.up, key) {
+                    velocity += Vec3::Y
+                }
+                if validate_key(settings.map.down, key) {
+                    velocity -= Vec3::Y
+                }
+            }
+        }
+
+        velocity = velocity.normalize();
+
+        if !velocity.is_nan() {
+            transform.translation += velocity * time.delta_seconds() * settings.speed
         }
     }
 }

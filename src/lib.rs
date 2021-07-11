@@ -12,14 +12,16 @@ use bevy::{
     window::Windows,
 };
 
-mod cam;
-use cam::{MovementSettings};
+pub mod cam;
+use cam::{MovementSettings, player_move};
 
-mod player;
-use player::{Player, PlayerSettings};
+pub mod player;
+use player::{Player, PlayerSettings, move_player};
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+
+pub struct PlayerMove;
 
 #[macro_export]
 macro_rules! next_enum {
@@ -44,7 +46,6 @@ macro_rules! next_enum {
     };
 }
 
-pub struct PlayerMove;
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum PluginState {
     Enabled,
@@ -67,6 +68,7 @@ pub enum CameraState {
     FollowStatic,
     //Camera is moved above and pointed down, rotation bound to one axis
     TopDown,
+    //Same as TopDown but follows the players direction
     TopDownDirection,
     //Follows behind the player a certain distance
     FollowBehind,
@@ -74,6 +76,123 @@ pub enum CameraState {
     Fps,
     //Use the mouse to look and move the camera freely
     Free,
+}
+
+pub struct Config {
+    pub current_camera_mode: CameraState,
+    pub allowed_camera_modes: &'static [CameraState],
+    pub target: Option<Entity>,
+    pub ext_targets: Vec<Entity>,
+    pub camera_settings: CameraSettings,
+    pub controller_settings: Option<Controller>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            current_camera_mode: CameraState::LookAt,
+            allowed_camera_modes: &[
+                CameraState::LookAt,
+                CameraState::FollowStatic,
+                CameraState::TopDown,
+                CameraState::FollowBehind,
+                CameraState::Fps,
+                CameraState::Free,
+            ],
+            target: None,
+            ext_targets: vec!(),
+            camera_settings: CameraSettings {
+                mouse_sensitivity: 0.00012,
+                speed: 12.,
+                pos: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+                map: 0.,
+                camera: None,
+                attached_camera: None,
+            },
+            controller_settings: Some(Controller {
+                speed: 1.,
+                rot_speed: 0.1,
+                map: 0.,
+            }),
+        }
+    }
+}
+
+pub struct CameraSettings {
+    pub mouse_sensitivity: f32,
+    pub speed: f32,
+    pub pos: Transform,
+    pub map: f32,
+    pub camera: Option<Entity>,
+    pub attached_camera: Option<Entity>,
+}
+
+pub struct Controller {
+    pub speed: f32,
+    pub rot_speed: f32,
+    pub map: f32,
+}
+
+fn setup_camera(
+    mut commands: Commands, 
+    mut config: ResMut<Config>, 
+){
+    if config.camera_settings.camera.is_none(){
+        config.camera_settings.camera = Some(
+            commands
+            .spawn_bundle(PerspectiveCameraBundle {
+                camera: Camera {
+                    name: Some("Camera3d".to_string()),
+                    ..Default::default()
+                },
+                transform: config.camera_settings.pos,
+                ..Default::default()
+            })
+            .insert(FlyCam).id()
+        );
+    } else {
+        let mut e = commands.entity(config.camera_settings.camera.unwrap());
+        //Might have to re-insert into camera_settings
+        e.insert(FlyCam);
+    } 
+}
+
+fn setup_controller(
+    mut commands: Commands, 
+    mut config: ResMut<Config>, 
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+){
+    //Create or Update Target
+    let trans = Vec3::new(0.,0.5,0.);
+
+    let player = if config.target.is_none() {
+        commands.spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Color::rgb(0.7, 0.3, 0.3).into()),
+            transform: Transform::from_translation(trans),
+            ..Default::default()
+        }).id()
+    } else {
+        config.target.unwrap()
+    };
+
+    let a = commands.entity(player).insert(PlayerMove)
+    .with_children(|parent|{
+        parent
+            .spawn_bundle(PerspectiveCameraBundle {
+                camera: Camera {
+                    name: Some("Target".to_string()),
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(trans)
+                    .looking_at(Vec3::ZERO, Vec3::Y),
+                ..Default::default()
+            })
+            .insert(PlayerCam);
+    }).id();
+
+    config.target = Some(a);
 }
 
 #[derive(Default)]
@@ -166,72 +285,6 @@ fn setup(
             ..Default::default()
         })
         .insert(FlyCam);
-}
-
-// control the cam logic character
-fn move_player(
-    keys: Res<Input<KeyCode>>,
-    time: Res<Time>,
-    settings: Res<PlayerSettings>,
-    mut transforms: Query<(&PlayerMove, &mut Transform)>,
-) {
-    if settings.disable_default { return; }
-    for (_player, mut transform) in transforms.iter_mut() {
-        let (_, mut rotation) = transform.rotation.to_axis_angle();
-        let mut velocity = Vec3::ZERO;
-        let local_z = transform.local_z();
-        //Forward should be togglable either xyz or cam direction xyz
-        let forward = if settings.cam_fwd {
-            Vec3::new(local_z.x, 0., local_z.z)
-        } else {
-            -Vec3::new(local_z.x, 0., local_z.z)
-        };
-
-        let right = Vec3::new(local_z.z, 0., -local_z.x);
-
-        for key in keys.get_pressed() {
-            if validate_key(settings.map.forward, key) {
-                velocity += forward
-            }
-            if validate_key(settings.map.backward, key) {
-                velocity -= forward
-            }
-            if validate_key(settings.map.left, key) {
-                velocity -= right
-            }
-            if validate_key(settings.map.right, key) {
-                velocity += right
-            }
-            if validate_key(settings.map.up, key) {
-                velocity += Vec3::Y
-            }
-            if validate_key(settings.map.down, key) {
-                velocity -= Vec3::Y
-            }
-            if validate_key(settings.map.rot_left, key) {
-                //Wrapping around
-                if rotation > std::f32::consts::FRAC_PI_2 * 4.0 - 0.05 {
-                    rotation = 0.0;
-                }
-                rotation += 0.1
-            }
-            if validate_key(settings.map.rot_right, key) {
-                //Wrapping around
-                if rotation < 0.05 {
-                    rotation = std::f32::consts::FRAC_PI_2 * 4.0;
-                }
-                rotation -= 0.1
-            }
-        }
-
-        velocity = velocity.normalize();
-
-        transform.rotation = Quat::from_rotation_y(rotation);
-
-        if !velocity.is_nan() {
-            transform.translation += velocity * time.delta_seconds() * 4.0;
-        }
-    }
 }
 
 // change the focus of the camera
@@ -454,8 +507,8 @@ struct InputState {
 }
 
 /// Used in queries when you want flycams and not other cameras
-struct FlyCam;
-struct PlayerCam;
+pub struct FlyCam;
+pub struct PlayerCam;
 
 /// Grabs/ungrabs mouse cursor
 fn toggle_grab_cursor(window: &mut Window) {
@@ -476,55 +529,6 @@ fn setup_player(mut commands: Commands) {
             ..Default::default()
         })
         .insert(FlyCam);
-}
-
-/// Handles keyboard input and movement
-fn player_move(
-    keys: Res<Input<KeyCode>>,
-    time: Res<Time>,
-    windows: Res<Windows>,
-    settings: Res<MovementSettings>,
-    mut query: Query<(&FlyCam, &mut Transform)>,
-) {
-    if settings.disable_move {
-        return;
-    }
-    let window = windows.get_primary().unwrap();
-    for (_camera, mut transform) in query.iter_mut() {
-        let mut velocity = Vec3::ZERO;
-        let local_z = transform.local_z();
-        let forward = -Vec3::new(local_z.x, 0., local_z.z);
-        let right = Vec3::new(local_z.z, 0., -local_z.x);
-
-        for key in keys.get_pressed() {
-            if window.cursor_locked() {
-                if validate_key(settings.map.forward, key) {
-                    velocity += forward
-                }
-                if validate_key(settings.map.backward, key) {
-                    velocity -= forward
-                }
-                if validate_key(settings.map.left, key) {
-                    velocity -= right
-                }
-                if validate_key(settings.map.right, key) {
-                    velocity += right
-                }
-                if validate_key(settings.map.up, key) {
-                    velocity += Vec3::Y
-                }
-                if validate_key(settings.map.down, key) {
-                    velocity -= Vec3::Y
-                }
-            }
-        }
-
-        velocity = velocity.normalize();
-
-        if !velocity.is_nan() {
-            transform.translation += velocity * time.delta_seconds() * settings.speed
-        }
-    }
 }
 
 pub fn validate_key<T>(codes: &'static [T], key: &T) -> bool
@@ -573,6 +577,7 @@ pub struct ConfigCam;
 impl Plugin for ConfigCam {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<CamLogic>()
+            .init_resource::<Config>()
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)

@@ -9,16 +9,6 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
-        .insert_resource(MovementSettings {
-            sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0,          // default: 12.0
-            ..Default::default()
-        })
-        .insert_resource(PlayerSettings {
-            pos: Vec3::new(2., 0., 0.),
-            player_asset: "models/craft_speederA.glb#Scene0",
-            ..Default::default()
-        })
         .add_startup_system(setup.system())
         .run();
 }
@@ -28,7 +18,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cl: ResMut<CamLogic>,
+    mut config: ResMut<Config>,
 ) {
     // plane
     commands.spawn_bundle(PbrBundle {
@@ -38,7 +28,7 @@ fn setup(
     });
 
     // cube, set as target
-    cl.target = Some(
+    config.ext_targets.push(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -46,7 +36,7 @@ fn setup(
                 transform: Transform::from_xyz(0.0, 0.5, 0.0),
                 ..Default::default()
             })
-            .id(),
+            .id()
     );
 
     // light
