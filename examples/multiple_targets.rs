@@ -8,16 +8,6 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
-        .insert_resource(MovementSettings {
-            sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0,          // default: 12.0
-            ..Default::default()
-        })
-        .insert_resource(PlayerSettings {
-            pos: Vec3::new(2., 0., 0.),
-            player_asset: "models/craft_speederA.glb#Scene0",
-            ..Default::default()
-        })
         .add_startup_system(setup.system())
         .add_system(set_closest_target.system())
         .run();
@@ -31,6 +21,8 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
+    mut config: ResMut<Config>,
 ) {
     // plane
     commands.spawn_bundle(PbrBundle {
@@ -38,6 +30,25 @@ fn setup(
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
     });
+
+    //Player
+    config.target = Some(
+        commands
+            .spawn_bundle((
+                Transform {
+                    translation: Vec3::new(
+                        0.,0.,0.
+                    ),
+                    rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
+                    ..Default::default()
+                },
+                GlobalTransform::identity(),
+            ))
+            .with_children(|cell| {
+                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
+            })
+            .id(),
+    );
 
     //Target 1
     commands
@@ -67,7 +78,7 @@ fn setup(
 }
 
 fn set_closest_target(
-    mut cl: ResMut<Config>,
+    mut config: ResMut<Config>,
     mut transforms: Query<(&PlayerMove, &Transform)>,
     query: QuerySet<(
         Query<(&T1, Entity, &Transform)>,
@@ -86,10 +97,10 @@ fn set_closest_target(
     let t2dist = t.translation.distance(t2.translation);
 
     if t1dist < t2dist && t1dist < 5. {
-        cl.target = Some(e1);
+        config.external_target = Some(e1);
     } else if t1dist > t2dist && t2dist < 5. {
-        cl.target = Some(e2);
+        config.external_target = Some(e2);
     } else {
-        cl.target = None;
+        config.external_target = None;
     }
 }

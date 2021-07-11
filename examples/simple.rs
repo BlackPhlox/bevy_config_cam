@@ -28,6 +28,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
     mut cl: ResMut<Config>,
 ) {
     // plane
@@ -38,13 +39,31 @@ fn setup(
     });
 
     // cube, set as target
-    cl.target = Some(
+    cl.external_target = Some(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                 material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
                 transform: Transform::from_xyz(0.0, 0.5, 0.0),
                 ..Default::default()
+            })
+            .id(),
+    );
+
+    cl.target = Some(
+        commands
+            .spawn_bundle((
+                Transform {
+                    translation: Vec3::new(
+                        0.,0.,0.
+                    ),
+                    rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
+                    ..Default::default()
+                },
+                GlobalTransform::identity(),
+            ))
+            .with_children(|cell| {
+                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
             })
             .id(),
     );

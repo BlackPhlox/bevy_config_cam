@@ -25,6 +25,8 @@ fn setup(
         ..Default::default()
     });
 
+    cl.allowed_camera_modes = &[CameraMode::Free, CameraMode::TopDown];
+
     // cube, set as target
     cl.external_target = Some(
         commands

@@ -78,11 +78,18 @@ pub enum CameraMode {
     Free,
 }
 
+/// Used in queries when you want flycams and not other cameras
+
+//Free moving camera
+pub struct StaticCam;
+//Attached to target
+pub struct AttachedCam;
+
 pub struct Config {
     pub current_camera_mode: usize,
     pub allowed_camera_modes: &'static [CameraMode],
     pub target: Option<Entity>,
-    pub ext_targets: Option<Entity>,
+    pub external_target: Option<Entity>,
     pub camera_settings: CameraSettings,
     pub controller_settings: Option<Controller>,
 }
@@ -100,7 +107,7 @@ impl Default for Config {
                 CameraMode::Free,
             ],
             target: None,
-            ext_targets: None,
+            external_target: None,
             camera_settings: CameraSettings {
                 mouse_sensitivity: 0.00012,
                 speed: 12.,
@@ -152,11 +159,11 @@ fn setup_camera(
                 transform: config.camera_settings.pos,
                 ..Default::default()
             })
-            .insert(FlyCam).id()
+            .insert(StaticCam).id()
         );
     } else {
         let mut e = commands.entity(config.camera_settings.camera.unwrap());
-        config.camera_settings.camera = Some (e.insert(FlyCam).id());
+        config.camera_settings.camera = Some (e.insert(StaticCam).id());
     } 
 }
 
@@ -192,7 +199,7 @@ fn setup_controller(
                     .looking_at(Vec3::ZERO, Vec3::Y),
                 ..Default::default()
             })
-            .insert(PlayerCam);
+            .insert(AttachedCam);
     }).id();
 
     config.target = Some(a);
@@ -202,7 +209,7 @@ const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
 
 #[allow(unused_must_use)]
 fn cycle_cam_state(
-    mut cam_state: ResMut<State<CameraMode>>,
+    //mut cam_state: ResMut<State<CameraMode>>,
     settings: Res<MovementSettings>,
     keyboard_input: Res<Input<KeyCode>>,
     mut config: ResMut<Config>,
@@ -218,14 +225,9 @@ fn cycle_cam_state(
         } else {
             0
         };
-        
-        config.current_camera_mode = next;        
-        let result = available.get(next).unwrap().clone();
-        
-        //let result = next_enum!(CameraMode, cam_state);
 
-        println!("Camera: {:?}", result);
-        cam_state.set(result);
+        config.current_camera_mode = next;        
+        println!("Camera: {:?}", config.allowed_camera_modes.get(config.current_camera_mode).unwrap());
     }
 }
 
@@ -233,7 +235,6 @@ fn cycle_cam_state(
 #[allow(clippy::type_complexity)]
 fn move_camera(
     time: Res<Time>,
-    state: Res<State<CameraMode>>,
     mut config: ResMut<Config>,
     mut settings: ResMut<MovementSettings>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
@@ -243,14 +244,14 @@ fn move_camera(
     settings.disable_move = false;
     settings.locked_to_player = false;
 
-    match *state.current() {
+    match config.allowed_camera_modes.get(config.current_camera_mode).unwrap() {
         CameraMode::Free => {
             settings.disable_look = false;
             return;
         }
         CameraMode::LookAt => {
             // if there is both a player and a bonus, target the mid-point of them
-            if let (Some(player_entity), Some(bonus_entity)) = (config.target, config.ext_targets) {
+            if let (Some(player_entity), Some(bonus_entity)) = (config.target, config.external_target) {
                 if let (Ok(player_transform), Ok(bonus_transform)) = (
                     transforms.q1().get(player_entity),
                     transforms.q1().get(bonus_entity),
@@ -272,7 +273,7 @@ fn move_camera(
         _ => {
             if let Some(player_entity) = config.target {
                 if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                    match *state.current() {
+                    match config.allowed_camera_modes.get(config.current_camera_mode).unwrap() {
                         CameraMode::Fps => {
                             delta_trans.translation = player_transform.translation;
                             settings.disable_move = true;
@@ -345,8 +346,8 @@ fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCameras>,
     mut settings: ResMut<MovementSettings>,
     mut query: QuerySet<(
-        Query<(&FlyCam, &mut Camera)>,
-        Query<(&PlayerCam, &mut Camera)>,
+        Query<(&StaticCam, &mut Camera)>,
+        Query<(&AttachedCam, &mut Camera)>,
     )>,
 ) {
     if settings.locked_to_player && !settings.ltp {
@@ -390,6 +391,17 @@ fn switch_scroll_type(
     }
 }
 
+fn show_cams(
+    mut query: Query<(&mut Camera, &mut PerspectiveProjection)>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Y) {
+        for (a,b) in query.iter_mut() {
+            println!("{:?}", a);
+        }
+    }
+}
+
 // Depending on the state, the mouse-scroll changes either the movement speed or the field-of-view of the camera
 fn scroll(
     mut settings: ResMut<MovementSettings>,
@@ -397,7 +409,7 @@ fn scroll(
     scroll_type: Res<State<ScrollType>>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
     windows: Res<Windows>,
-    mut query: Query<(&FlyCam, &mut Camera, &mut PerspectiveProjection)>,
+    mut query: Query<(&StaticCam, &mut Camera, &mut PerspectiveProjection)>,
 ) {
     for event in mouse_wheel_events.iter() {
         match *scroll_type.current() {
@@ -448,10 +460,6 @@ struct InputState {
     yaw: f32,
 }
 
-/// Used in queries when you want flycams and not other cameras
-pub struct FlyCam;
-pub struct PlayerCam;
-
 /// Grabs/ungrabs mouse cursor
 fn toggle_grab_cursor(window: &mut Window) {
     window.set_cursor_lock_mode(!window.cursor_locked());
@@ -476,7 +484,7 @@ fn player_look(
     windows: Res<Windows>,
     mut state: ResMut<InputState>,
     motion: Res<Events<MouseMotion>>,
-    mut query: Query<(&FlyCam, &mut Transform)>,
+    mut query: Query<(&StaticCam, &mut Transform)>,
 ) {
     if settings.disable_look {
         return;
@@ -512,7 +520,6 @@ impl Plugin for ConfigCam {
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
-            .add_state(CameraMode::LookAt)
             .add_state(ScrollType::MovementSpeed)
             .add_system(toggle_camera_parent.system())
             .add_system(switch_scroll_type.system())

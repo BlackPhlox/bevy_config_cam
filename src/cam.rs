@@ -1,6 +1,6 @@
 use bevy::{core::Time, input::Input, math::Vec3, prelude::{KeyCode, Query, Res, Transform}, window::Windows};
 
-use crate::{FlyCam, validate_key};
+use crate::{StaticCam, validate_key};
 
 /// Mouse sensitivity and movement speed
 pub struct MovementSettings {
@@ -65,7 +65,7 @@ pub fn player_move(
     time: Res<Time>,
     windows: Res<Windows>,
     settings: Res<MovementSettings>,
-    mut query: Query<(&FlyCam, &mut Transform)>,
+    mut query: Query<(&StaticCam, &mut Transform)>,
 ) {
     if settings.disable_move {
         return;
