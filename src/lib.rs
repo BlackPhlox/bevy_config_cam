@@ -13,10 +13,10 @@ use bevy::{
 };
 
 pub mod cam;
-use cam::{MovementSettings, player_move};
+use cam::{player_move, MovementSettings};
 
 pub mod player;
-use player::{Player, PlayerSettings, move_player};
+use player::{move_player, PlayerSettings};
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -92,6 +92,7 @@ pub struct Config {
     pub external_target: Option<Entity>,
     pub camera_settings: CameraSettings,
     pub controller_settings: Option<Controller>,
+    pub debug: bool,
 }
 
 impl Default for Config {
@@ -123,6 +124,7 @@ impl Default for Config {
                 rot_speed: 0.1,
                 map: 0.,
             }),
+            debug: false,
         }
     }
 }
@@ -144,63 +146,65 @@ pub struct Controller {
     pub map: f32,
 }
 
-fn setup_camera(
-    mut commands: Commands, 
-    mut config: ResMut<Config>, 
-){
-    if config.camera_settings.camera.is_none(){
+fn setup_camera(mut commands: Commands, mut config: ResMut<Config>) {
+    if config.camera_settings.camera.is_none() {
         config.camera_settings.camera = Some(
             commands
-            .spawn_bundle(PerspectiveCameraBundle {
-                camera: Camera {
-                    name: Some("Camera3d".to_string()),
+                .spawn_bundle(PerspectiveCameraBundle {
+                    camera: Camera {
+                        name: Some("Camera3d".to_string()),
+                        ..Default::default()
+                    },
+                    transform: config.camera_settings.pos,
                     ..Default::default()
-                },
-                transform: config.camera_settings.pos,
-                ..Default::default()
-            })
-            .insert(StaticCam).id()
+                })
+                .insert(StaticCam)
+                .id(),
         );
     } else {
         let mut e = commands.entity(config.camera_settings.camera.unwrap());
-        config.camera_settings.camera = Some (e.insert(StaticCam).id());
-    } 
+        config.camera_settings.camera = Some(e.insert(StaticCam).id());
+    }
 }
 
 fn setup_controller(
-    mut commands: Commands, 
-    mut config: ResMut<Config>, 
+    mut commands: Commands,
+    mut config: ResMut<Config>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-){
+) {
     //Create or Update Target
-    let trans = Vec3::new(0.,0.5,0.);
+    let trans = Vec3::new(0., 0.5, 0.);
 
     let player = if config.target.is_none() {
-        commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.7, 0.3, 0.3).into()),
-            transform: Transform::from_translation(trans),
-            ..Default::default()
-        }).id()
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                material: materials.add(Color::rgb(0.7, 0.3, 0.3).into()),
+                transform: Transform::from_translation(trans),
+                ..Default::default()
+            })
+            .id()
     } else {
         config.target.unwrap()
     };
 
-    let a = commands.entity(player).insert(PlayerMove)
-    .with_children(|parent|{
-        parent
-            .spawn_bundle(PerspectiveCameraBundle {
-                camera: Camera {
-                    name: Some("Target".to_string()),
+    let a = commands
+        .entity(player)
+        .insert(PlayerMove)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(PerspectiveCameraBundle {
+                    camera: Camera {
+                        name: Some("Target".to_string()),
+                        ..Default::default()
+                    },
+                    transform: Transform::from_translation(trans).looking_at(Vec3::ZERO, Vec3::Y),
                     ..Default::default()
-                },
-                transform: Transform::from_translation(trans)
-                    .looking_at(Vec3::ZERO, Vec3::Y),
-                ..Default::default()
-            })
-            .insert(AttachedCam);
-    }).id();
+                })
+                .insert(AttachedCam);
+        })
+        .id();
 
     config.target = Some(a);
 }
@@ -220,14 +224,20 @@ fn cycle_cam_state(
     {
         let current = &config.current_camera_mode;
         let available = config.allowed_camera_modes;
-        let next = if available.len() - 1 > *current  {
+        let next = if available.len() - 1 > *current {
             current + 1
         } else {
             0
         };
 
-        config.current_camera_mode = next;        
-        println!("Camera: {:?}", config.allowed_camera_modes.get(config.current_camera_mode).unwrap());
+        config.current_camera_mode = next;
+        println!(
+            "Camera: {:?}",
+            config
+                .allowed_camera_modes
+                .get(config.current_camera_mode)
+                .unwrap()
+        );
     }
 }
 
@@ -244,14 +254,20 @@ fn move_camera(
     settings.disable_move = false;
     settings.locked_to_player = false;
 
-    match config.allowed_camera_modes.get(config.current_camera_mode).unwrap() {
+    match config
+        .allowed_camera_modes
+        .get(config.current_camera_mode)
+        .unwrap()
+    {
         CameraMode::Free => {
             settings.disable_look = false;
             return;
         }
         CameraMode::LookAt => {
             // if there is both a player and a bonus, target the mid-point of them
-            if let (Some(player_entity), Some(bonus_entity)) = (config.target, config.external_target) {
+            if let (Some(player_entity), Some(bonus_entity)) =
+                (config.target, config.external_target)
+            {
                 if let (Ok(player_transform), Ok(bonus_transform)) = (
                     transforms.q1().get(player_entity),
                     transforms.q1().get(bonus_entity),
@@ -273,7 +289,11 @@ fn move_camera(
         _ => {
             if let Some(player_entity) = config.target {
                 if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                    match config.allowed_camera_modes.get(config.current_camera_mode).unwrap() {
+                    match config
+                        .allowed_camera_modes
+                        .get(config.current_camera_mode)
+                        .unwrap()
+                    {
                         CameraMode::Fps => {
                             delta_trans.translation = player_transform.translation;
                             settings.disable_move = true;
@@ -323,7 +343,8 @@ fn move_camera(
     // calculate the camera motion based on the difference between where the camera is looking
     // and where it should be looking; the greater the distance, the faster the motion;
     // smooth out the camera movement using the frame time
-    let mut camera_motion = config.camera_settings.camera_should_focus - config.camera_settings.camera_is_focus;
+    let mut camera_motion =
+        config.camera_settings.camera_should_focus - config.camera_settings.camera_is_focus;
     if camera_motion.length() > 0.2 {
         camera_motion *= SPEED * time.delta_seconds();
         // set the new camera's actual focus
@@ -394,9 +415,13 @@ fn switch_scroll_type(
 fn show_cams(
     mut query: Query<(&mut Camera, &mut PerspectiveProjection)>,
     keyboard_input: Res<Input<KeyCode>>,
+    config: Res<Config>,
 ) {
+    if !config.debug {
+        return;
+    }
     if keyboard_input.just_pressed(KeyCode::Y) {
-        for (a,b) in query.iter_mut() {
+        for (a, _) in query.iter_mut() {
             println!("{:?}", a);
         }
     }
@@ -479,7 +504,7 @@ where
 }
 
 /// Handles looking around if cursor is locked
-fn player_look(
+fn mouse_look(
     settings: Res<MovementSettings>,
     windows: Res<Windows>,
     mut state: ResMut<InputState>,
@@ -516,7 +541,7 @@ fn cursor_grab(keys: Res<Input<KeyCode>>, mut windows: ResMut<Windows>) {
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
     fn build(&self, app: &mut AppBuilder) {
-        app .init_resource::<Config>()
+        app.init_resource::<Config>()
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
@@ -524,16 +549,17 @@ impl Plugin for ConfigCam {
             .add_system(toggle_camera_parent.system())
             .add_system(switch_scroll_type.system())
             .add_system(scroll.system())
+            .add_system(show_cams.system())
             .add_system(cycle_cam_state.system())
             .add_system_set(
                 SystemSet::on_enter(PluginState::Enabled)
-                .with_system(setup_camera.system())
-                .with_system(setup_controller.system())
+                    .with_system(setup_camera.system())
+                    .with_system(setup_controller.system()),
             )
             .add_system_set(
                 SystemSet::on_update(PluginState::Enabled)
                     .with_system(move_player.system())
-                    .with_system(move_camera.system())
+                    .with_system(move_camera.system()),
             );
     }
 }
@@ -545,7 +571,7 @@ impl Plugin for NoCameraPlayerPlugin {
             .init_resource::<MovementSettings>()
             .add_startup_system(initial_grab_cursor.system())
             .add_system(player_move.system())
-            .add_system(player_look.system())
+            .add_system(mouse_look.system())
             .add_system(cursor_grab.system());
     }
 }

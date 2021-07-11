@@ -1,6 +1,11 @@
-use bevy::{core::Time, input::Input, math::{Quat, Vec3}, prelude::{Entity, KeyCode, Query, Res, Transform}};
+use bevy::{
+    core::Time,
+    input::Input,
+    math::{Quat, Vec3},
+    prelude::{Entity, KeyCode, Query, Res, Transform},
+};
 
-use crate::{PlayerMove, validate_key};
+use crate::{validate_key, PlayerMove};
 
 #[derive(Default)]
 pub struct Player {
@@ -8,7 +13,6 @@ pub struct Player {
 }
 
 pub struct PlayerSettings {
-    pub player_asset: &'static str,
     pub speed: f32,
     pub map: PlayerKeyMap,
     pub pos: Vec3,
@@ -19,7 +23,6 @@ pub struct PlayerSettings {
 impl Default for PlayerSettings {
     fn default() -> Self {
         Self {
-            player_asset: "",
             speed: 12.0,
             map: PlayerKeyMap::default(),
             pos: Default::default(),
@@ -62,7 +65,9 @@ pub fn move_player(
     settings: Res<PlayerSettings>,
     mut transforms: Query<(&PlayerMove, &mut Transform)>,
 ) {
-    if settings.disable_default { return; }
+    if settings.disable_default {
+        return;
+    }
     for (_player, mut transform) in transforms.iter_mut() {
         let (_, mut rotation) = transform.rotation.to_axis_angle();
         let mut velocity = Vec3::ZERO;

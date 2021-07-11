@@ -1,6 +1,6 @@
 //Base
 use bevy::prelude::*;
-use bevy_config_cam::player::{Player,PlayerSettings};
+use bevy_config_cam::player::{Player, PlayerSettings};
 use bevy_config_cam::*;
 
 fn main() {
@@ -38,7 +38,7 @@ fn setup(
         })
         .insert(PlayerMove)
         .id();
-    
+
     settings.disable_default = true;
     cl.target = Some(p);
 
@@ -53,7 +53,6 @@ fn setup(
 fn move_player(
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
-    //settings: Res<PlayerSettings>,
     mut transforms: Query<(&PlayerMove, &mut Transform)>,
 ) {
     for (_player, mut transform) in transforms.iter_mut() {

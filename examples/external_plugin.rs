@@ -1,8 +1,10 @@
-
 //Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
-use bevy_mod_picking::{DebugCursorPickingPlugin, DebugEventsPickingPlugin, HighlightablePickingPlugin, InteractablePickingPlugin, PickableBundle, PickingCameraBundle, PickingPlugin};
+use bevy_mod_picking::{
+    DebugCursorPickingPlugin, DebugEventsPickingPlugin, HighlightablePickingPlugin,
+    InteractablePickingPlugin, PickableBundle, PickingCameraBundle, PickingPlugin,
+};
 
 fn main() {
     App::build()
@@ -46,12 +48,15 @@ fn setup(
             .id(),
     );
 
-    config.camera_settings.camera = Some ( commands
-        .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..Default::default()
-        })
-        .insert_bundle(PickingCameraBundle::default()).id());
+    config.camera_settings.camera = Some(
+        commands
+            .spawn_bundle(PerspectiveCameraBundle {
+                transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+                ..Default::default()
+            })
+            .insert_bundle(PickingCameraBundle::default())
+            .id(),
+    );
 
     // light
     commands.spawn_bundle(LightBundle {

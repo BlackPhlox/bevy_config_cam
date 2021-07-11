@@ -1,6 +1,12 @@
-use bevy::{core::Time, input::Input, math::Vec3, prelude::{KeyCode, Query, Res, Transform}, window::Windows};
+use bevy::{
+    core::Time,
+    input::Input,
+    math::Vec3,
+    prelude::{KeyCode, Query, Res, Transform},
+    window::Windows,
+};
 
-use crate::{StaticCam, validate_key};
+use crate::{validate_key, StaticCam};
 
 /// Mouse sensitivity and movement speed
 pub struct MovementSettings {

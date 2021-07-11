@@ -36,9 +36,7 @@ fn setup(
         commands
             .spawn_bundle((
                 Transform {
-                    translation: Vec3::new(
-                        0.,0.,0.
-                    ),
+                    translation: Vec3::new(0., 0., 0.),
                     rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
                     ..Default::default()
                 },
