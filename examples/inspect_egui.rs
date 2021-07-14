@@ -1,21 +1,17 @@
 //Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
-use bevy_config_cam::{cam::MovementSettings, player::PlayerSettings};
+use bevy_inspector_egui::{Inspectable, WorldInspectorPlugin, InspectorPlugin, WorldInspectorParams, InspectableRegistry};
+use bevy_inspector_egui::widgets::{ResourceInspector};
 
 fn main() {
     App::build()
-        .insert_resource(ClearColor(Color::rgb(0.1058, 0.1058, 0.1058)))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
-        .insert_resource(MovementSettings {
-            sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0,          // default: 12.0
-            ..Default::default()
-        })
-        .insert_resource(PlayerSettings {
-            pos: Vec3::new(2., 0., 0.),
+        .add_plugin(WorldInspectorPlugin::new())
+        .insert_resource(WorldInspectorParams {
+            despawnable_entities: true,
             ..Default::default()
         })
         .add_startup_system(setup.system())
@@ -27,7 +23,6 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
     mut cl: ResMut<Config>,
 ) {
     // plane
@@ -45,22 +40,6 @@ fn setup(
                 material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
                 transform: Transform::from_xyz(0.0, 0.5, 0.0),
                 ..Default::default()
-            })
-            .id(),
-    );
-
-    cl.target = Some(
-        commands
-            .spawn_bundle((
-                Transform {
-                    translation: Vec3::new(0., 0., 0.),
-                    rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
-                    ..Default::default()
-                },
-                GlobalTransform::identity(),
-            ))
-            .with_children(|cell| {
-                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
             })
             .id(),
     );

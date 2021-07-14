@@ -28,6 +28,7 @@ strum_macros = "0.21.1"
 
 [dev-dependencies]
 bevy_mod_picking = "0.4.0"
+bevy-inspector-egui = "0.5"
 
 [dependencies.bevy]
 version = "0.5"
