@@ -2,12 +2,10 @@
 
 ## Current
 
-* [bevy_config_cam](https://github.com/BlackPhlox/bevy_config_cam): [ISC License](licenses/bevy_config_cam_ISC.md); Copyright (c) 2021 Mikkel Rasmussen
-* [bevy_config_cam](https://github.com/BlackPhlox/bevy_config_cam): [MIT License](licenses/bevy_config_cam_MIT.md); Copyright (c) 2021 Mikkel Rasmussen
-
+* [bevy_config_cam](https://github.com/BlackPhlox/bevy_config_cam): [MIT/Apache 2.0 License](licenses/bevy_config_cam_license.md); Copyright (c) 2021 Mikkel Rasmussen
 ## Libraries
 
-* [bevy](https://github.com/bevyengine/bevy): [MIT License](licenses/bevy_MIT.md); Copyright (c) 2020 Carter Anderson
+* [bevy](https://github.com/bevyengine/bevy): [MIT/Apache 2.0 License](licenses/bevy_license.md); Copyright (c) 2021 Bevy Engine
 * [bevy_flycam](https://github.com/sburris0/bevy_flycam): [ISC License](licenses/bevy_flycam_ISC.md); Copyright (c) 2020 Spencer Burris
 * [strum](https://github.com/Peternator7/strum): [MIT License](licenses/strum_MIT.md); Copyright (c) 2019 Peter Glotfelty
 
