@@ -107,10 +107,12 @@ Now, there is a reason for the name `bevy_config_cam`. It is most likely that yo
     })
     .insert_resource(PlayerSettings {
         pos: Vec3::new(2., 0., 0.),//Initial position of the player
-        player_asset: "models/craft_speederA.glb#Scene0", //Model of the player, default is a red cube
         ..Default::default()
     })
 ```
+
+See the [simple.rs](examples/simple.rs) example for how to attach a player to camera.
+
 Note: That some of them are overwritten by accessing the settings or the changing the camera type. Feedback on this is high appreciated, just create a new issue and I'll look into it when I have the time.
 
 # Support
@@ -119,9 +121,9 @@ Note: That some of them are overwritten by accessing the settings or the changin
 |bevy|bevy_config_cam|
 |---|---|
 |0.5|0.1.X|
+|0.6|0.2.X|
 
 # Licensing
-The project is under dual license MIT and ISC (functionally equivalent, though ISC removing some language that is no longer necessary), so yoink to your hearts content, just remember the license agreements.
-
+The project is under dual license MIT and Apache 2.0, so joink to your hearts content, just remember the license agreements.
 # Contributing
 Yes this project is still very much WIP, so PRs are very welcome
