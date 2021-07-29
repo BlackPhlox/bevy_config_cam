@@ -1,16 +1,9 @@
-use bevy::{
-    app::{Events, ManualEventReader},
-    ecs::schedule::SystemSet,
-    input::mouse::{MouseMotion, MouseWheel},
-    prelude::*,
-    render::{
+use bevy::{app::{Events, ManualEventReader}, ecs::{query::{FilterFetch, WorldQuery}, schedule::SystemSet}, input::mouse::{MouseMotion, MouseWheel}, prelude::*, render::{
         camera::Camera,
         camera::CameraProjection,
         camera::{ActiveCameras, PerspectiveProjection},
         render_graph::base::camera::CAMERA_3D,
-    },
-    window::Windows,
-};
+    }, window::Windows};
 
 pub mod cam;
 use cam::{player_move, MovementSettings};
@@ -86,7 +79,7 @@ pub struct StaticCam;
 pub struct AttachedCam;
 
 pub struct Config {
-    pub current_camera_mode: usize,
+    current_camera_mode: usize,
     pub allowed_camera_modes: &'static [CameraMode],
     pub target: Option<Entity>,
     pub external_target: Option<Entity>,
@@ -95,6 +88,89 @@ pub struct Config {
     pub debug: bool,
 }
 
+pub trait ChangeTarget {
+    //TODO Check the entity has a transform
+    fn set_player_target(&mut self, entity: Entity) -> Result<(), &str>;
+    //TODO Convert to using vec instead
+    fn add_ext_target(&mut self, entity: Entity);
+    fn remove_ext_target(&mut self);
+    fn clear_ext_targets(&mut self);
+}
+
+impl ChangeTarget for Config {
+    fn set_player_target(&mut self, entity: Entity) -> Result<(), &str> {
+        self.target = Some(entity);
+        Ok(())
+    }
+
+    fn add_ext_target(&mut self, entity: Entity)
+    {
+        self.external_target = Some(entity);
+    }
+
+    fn remove_ext_target(&mut self) {
+        self.external_target = None;
+    }
+
+    fn clear_ext_targets(&mut self) {
+        self.external_target = None;
+    }
+}
+
+pub trait ChangeCamera {
+    fn set_camera(&mut self, cam_mode: CameraMode) -> Result<(), &str>;
+    fn next_camera(&mut self) -> ();
+}
+
+impl ChangeCamera for Config {
+    fn set_camera(self: &mut Config, cam_mode: CameraMode) -> Result<(), &str> {
+        let is_valid = self.allowed_camera_modes.contains(&cam_mode);
+        if !is_valid {
+            Err("This camera mode is not allowed")
+        } else {
+            let index = self.allowed_camera_modes.iter().position(|cms| cms.eq(&cam_mode)).unwrap();    
+            self.current_camera_mode = index;
+            if self.debug {
+                println!(
+                    "Camera: {:?}",
+                    self
+                    .allowed_camera_modes
+                    .get(self.current_camera_mode)
+                    .unwrap()
+                );
+            }
+            Ok(())
+        }
+    }
+
+    fn next_camera(self: &mut Config) -> () {
+        let current = &self.current_camera_mode;
+        let available = self.allowed_camera_modes;
+        let next = if available.len() - 1 > *current {
+            current + 1
+        } else {
+            0
+        };
+
+        self.current_camera_mode = next;
+        if self.debug {
+            println!(
+                "Camera: {:?}",
+                self
+                .allowed_camera_modes
+                .get(self.current_camera_mode)
+                .unwrap()
+            );
+        }
+    }
+}
+
+/*
+    The config component.
+    Currently handles everything except input which is handled by cam.rs and player.rs respectively
+    TODO: 
+        - Break up the component into a Controller component similar to smooth-bevy-cameras for easy integration
+*/
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -103,6 +179,7 @@ impl Default for Config {
                 CameraMode::LookAt,
                 CameraMode::FollowStatic,
                 CameraMode::TopDown,
+                CameraMode::TopDownDirection,
                 CameraMode::FollowBehind,
                 CameraMode::Fps,
                 CameraMode::Free,
@@ -124,7 +201,7 @@ impl Default for Config {
                 rot_speed: 0.1,
                 map: 0.,
             }),
-            debug: false,
+            debug: true,
         }
     }
 }
@@ -146,6 +223,12 @@ pub struct Controller {
     pub map: f32,
 }
 
+/**
+    Setting up the camera.
+    If no camera is provided, a new camera is created
+    else the StaticCam component is inserted onto the camera entity.
+    TODO: Lookup for a new ConfigCamera tag-component
+*/
 fn setup_camera(mut commands: Commands, mut config: ResMut<Config>) {
     if config.camera_settings.camera.is_none() {
         config.camera_settings.camera = Some(
@@ -167,6 +250,14 @@ fn setup_camera(mut commands: Commands, mut config: ResMut<Config>) {
     }
 }
 
+/*
+    Setting up the controller.
+    If no target(player) is provided, create a new default player (red cube).
+    Then attach a unique follow camera to the player entity with component AttachedCam
+    TODO: 
+        - Input a initial position from setup will move camera to the correct relative position 
+        - Allow the user to provided its own AttachedCam
+*/
 fn setup_controller(
     mut commands: Commands,
     mut config: ResMut<Config>,
@@ -222,22 +313,7 @@ fn cycle_cam_state(
         .get_just_pressed()
         .any(|m| settings.map.next_cam.iter().any(|nc| m == nc))
     {
-        let current = &config.current_camera_mode;
-        let available = config.allowed_camera_modes;
-        let next = if available.len() - 1 > *current {
-            current + 1
-        } else {
-            0
-        };
-
-        config.current_camera_mode = next;
-        println!(
-            "Camera: {:?}",
-            config
-                .allowed_camera_modes
-                .get(config.current_camera_mode)
-                .unwrap()
-        );
+        config.next_camera();
     }
 }
 
