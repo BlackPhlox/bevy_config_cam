@@ -11,6 +11,7 @@ const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
 /// Use the mouse to look and move the camera freely
 pub struct Free;
 impl CameraMode for Free {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         _config: Config,
@@ -29,6 +30,7 @@ impl CameraMode for Free {
 /// Look at player and other targets if set
 pub struct LookAt;
 impl CameraMode for LookAt {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         mut config: Config,
@@ -65,6 +67,7 @@ impl CameraMode for LookAt {
 /// Camera at same position as player, enables to use the mouse to look (WIP)
 pub struct Fps;
 impl CameraMode for Fps {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         config: Config,
@@ -92,6 +95,7 @@ impl CameraMode for Fps {
 /// Camera is moved above and pointed down, rotation bound to one axis
 pub struct TopDown;
 impl CameraMode for TopDown {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         config: Config,
@@ -119,6 +123,7 @@ impl CameraMode for TopDown {
 /// Same as TopDown but follows the players direction
 pub struct TopDownDirection;
 impl CameraMode for TopDownDirection {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         _config: Config,
@@ -141,6 +146,7 @@ impl CameraMode for TopDownDirection {
 //Follows behind the player a certain distance
 pub struct FollowBehind;
 impl CameraMode for FollowBehind {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         _config: Config,
@@ -162,6 +168,7 @@ impl CameraMode for FollowBehind {
 //Follow the player only
 pub struct FollowStatic;
 impl CameraMode for FollowStatic {
+    #[allow(clippy::type_complexity)]
     fn update(
         &self,
         mut config: Config,
@@ -180,54 +187,3 @@ impl CameraMode for FollowStatic {
         "FollowStatic"
     }
 }
-
-/*
-if let Some(player_entity) = config.target {
-    if let Ok(player_transform) = transforms.q1().get(player_entity) {
-        match config
-            .allowed_camera_modes
-            .get(config.current_camera_mode)
-            .unwrap()
-        {
-            CameraMode::Fps => {
-                delta_trans.translation = player_transform.translation;
-                settings.disable_move = true;
-
-                settings.disable_look = false;
-                delta_trans.rotation = player_transform.rotation;
-                delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
-            }
-            CameraMode::TopDown => {
-                delta_trans.translation = player_transform.translation;
-                settings.disable_move = true;
-
-                delta_trans.translation +=
-                    Vec3::new(/*-4.*/ 0., settings.dist, 0.);
-                delta_trans.rotation =
-                    Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
-            }
-            CameraMode::TopDownDirection => {
-                settings.disable_move = true;
-                settings.locked_to_player = true;
-
-                delta_trans.translation +=
-                    Vec3::new(/*-4.*/ 0., settings.dist, 0.);
-                delta_trans.rotation =
-                    Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
-            }
-            CameraMode::FollowBehind => {
-                settings.disable_move = true;
-
-                settings.locked_to_player = true;
-
-                delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 4.);
-            }
-            _ => {}
-        }
-        config.camera_settings.camera_should_focus = player_transform.translation;
-    }
-    // otherwise, target the middle
-    } else {
-    config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
-    }
-*/

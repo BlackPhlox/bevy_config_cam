@@ -119,6 +119,7 @@ impl Default for Cameras {
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub trait CameraMode {
     fn update(
         &self,
@@ -163,7 +164,7 @@ pub trait ChangeCamera {
         &mut self,
         cam_mode: &std::boxed::Box<dyn CameraMode + Send + Sync>,
     ) -> Result<(), &str>;
-    fn next_camera(&mut self) -> ();
+    fn next_camera(&mut self);
 }
 
 impl ChangeCamera for Cameras {
@@ -194,7 +195,7 @@ impl ChangeCamera for Cameras {
         }
     }
 
-    fn next_camera(self: &mut Cameras) -> () {
+    fn next_camera(self: &mut Cameras) {
         let current = &self.current_camera_mode;
         let available = &self.camera_modes;
         let next = if available.len() - 1 > *current {
