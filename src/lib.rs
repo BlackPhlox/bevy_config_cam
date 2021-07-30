@@ -1,9 +1,23 @@
-use bevy::{app::{Events, ManualEventReader}, ecs::{query::{FilterFetch, WorldQuery}, schedule::SystemSet}, input::mouse::{MouseMotion, MouseWheel}, prelude::*, render::{
+use std::fmt::Debug;
+
+use bevy::{
+    app::{Events, ManualEventReader},
+    ecs::schedule::{ShouldRun, SystemSet},
+    input::mouse::{MouseMotion, MouseWheel},
+    prelude::*,
+    render::{
         camera::Camera,
         camera::CameraProjection,
         camera::{ActiveCameras, PerspectiveProjection},
         render_graph::base::camera::CAMERA_3D,
-    }, window::Windows};
+    },
+    window::Windows,
+};
+
+pub mod default_cam_modes;
+use crate::default_cam_modes::{
+    FollowBehind, FollowStatic, Fps, Free, LookAt, TopDown, TopDownDirection,
+};
 
 pub mod cam;
 use cam::{player_move, MovementSettings};
@@ -53,39 +67,67 @@ enum ScrollType {
     Lerp,
     CamFwd,
 }
-#[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
-pub enum CameraMode {
-    //Look at player and other targets if set
-    LookAt,
-    //Follow the player only
-    FollowStatic,
-    //Camera is moved above and pointed down, rotation bound to one axis
-    TopDown,
-    //Same as TopDown but follows the players direction
-    TopDownDirection,
-    //Follows behind the player a certain distance
-    FollowBehind,
-    //Camera at same position as player, enables to use the mouse to look (WIP)
-    Fps,
-    //Use the mouse to look and move the camera freely
-    Free,
-}
-
-/// Used in queries when you want flycams and not other cameras
 
 //Free moving camera
 pub struct StaticCam;
 //Attached to target
 pub struct AttachedCam;
 
+#[derive(Clone, PartialEq)]
 pub struct Config {
-    current_camera_mode: usize,
-    pub allowed_camera_modes: &'static [CameraMode],
     pub target: Option<Entity>,
     pub external_target: Option<Entity>,
     pub camera_settings: CameraSettings,
     pub controller_settings: Option<Controller>,
     pub debug: bool,
+}
+
+#[derive(Debug)]
+pub struct Cameras {
+    current_camera_mode: usize,
+    pub camera_modes: Vec<Box<dyn CameraMode + Sync + Send + 'static>>,
+    pub debug: bool,
+}
+
+impl Debug for std::boxed::Box<dyn CameraMode + Send + Sync> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name())
+    }
+}
+
+impl PartialEq for std::boxed::Box<dyn CameraMode + Send + Sync> {
+    fn eq(&self, other: &Self) -> bool {
+        self.name().eq(other.name())
+    }
+}
+
+impl Default for Cameras {
+    fn default() -> Self {
+        Self {
+            current_camera_mode: 0usize,
+            camera_modes: vec![
+                Box::new(LookAt),
+                Box::new(FollowStatic),
+                Box::new(TopDown),
+                Box::new(TopDownDirection),
+                Box::new(FollowBehind),
+                Box::new(Fps),
+                Box::new(Free),
+            ],
+            debug: true,
+        }
+    }
+}
+
+pub trait CameraMode {
+    fn update(
+        &self,
+        config: Config,
+        move_config: ResMut<MovementSettings>,
+        transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
+    ) -> Transform;
+
+    fn name(&self) -> &str;
 }
 
 pub trait ChangeTarget {
@@ -103,8 +145,7 @@ impl ChangeTarget for Config {
         Ok(())
     }
 
-    fn add_ext_target(&mut self, entity: Entity)
-    {
+    fn add_ext_target(&mut self, entity: Entity) {
         self.external_target = Some(entity);
     }
 
@@ -118,34 +159,44 @@ impl ChangeTarget for Config {
 }
 
 pub trait ChangeCamera {
-    fn set_camera(&mut self, cam_mode: CameraMode) -> Result<(), &str>;
+    fn set_camera(
+        &mut self,
+        cam_mode: &std::boxed::Box<dyn CameraMode + Send + Sync>,
+    ) -> Result<(), &str>;
     fn next_camera(&mut self) -> ();
 }
 
-impl ChangeCamera for Config {
-    fn set_camera(self: &mut Config, cam_mode: CameraMode) -> Result<(), &str> {
-        let is_valid = self.allowed_camera_modes.contains(&cam_mode);
+impl ChangeCamera for Cameras {
+    fn set_camera(
+        self: &mut Cameras,
+        cam_mode: &std::boxed::Box<dyn CameraMode + Send + Sync>,
+    ) -> Result<(), &str> {
+        let is_valid = self
+            .camera_modes
+            .iter()
+            .any(|b| b.name() == cam_mode.name());
         if !is_valid {
             Err("This camera mode is not allowed")
         } else {
-            let index = self.allowed_camera_modes.iter().position(|cms| cms.eq(&cam_mode)).unwrap();    
+            let index = self
+                .camera_modes
+                .iter()
+                .position(|cms| cms.name().eq(cam_mode.name()))
+                .unwrap();
             self.current_camera_mode = index;
             if self.debug {
                 println!(
                     "Camera: {:?}",
-                    self
-                    .allowed_camera_modes
-                    .get(self.current_camera_mode)
-                    .unwrap()
+                    self.camera_modes.get(self.current_camera_mode).unwrap()
                 );
             }
             Ok(())
         }
     }
 
-    fn next_camera(self: &mut Config) -> () {
+    fn next_camera(self: &mut Cameras) -> () {
         let current = &self.current_camera_mode;
-        let available = self.allowed_camera_modes;
+        let available = &self.camera_modes;
         let next = if available.len() - 1 > *current {
             current + 1
         } else {
@@ -156,10 +207,7 @@ impl ChangeCamera for Config {
         if self.debug {
             println!(
                 "Camera: {:?}",
-                self
-                .allowed_camera_modes
-                .get(self.current_camera_mode)
-                .unwrap()
+                self.camera_modes.get(self.current_camera_mode).unwrap()
             );
         }
     }
@@ -168,12 +216,13 @@ impl ChangeCamera for Config {
 /*
     The config component.
     Currently handles everything except input which is handled by cam.rs and player.rs respectively
-    TODO: 
+    TODO:
         - Break up the component into a Controller component similar to smooth-bevy-cameras for easy integration
 */
 impl Default for Config {
     fn default() -> Self {
         Self {
+            /*
             current_camera_mode: 0,
             allowed_camera_modes: &[
                 CameraMode::LookAt,
@@ -183,7 +232,7 @@ impl Default for Config {
                 CameraMode::FollowBehind,
                 CameraMode::Fps,
                 CameraMode::Free,
-            ],
+            ],*/
             target: None,
             external_target: None,
             camera_settings: CameraSettings {
@@ -206,6 +255,7 @@ impl Default for Config {
     }
 }
 
+#[derive(Clone, PartialEq)]
 pub struct CameraSettings {
     pub mouse_sensitivity: f32,
     pub speed: f32,
@@ -217,6 +267,7 @@ pub struct CameraSettings {
     pub attached_camera: Option<Entity>,
 }
 
+#[derive(Clone, PartialEq)]
 pub struct Controller {
     pub speed: f32,
     pub rot_speed: f32,
@@ -254,8 +305,8 @@ fn setup_camera(mut commands: Commands, mut config: ResMut<Config>) {
     Setting up the controller.
     If no target(player) is provided, create a new default player (red cube).
     Then attach a unique follow camera to the player entity with component AttachedCam
-    TODO: 
-        - Input a initial position from setup will move camera to the correct relative position 
+    TODO:
+        - Input a initial position from setup will move camera to the correct relative position
         - Allow the user to provided its own AttachedCam
 */
 fn setup_controller(
@@ -307,13 +358,13 @@ fn cycle_cam_state(
     //mut cam_state: ResMut<State<CameraMode>>,
     settings: Res<MovementSettings>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut config: ResMut<Config>,
+    mut cams: ResMut<Cameras>,
 ) {
     if keyboard_input
         .get_just_pressed()
         .any(|m| settings.map.next_cam.iter().any(|nc| m == nc))
     {
-        config.next_camera();
+        cams.next_camera();
     }
 }
 
@@ -323,95 +374,22 @@ fn move_camera(
     time: Res<Time>,
     mut config: ResMut<Config>,
     mut settings: ResMut<MovementSettings>,
+    cameras: Res<Cameras>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
 ) {
-    let mut delta_trans = Transform::identity();
     settings.disable_look = true;
     settings.disable_move = false;
     settings.locked_to_player = false;
 
-    match config
-        .allowed_camera_modes
-        .get(config.current_camera_mode)
-        .unwrap()
-    {
-        CameraMode::Free => {
-            settings.disable_look = false;
-            return;
-        }
-        CameraMode::LookAt => {
-            // if there is both a player and a bonus, target the mid-point of them
-            if let (Some(player_entity), Some(bonus_entity)) =
-                (config.target, config.external_target)
-            {
-                if let (Ok(player_transform), Ok(bonus_transform)) = (
-                    transforms.q1().get(player_entity),
-                    transforms.q1().get(bonus_entity),
-                ) {
-                    config.camera_settings.camera_should_focus = player_transform
-                        .translation
-                        .lerp(bonus_transform.translation, settings.lerp);
-                }
-            // otherwise, if there is only a player, target the player
-            } else if let Some(player_entity) = config.target {
-                if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                    config.camera_settings.camera_should_focus = player_transform.translation;
-                }
-            // otherwise, target the middle
-            } else {
-                config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
-            }
-        }
-        _ => {
-            if let Some(player_entity) = config.target {
-                if let Ok(player_transform) = transforms.q1().get(player_entity) {
-                    match config
-                        .allowed_camera_modes
-                        .get(config.current_camera_mode)
-                        .unwrap()
-                    {
-                        CameraMode::Fps => {
-                            delta_trans.translation = player_transform.translation;
-                            settings.disable_move = true;
+    let delta_trans = cameras.camera_modes[cameras.current_camera_mode].update(
+        config.clone(),
+        settings,
+        &transforms,
+    );
 
-                            settings.disable_look = false;
-                            delta_trans.rotation = player_transform.rotation;
-                            delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
-                        }
-                        CameraMode::TopDown => {
-                            delta_trans.translation = player_transform.translation;
-                            settings.disable_move = true;
-
-                            delta_trans.translation +=
-                                Vec3::new(/*-4.*/ 0., settings.dist, 0.);
-                            delta_trans.rotation =
-                                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
-                        }
-                        CameraMode::TopDownDirection => {
-                            settings.disable_move = true;
-                            settings.locked_to_player = true;
-
-                            delta_trans.translation +=
-                                Vec3::new(/*-4.*/ 0., settings.dist, 0.);
-                            delta_trans.rotation =
-                                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
-                        }
-                        CameraMode::FollowBehind => {
-                            settings.disable_move = true;
-
-                            settings.locked_to_player = true;
-
-                            delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 4.);
-                        }
-                        _ => {}
-                    }
-                    config.camera_settings.camera_should_focus = player_transform.translation;
-                }
-            // otherwise, target the middle
-            } else {
-                config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
-            }
-        }
+    let disable = false;
+    if disable {
+        config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
     }
 
     const SPEED: f32 = 2.0;
@@ -579,6 +557,14 @@ where
     codes.iter().any(|m| m == key)
 }
 
+fn should_mouse_look(settings: Local<MovementSettings>) -> ShouldRun {
+    if settings.disable_look {
+        ShouldRun::No
+    } else {
+        ShouldRun::Yes
+    }
+}
+
 /// Handles looking around if cursor is locked
 fn mouse_look(
     settings: Res<MovementSettings>,
@@ -587,9 +573,6 @@ fn mouse_look(
     motion: Res<Events<MouseMotion>>,
     mut query: Query<(&StaticCam, &mut Transform)>,
 ) {
-    if settings.disable_look {
-        return;
-    }
     let window = windows.get_primary().unwrap();
     for (_camera, mut transform) in query.iter_mut() {
         for ev in state.reader_motion.iter(&motion) {
@@ -618,7 +601,8 @@ pub struct ConfigCam;
 impl Plugin for ConfigCam {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<Config>()
-            .add_plugin(NoCameraPlayerPlugin)
+            .init_resource::<Cameras>()
+            .add_plugin(MovementPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
             .add_state(ScrollType::MovementSpeed)
@@ -640,14 +624,18 @@ impl Plugin for ConfigCam {
     }
 }
 /// Same as `PlayerPlugin` but does not spawn a camera
-pub struct NoCameraPlayerPlugin;
-impl Plugin for NoCameraPlayerPlugin {
+pub struct MovementPlugin;
+impl Plugin for MovementPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
             .add_startup_system(initial_grab_cursor.system())
             .add_system(player_move.system())
-            .add_system(mouse_look.system())
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(should_mouse_look.system())
+                    .with_system(mouse_look.system()),
+            )
             .add_system(cursor_grab.system());
     }
 }

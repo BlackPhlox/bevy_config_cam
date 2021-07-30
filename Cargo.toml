@@ -1,6 +1,6 @@
 [package]
 name = "bevy_config_cam"
-version = "0.1.3"
+version = "0.2.0"
 authors = ["Black Phlox <bphlox@gmail.com>"]
 license = "MIT OR Apache-2.0"
 edition = "2018"

@@ -76,7 +76,7 @@ Add the correct version to your `Cargo.toml`, you can find the version you are l
 [dependencies]
 bevy = { version = "0.5"}
 # ...
-bevy_config_cam = { version = "0.1.2"} # <-- 
+bevy_config_cam = { version = "0.2.0"} # <-- 
 ```
 
 ### Step 2. - Add to project
@@ -120,8 +120,8 @@ Note: That some of them are overwritten by accessing the settings or the changin
 
 |bevy|bevy_config_cam|
 |---|---|
-|0.5|0.1.X|
-|0.6|0.2.X|
+|0.5|0.1.2|
+|0.5|0.2.X|
 
 # Licensing
 The project is under dual license MIT and Apache 2.0, so joink to your hearts content, just remember the license agreements.

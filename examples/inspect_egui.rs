@@ -1,8 +1,10 @@
 //Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
-use bevy_inspector_egui::{Inspectable, WorldInspectorPlugin, InspectorPlugin, WorldInspectorParams, InspectableRegistry};
-use bevy_inspector_egui::widgets::{ResourceInspector};
+use bevy_inspector_egui::widgets::ResourceInspector;
+use bevy_inspector_egui::{
+    Inspectable, InspectableRegistry, InspectorPlugin, WorldInspectorParams, WorldInspectorPlugin,
+};
 
 fn main() {
     App::build()
