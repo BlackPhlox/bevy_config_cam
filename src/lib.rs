@@ -79,7 +79,6 @@ pub struct Config {
     pub external_target: Option<Entity>,
     pub camera_settings: CameraSettings,
     pub controller_settings: Option<Controller>,
-    pub track_ext_targets: bool,
     pub debug: bool,
 }
 
@@ -237,7 +236,6 @@ impl Default for Config {
             ],*/
             target: None,
             external_target: None,
-            track_ext_targets: false,
             camera_settings: CameraSettings {
                 mouse_sensitivity: 0.00012,
                 speed: 12.,
@@ -354,8 +352,6 @@ fn setup_controller(
     config.target = Some(a);
 }
 
-const RESET_FOCUS: [f32; 3] = [0., 0., 0.];
-
 #[allow(unused_must_use)]
 fn cycle_cam_state(
     //mut cam_state: ResMut<State<CameraMode>>,
@@ -373,9 +369,10 @@ fn cycle_cam_state(
 
 // change the focus of the camera
 #[allow(clippy::type_complexity)]
+#[allow(unused_mut)]
 fn move_camera(
     time: Res<Time>,
-    config: ResMut<Config>,
+    mut config: ResMut<Config>,
     mut settings: ResMut<MovementSettings>,
     cameras: Res<Cameras>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
@@ -396,10 +393,6 @@ fn move_camera(
     }*/
 
     const SPEED: f32 = 2.0;
-
-    if config2.track_ext_targets {
-        config2.camera_settings.camera_is_focus = Vec3::new(0.,0.,0.);
-    }
 
     // calculate the camera motion based on the difference between where the camera is looking
     // and where it should be looking; the greater the distance, the faster the motion;

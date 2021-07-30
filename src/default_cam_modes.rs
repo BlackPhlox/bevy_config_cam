@@ -176,7 +176,6 @@ impl CameraMode for FollowStatic {
         _move_config: ResMut<MovementSettings>,
         transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
     ) -> (Config, Transform) {
-        config.track_ext_targets = false;
         if let Some(player_entity) = config.target {
             if let Ok(player_transform) = transforms.q1().get(player_entity) {
                 config.camera_settings.camera_should_focus = player_transform.translation;
