@@ -1,7 +1,6 @@
 //Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
-use bevy_config_cam::{cam::MovementSettings, player::PlayerSettings};
 
 fn main() {
     App::build()

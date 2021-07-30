@@ -84,7 +84,7 @@ pub struct Config {
 
 #[derive(Debug)]
 pub struct Cameras {
-    current_camera_mode: usize,
+    pub current_camera_mode: usize,
     pub camera_modes: Vec<Box<dyn CameraMode + Sync + Send + 'static>>,
     pub debug: bool,
 }

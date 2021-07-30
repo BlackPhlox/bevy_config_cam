@@ -1,6 +1,6 @@
 //Base
 use bevy::prelude::*;
-use bevy_config_cam::player::{Player, PlayerSettings};
+use bevy_config_cam::player::PlayerSettings;
 use bevy_config_cam::*;
 
 fn main() {
@@ -39,7 +39,7 @@ fn setup(
         .insert(PlayerMove)
         .id();
 
-    settings.disable_default = true;
+    settings.disable_move = true;
     cl.target = Some(p);
 
     // light

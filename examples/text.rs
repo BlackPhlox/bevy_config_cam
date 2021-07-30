@@ -1,4 +1,4 @@
-use bevy::{prelude::*, text::Text2dSize};
+use bevy::prelude::*;
 use bevy_config_cam::{cam::MovementSettings, ConfigCam};
 
 fn main() {

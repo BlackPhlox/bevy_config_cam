@@ -1,12 +1,19 @@
 //Base
 use bevy::prelude::*;
-use bevy_config_cam::*;
+use bevy_config_cam::{
+    default_cam_modes::{Free, TopDown},
+    Cameras, Config, ConfigCam,
+};
 
 fn main() {
     App::build()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
+        .insert_resource(Cameras {
+            camera_modes: vec![Box::new(TopDown), Box::new(Free)],
+            ..Default::default()
+        })
         .add_startup_system(setup.system())
         .run();
 }
@@ -24,8 +31,6 @@ fn setup(
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
     });
-
-    cl.allowed_camera_modes = &[CameraMode::Free, CameraMode::TopDown];
 
     // cube, set as target
     cl.external_target = Some(

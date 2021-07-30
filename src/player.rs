@@ -17,7 +17,7 @@ pub struct PlayerSettings {
     pub map: PlayerKeyMap,
     pub pos: Vec3,
     pub cam_fwd: bool,
-    pub disable_default: bool,
+    pub disable_move: bool,
 }
 
 impl Default for PlayerSettings {
@@ -27,7 +27,7 @@ impl Default for PlayerSettings {
             map: PlayerKeyMap::default(),
             pos: Default::default(),
             cam_fwd: false,
-            disable_default: false,
+            disable_move: false,
         }
     }
 }
@@ -65,7 +65,7 @@ pub fn move_player(
     settings: Res<PlayerSettings>,
     mut transforms: Query<(&PlayerMove, &mut Transform)>,
 ) {
-    if settings.disable_default {
+    if settings.disable_move {
         return;
     }
     for (_player, mut transform) in transforms.iter_mut() {
