@@ -79,6 +79,7 @@ pub struct Config {
     pub external_target: Option<Entity>,
     pub camera_settings: CameraSettings,
     pub controller_settings: Option<Controller>,
+    pub track_ext_targets: bool,
     pub debug: bool,
 }
 
@@ -123,10 +124,10 @@ impl Default for Cameras {
 pub trait CameraMode {
     fn update(
         &self,
-        config: Config,
+        config: ResMut<Config>,
         move_config: ResMut<MovementSettings>,
         transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform;
+    ) -> (Config, Transform);
 
     fn name(&self) -> &str;
 }
@@ -236,6 +237,7 @@ impl Default for Config {
             ],*/
             target: None,
             external_target: None,
+            track_ext_targets: false,
             camera_settings: CameraSettings {
                 mouse_sensitivity: 0.00012,
                 speed: 12.,
@@ -373,7 +375,7 @@ fn cycle_cam_state(
 #[allow(clippy::type_complexity)]
 fn move_camera(
     time: Res<Time>,
-    mut config: ResMut<Config>,
+    config: ResMut<Config>,
     mut settings: ResMut<MovementSettings>,
     cameras: Res<Cameras>,
     mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
@@ -382,28 +384,32 @@ fn move_camera(
     settings.disable_move = false;
     settings.locked_to_player = false;
 
-    let delta_trans = cameras.camera_modes[cameras.current_camera_mode].update(
-        config.clone(),
+    let (mut config2, delta_trans) = cameras.camera_modes[cameras.current_camera_mode].update(
+        config,
         settings,
         &transforms,
     );
 
-    let disable = false;
+    /*let disable = false;
     if disable {
         config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
-    }
+    }*/
 
     const SPEED: f32 = 2.0;
+
+    if config2.track_ext_targets {
+        config2.camera_settings.camera_is_focus = Vec3::new(0.,0.,0.);
+    }
 
     // calculate the camera motion based on the difference between where the camera is looking
     // and where it should be looking; the greater the distance, the faster the motion;
     // smooth out the camera movement using the frame time
     let mut camera_motion =
-        config.camera_settings.camera_should_focus - config.camera_settings.camera_is_focus;
+        config2.camera_settings.camera_should_focus - config2.camera_settings.camera_is_focus;
     if camera_motion.length() > 0.2 {
         camera_motion *= SPEED * time.delta_seconds();
         // set the new camera's actual focus
-        config.camera_settings.camera_is_focus += camera_motion;
+        config2.camera_settings.camera_is_focus += camera_motion;
     }
     // look at that new camera's actual focus
     for (mut transform, camera) in transforms.q0_mut().iter_mut() {
@@ -411,7 +417,7 @@ fn move_camera(
             if delta_trans.translation != Vec3::ZERO {
                 *transform = delta_trans
             } else {
-                *transform = transform.looking_at(config.camera_settings.camera_is_focus, Vec3::Y)
+                *transform = transform.looking_at(config2.camera_settings.camera_is_focus, Vec3::Y)
             }
         }
     }

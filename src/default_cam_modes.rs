@@ -14,12 +14,12 @@ impl CameraMode for Free {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        _config: Config,
+        _config: ResMut<Config>,
         mut move_config: ResMut<MovementSettings>,
         _transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
         move_config.disable_look = false;
-        Transform::identity()
+        (_config.to_owned(), Transform::identity())
     }
 
     fn name(&self) -> &str {
@@ -33,10 +33,10 @@ impl CameraMode for LookAt {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        mut config: Config,
+        mut config: ResMut<Config>,
         move_config: ResMut<MovementSettings>,
         transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
         // if there is both a player and a bonus, target the mid-point of them
         if let (Some(player_entity), Some(bonus_entity)) = (config.target, config.external_target) {
             if let (Ok(player_transform), Ok(bonus_transform)) = (
@@ -56,7 +56,7 @@ impl CameraMode for LookAt {
         } else {
             config.camera_settings.camera_should_focus = Vec3::from(RESET_FOCUS);
         }
-        Transform::identity()
+        (config.to_owned(), Transform::identity())
     }
 
     fn name(&self) -> &str {
@@ -70,10 +70,10 @@ impl CameraMode for Fps {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        config: Config,
+        config: ResMut<Config>,
         mut move_config: ResMut<MovementSettings>,
         transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
         let mut delta_trans = Transform::identity();
         if let Some(player_entity) = config.target {
             if let Ok(player_transform) = transforms.q1().get(player_entity) {
@@ -84,7 +84,7 @@ impl CameraMode for Fps {
         move_config.disable_move = true;
         move_config.disable_look = false;
         delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 0.);
-        delta_trans
+        (config.to_owned(), delta_trans)
     }
 
     fn name(&self) -> &str {
@@ -98,10 +98,10 @@ impl CameraMode for TopDown {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        config: Config,
+        config: ResMut<Config>,
         mut move_config: ResMut<MovementSettings>,
         transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
         let mut delta_trans = Transform::identity();
         if let Some(player_entity) = config.target {
             if let Ok(player_transform) = transforms.q1().get(player_entity) {
@@ -112,7 +112,7 @@ impl CameraMode for TopDown {
         }
         move_config.disable_move = true;
         move_config.disable_look = false;
-        delta_trans
+        (config.to_owned(), delta_trans)
     }
 
     fn name(&self) -> &str {
@@ -126,16 +126,17 @@ impl CameraMode for TopDownDirection {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        _config: Config,
+        _config: ResMut<Config>,
         mut move_config: ResMut<MovementSettings>,
         _transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
         let mut delta_trans = Transform::identity();
         delta_trans.translation += Vec3::new(/*-4.*/ 0., move_config.dist, 0.);
         delta_trans.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
+        move_config.locked_to_player = true;
         move_config.disable_move = true;
         move_config.disable_look = false;
-        delta_trans
+        (_config.to_owned(), delta_trans)
     }
 
     fn name(&self) -> &str {
@@ -149,15 +150,15 @@ impl CameraMode for FollowBehind {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        _config: Config,
+        _config: ResMut<Config>,
         mut move_config: ResMut<MovementSettings>,
         _transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
         let mut delta_trans = Transform::identity();
         move_config.disable_move = true;
         move_config.locked_to_player = true;
         delta_trans.translation += Vec3::new(/*-4.*/ 0., 1., 4.);
-        delta_trans
+        (_config.to_owned(), delta_trans)
     }
 
     fn name(&self) -> &str {
@@ -171,16 +172,17 @@ impl CameraMode for FollowStatic {
     #[allow(clippy::type_complexity)]
     fn update(
         &self,
-        mut config: Config,
+        mut config: ResMut<Config>,
         _move_config: ResMut<MovementSettings>,
         transforms: &QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
-    ) -> Transform {
+    ) -> (Config, Transform) {
+        config.track_ext_targets = false;
         if let Some(player_entity) = config.target {
             if let Ok(player_transform) = transforms.q1().get(player_entity) {
                 config.camera_settings.camera_should_focus = player_transform.translation;
             }
         }
-        Transform::identity()
+        (config.to_owned(), Transform::identity())
     }
 
     fn name(&self) -> &str {
