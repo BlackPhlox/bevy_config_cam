@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install libxcb-shape0-dev
-        run: sudo apt install libxcb-shape0-dev
+        run: sudo apt install libxcb-shape0-dev libxcb-xfixes0-dev
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
