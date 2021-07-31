@@ -23,7 +23,7 @@ pub struct PlayerSettings {
 impl Default for PlayerSettings {
     fn default() -> Self {
         Self {
-            speed: 12.0,
+            speed: 4.0,
             map: PlayerKeyMap::default(),
             pos: Default::default(),
             cam_fwd: false,
@@ -121,7 +121,7 @@ pub fn move_player(
         transform.rotation = Quat::from_rotation_y(rotation);
 
         if !velocity.is_nan() {
-            transform.translation += velocity * time.delta_seconds() * 4.0;
+            transform.translation += velocity * time.delta_seconds() * settings.speed;
         }
     }
 }

@@ -16,6 +16,7 @@ fn main() {
         })
         .insert_resource(PlayerSettings {
             pos: Vec3::new(2., 0., 0.),
+            speed: 4.0,
             ..Default::default()
         })
         .add_startup_system(setup.system())

@@ -61,7 +61,8 @@ enum PluginState {
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
 enum ScrollType {
-    MovementSpeed,
+    CameraMovementSpeed,
+    PlayerMovementSpeed,
     Zoom,
     Sensitivity,
     Lerp,
@@ -381,11 +382,8 @@ fn move_camera(
     settings.disable_move = false;
     settings.locked_to_player = false;
 
-    let (mut config2, delta_trans) = cameras.camera_modes[cameras.current_camera_mode].update(
-        config,
-        settings,
-        &transforms,
-    );
+    let (mut config2, delta_trans) =
+        cameras.camera_modes[cameras.current_camera_mode].update(config, settings, &transforms);
 
     /*let disable = false;
     if disable {
@@ -487,22 +485,33 @@ fn scroll(
     mut p_settings: ResMut<PlayerSettings>,
     scroll_type: Res<State<ScrollType>>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
+    keyboard_input: Res<Input<KeyCode>>,
     windows: Res<Windows>,
     mut query: Query<(&StaticCam, &mut Camera, &mut PerspectiveProjection)>,
 ) {
+    let mult = if keyboard_input.get_pressed().any(|f| f.eq(&KeyCode::LControl)) {
+        4.0
+    } else {
+        1.0
+    };
+
     for event in mouse_wheel_events.iter() {
         match *scroll_type.current() {
-            ScrollType::MovementSpeed => {
-                settings.speed = (settings.speed + event.y * 0.1).abs();
-                println!("Speed: {:?}", settings.speed);
+            ScrollType::PlayerMovementSpeed => {
+                p_settings.speed = (p_settings.speed + event.y * 0.1 * mult).abs();
+                println!("Player Speed: {:?}", p_settings.speed);
+            }
+            ScrollType::CameraMovementSpeed => {
+                settings.speed = (settings.speed + event.y * 0.1 * mult).abs();
+                println!("Camera Speed: {:?}", settings.speed);
             }
             ScrollType::Sensitivity => {
-                settings.sensitivity = (settings.sensitivity + event.y * 0.000001).abs();
+                settings.sensitivity = (settings.sensitivity + event.y * 0.000001 * mult).abs();
                 println!("Sensitivity: {:?}", settings.sensitivity);
             }
             ScrollType::Zoom => {
                 for (_camera, mut camera, mut project) in query.iter_mut() {
-                    project.fov = (project.fov - event.y * 0.01).abs();
+                    project.fov = (project.fov - event.y * 0.01 * mult).abs();
                     let prim = windows.get_primary().unwrap();
 
                     //Calculate projection with new fov
@@ -516,7 +525,7 @@ fn scroll(
                 }
             }
             ScrollType::Lerp => {
-                settings.lerp = (settings.lerp + event.y * 0.01).abs();
+                settings.lerp = (settings.lerp + event.y * 0.01 * mult).abs();
                 println!("Lerp: {:?}", settings.lerp);
             }
             ScrollType::CamFwd => {
@@ -605,7 +614,7 @@ impl Plugin for ConfigCam {
             .add_plugin(MovementPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
-            .add_state(ScrollType::MovementSpeed)
+            .add_state(ScrollType::CameraMovementSpeed)
             .add_system(toggle_camera_parent.system())
             .add_system(switch_scroll_type.system())
             .add_system(scroll.system())
