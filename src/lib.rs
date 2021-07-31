@@ -489,7 +489,10 @@ fn scroll(
     windows: Res<Windows>,
     mut query: Query<(&StaticCam, &mut Camera, &mut PerspectiveProjection)>,
 ) {
-    let mult = if keyboard_input.get_pressed().any(|f| f.eq(&KeyCode::LControl)) {
+    let mult = if keyboard_input
+        .get_pressed()
+        .any(|f| f.eq(&KeyCode::LControl))
+    {
         4.0
     } else {
         1.0

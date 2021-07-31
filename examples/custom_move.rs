@@ -5,6 +5,10 @@ use bevy_config_cam::*;
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: "bevy_config_cam example: custom_move.rs - Showing how to implement and use your own controller system".to_string(),
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)

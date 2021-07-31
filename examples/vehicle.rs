@@ -6,7 +6,7 @@ use bevy_config_cam::{cam::MovementSettings, player::PlayerSettings};
 fn main() {
     App::build()
         .insert_resource(WindowDescriptor {
-            title: "bevy_config_cam example: simple.rs - Insert MovementSettings and or PlayerSettings to configure config_cam".to_string(),
+            title: "bevy_config_cam example: vehicle.rs - Changing camera-mode based on a custom player state".to_string(),
             ..Default::default()
         })
         .insert_resource(ClearColor(Color::rgb(0.1058, 0.1058, 0.1058)))
@@ -54,21 +54,36 @@ fn setup(
             .id(),
     );
 
+    //Spawn player
     cl.target = Some(
         commands
             .spawn_bundle((
                 Transform {
-                    translation: Vec3::new(0., 0., 0.),
+                    translation: Vec3::new(-1.5, 0., 0.),
                     rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
                     ..Default::default()
                 },
                 GlobalTransform::identity(),
             ))
             .with_children(|cell| {
-                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
+                cell.spawn_scene(asset_server.load("models/alien.glb#Scene0"));
             })
             .id(),
     );
+
+    // Spawn spacecraft
+    commands
+        .spawn_bundle((
+            Transform {
+                translation: Vec3::new(1.5, 0., 1.5),
+                rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
+                ..Default::default()
+            },
+            GlobalTransform::identity(),
+        ))
+        .with_children(|cell| {
+            cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
+        });
 
     // light
     commands.spawn_bundle(LightBundle {

@@ -11,5 +11,4 @@
 
 ## Assets
 
-* Spacecraft from kenney.nl's [Space Kit](https://www.kenney.nl/assets/space-kit): [CC0 License](https://creativecommons.org/publicdomain/zero/1.0/legalcode); Copyright (c) 2021 Kenny NL
-
+* Spacecraft & Alien from kenney.nl's [Space Kit](https://www.kenney.nl/assets/space-kit): [CC0 License](https://creativecommons.org/publicdomain/zero/1.0/legalcode); Copyright (c) 2021 Kenny NL

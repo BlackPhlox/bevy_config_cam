@@ -5,6 +5,10 @@ use bevy_inspector_egui::{WorldInspectorParams, WorldInspectorPlugin};
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: "bevy_config_cam example: inspect_egui.rs - Using bevy_inspector_egui to show the structure of the scene and config cam using world inspector".to_string(),
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)

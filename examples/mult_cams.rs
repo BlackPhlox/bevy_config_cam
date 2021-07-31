@@ -1,3 +1,5 @@
+// WIP
+
 //Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
@@ -5,10 +7,6 @@ use bevy_config_cam::{cam::MovementSettings, player::PlayerSettings};
 
 fn main() {
     App::build()
-        .insert_resource(WindowDescriptor {
-            title: "bevy_config_cam example: simple.rs - Insert MovementSettings and or PlayerSettings to configure config_cam".to_string(),
-            ..Default::default()
-        })
         .insert_resource(ClearColor(Color::rgb(0.1058, 0.1058, 0.1058)))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
@@ -42,7 +40,7 @@ fn setup(
         ..Default::default()
     });
 
-    // cube, set as target
+    // cube, set as external target
     cl.external_target = Some(
         commands
             .spawn_bundle(PbrBundle {
@@ -73,6 +71,12 @@ fn setup(
     // light
     commands.spawn_bundle(LightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
+        ..Default::default()
+    });
+
+    //Add another camera, to try to confuse config cam
+    commands.spawn_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
 }

@@ -4,6 +4,10 @@ use bevy_config_cam::*;
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: "bevy_config_cam example: minimal.rs - Inserting minimal code to show the basic capabilities of the plugin".to_string(),
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)

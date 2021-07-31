@@ -16,6 +16,11 @@ enum Cameras {
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: "bevy_config_cam example: switch.rs - Switch between multiple cameras"
+                .to_string(),
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_state(Cameras::CubeCam)

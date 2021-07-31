@@ -4,6 +4,10 @@ use bevy_config_cam::*;
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: "bevy_config_cam example: multiple_targets.rs - Automatically focus on entities when they are in range".to_string(),
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)

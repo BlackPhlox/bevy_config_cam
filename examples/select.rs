@@ -8,6 +8,10 @@ use bevy_mod_picking::{
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: "bevy_config_cam example: select.rs - Using bevy_mod_picking to select and focus on entities in the scene".to_string(),
+            ..Default::default()
+        })
         .insert_resource(ClearColor(Color::rgb(0.1058, 0.1058, 0.1058)))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
