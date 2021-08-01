@@ -1,22 +1,19 @@
 //Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
-use bevy_inspector_egui::{WorldInspectorParams, WorldInspectorPlugin};
 
 fn main() {
     App::build()
         .insert_resource(WindowDescriptor {
-            title: "bevy_config_cam example: inspect_egui.rs - Using bevy_inspector_egui to show the structure of the scene and config cam using world inspector".to_string(),
+            title:
+                "bevy_config_cam example: change.rs - How to change between specific camera-modes"
+                    .to_string(),
             ..Default::default()
         })
+        .insert_resource(ClearColor(Color::rgb(0.1058, 0.1058, 0.1058)))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
-        .add_plugin(WorldInspectorPlugin::new())
-        .insert_resource(WorldInspectorParams {
-            despawnable_entities: true,
-            ..Default::default()
-        })
         .add_startup_system(setup.system())
         .add_system(update_camera_mode.system())
         .run();
@@ -24,13 +21,12 @@ fn main() {
 
 struct TargetCube;
 
-struct PlayerCube2;
-
 /// set up a simple 3D scene
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
     mut cl: ResMut<Config>,
 ) {
     // plane
@@ -53,47 +49,47 @@ fn setup(
             .id(),
     );
 
+    cl.target = Some(
+        commands
+            .spawn_bundle((
+                Transform {
+                    translation: Vec3::new(0., 0., 0.),
+                    rotation: Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
+                    ..Default::default()
+                },
+                GlobalTransform::identity(),
+            ))
+            .with_children(|cell| {
+                cell.spawn_scene(asset_server.load("models/craft_speederA.glb#Scene0"));
+            })
+            .id(),
+    );
+
     // light
     commands.spawn_bundle(LightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.4, 0.4, 0.7).into()),
-            transform: Transform::from_xyz(2.0, 0.5, 0.0),
-            ..Default::default()
-        })
-        .insert(PlayerCube2)
-        .id();
 }
 
 fn update_camera_mode(
-    commands: Commands,
-    mut config: ResMut<Config>,
-    player_t: Query<(&PlayerMove, &Transform, Entity)>,
+    mut cams: ResMut<Cameras>,
+    player_t: Query<(&PlayerMove, &Transform)>,
     mut target_t: Query<(&TargetCube, &Transform)>,
-    mut player_cube2: Query<(&PlayerCube2, Entity)>,
 ) {
     //Check to prevent panic on first loop
     if player_t.iter().count() == 0 {
         return;
     }
-    let (_t1, t1, e) = player_t.single().unwrap();
+    let (_t1, t1) = player_t.single().unwrap();
     let (_, t) = target_t.single_mut().unwrap();
-
-    let (_, pc2e) = player_cube2.single_mut().unwrap();
 
     let t1dist = t.translation.distance(t1.translation);
 
     //Moving outside of plane
     if t1dist < 3. {
-        //let _ = cams.set_camera("LookAt");
-        let _ = config.set_player_target(e, commands);
+        let _ = cams.set_camera("LookAt");
     } else {
-        //let _ = cams.set_camera("FollowBehind");
-        let _ = config.set_player_target(pc2e, commands);
+        let _ = cams.set_camera("FollowBehind");
     }
 }

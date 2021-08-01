@@ -76,6 +76,7 @@ pub struct AttachedCam;
 
 #[derive(Clone, PartialEq)]
 pub struct Config {
+    //TODO: Make non-pub and handle only by functions
     pub target: Option<Entity>,
     pub external_target: Option<Entity>,
     pub camera_settings: CameraSettings,
@@ -134,15 +135,73 @@ pub trait CameraMode {
 
 pub trait ChangeTarget {
     //TODO Check the entity has a transform
-    fn set_player_target(&mut self, entity: Entity) -> Result<(), &str>;
+    fn set_player_target(&mut self, entity: Entity, commands: Commands) -> Result<(), &str>;
     //TODO Convert to using vec instead
     fn add_ext_target(&mut self, entity: Entity);
     fn remove_ext_target(&mut self);
     fn clear_ext_targets(&mut self);
 }
 
+/*
+pub trait ChangeController {
+    fn set_player_controller(
+        &mut self,
+        entity: Entity,
+        commands: &mut Commands,
+    ) -> Result<(), &str>;
+}
+
+impl ChangeController for Config {
+    fn set_player_controller(
+        &mut self,
+        entity: Entity,
+        commands: &mut Commands,
+    ) -> Result<(), &str> {
+        println!("{:?}", self.target);
+        /*
+        let _ = self.set_player_controller(entity, commands);
+        if self.target.is_some(){
+            commands.entity(self.target.unwrap()).remove::<PlayerMove>();
+        }
+
+        self.target = Some(commands.entity(entity).insert(PlayerMove).id());
+        */
+        Ok(())
+    }
+}
+*/
+
+pub trait ChangeCamera {
+    fn set_camera(&mut self, cam_mode: &str) -> Result<(), &str>;
+    fn next_camera(&mut self);
+}
+
 impl ChangeTarget for Config {
-    fn set_player_target(&mut self, entity: Entity) -> Result<(), &str> {
+    fn set_player_target(&mut self, entity: Entity, mut commands: Commands) -> Result<(), &str> {
+        if self.target.is_some() && self.target.unwrap().eq(&entity) {
+            return Ok(());
+        }
+
+        if let Some(old_entity) = self.camera_settings.attached_camera {
+            commands.entity(old_entity).despawn_recursive();
+        }
+
+        let new_attach_cam = commands
+            .spawn_bundle(PerspectiveCameraBundle {
+                camera: Camera {
+                    name: Some("Camera3d".to_string()),
+                    ..Default::default()
+                },
+                transform: self.camera_settings.pos,
+                ..Default::default()
+            })
+            .insert(AttachedCam)
+            .id();
+
+        self.camera_settings.attached_camera = Some(new_attach_cam);
+
+        commands.entity(entity).push_children(&[new_attach_cam]);
+
         self.target = Some(entity);
         Ok(())
     }
@@ -160,30 +219,18 @@ impl ChangeTarget for Config {
     }
 }
 
-pub trait ChangeCamera {
-    fn set_camera(
-        &mut self,
-        cam_mode: &std::boxed::Box<dyn CameraMode + Send + Sync>,
-    ) -> Result<(), &str>;
-    fn next_camera(&mut self);
-}
-
 impl ChangeCamera for Cameras {
-    fn set_camera(
-        self: &mut Cameras,
-        cam_mode: &std::boxed::Box<dyn CameraMode + Send + Sync>,
-    ) -> Result<(), &str> {
-        let is_valid = self
-            .camera_modes
-            .iter()
-            .any(|b| b.name() == cam_mode.name());
+    fn set_camera(self: &mut Cameras, cam_mode: &str) -> Result<(), &str> {
+        let is_valid = self.camera_modes.iter().any(|b| {
+            b.name() == cam_mode && self.camera_modes[self.current_camera_mode].name() != cam_mode
+        });
         if !is_valid {
             Err("This camera mode is not allowed")
         } else {
             let index = self
                 .camera_modes
                 .iter()
-                .position(|cms| cms.name().eq(cam_mode.name()))
+                .position(|cms| cms.name().eq(cam_mode))
                 .unwrap();
             self.current_camera_mode = index;
             if self.debug {
@@ -224,17 +271,6 @@ impl ChangeCamera for Cameras {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            /*
-            current_camera_mode: 0,
-            allowed_camera_modes: &[
-                CameraMode::LookAt,
-                CameraMode::FollowStatic,
-                CameraMode::TopDown,
-                CameraMode::TopDownDirection,
-                CameraMode::FollowBehind,
-                CameraMode::Fps,
-                CameraMode::Free,
-            ],*/
             target: None,
             external_target: None,
             camera_settings: CameraSettings {
@@ -264,9 +300,9 @@ pub struct CameraSettings {
     pub pos: Transform,
     pub map: f32,
     pub camera: Option<Entity>,
+    pub attached_camera: Option<Entity>,
     camera_should_focus: Vec3,
     camera_is_focus: Vec3,
-    pub attached_camera: Option<Entity>,
 }
 
 #[derive(Clone, PartialEq)]
@@ -333,24 +369,26 @@ fn setup_controller(
         config.target.unwrap()
     };
 
-    let a = commands
-        .entity(player)
-        .insert(PlayerMove)
-        .with_children(|parent| {
-            parent
-                .spawn_bundle(PerspectiveCameraBundle {
-                    camera: Camera {
-                        name: Some("Target".to_string()),
-                        ..Default::default()
-                    },
-                    transform: Transform::from_translation(trans).looking_at(Vec3::ZERO, Vec3::Y),
-                    ..Default::default()
-                })
-                .insert(AttachedCam);
+    let attached_cam = commands
+        .spawn_bundle(PerspectiveCameraBundle {
+            camera: Camera {
+                name: Some("Camera3d".to_string()),
+                ..Default::default()
+            },
+            transform: Transform::from_translation(trans).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
         })
+        .insert(AttachedCam)
         .id();
 
-    config.target = Some(a);
+    let target_player = commands
+        .entity(player)
+        .insert(PlayerMove)
+        .push_children(&[attached_cam])
+        .id();
+
+    config.camera_settings.attached_camera = Some(attached_cam);
+    config.target = Some(target_player);
 }
 
 #[allow(unused_must_use)]

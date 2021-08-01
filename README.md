@@ -60,10 +60,11 @@ If you're like me then this is for you.
 2. Go into the project folder (`cd bevy_config_cam`)
 3. And run the cargo command (`cargo run --release --example simple`)
 4. Test functionality </br>
-Player : <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> for movement, <kbd>RShift</kbd> & <kbd>-</kbd> for going up and down.<br>
-Camera : <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> for movement, <kbd>Space</kbd> & <kbd>LShift</kbd> for going up and down.<br>
+Player: <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> for movement, <kbd>RShift</kbd> & <kbd>-</kbd> for going up and down.<br>
+Camera: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> for movement, <kbd>Space</kbd> & <kbd>LShift</kbd> for going up and down.<br>
 Switch Camera: <kbd>C</kbd> (Look in console for which camera type you are on)</br>
 Settings: <kbd>E</kbd> and use the mouse-scroll to change the selected settings value.
+Settings Multiplier: Hold <kbd>LCtrl</kbd> while scrolling to due a 4x step of the selected setting value.
 
 ## Add to your own project
 
@@ -120,8 +121,7 @@ Note: That some of them are overwritten by accessing the settings or the changin
 
 |bevy|bevy_config_cam|
 |---|---|
-|0.5|0.1.2|
-|0.5|0.2.X|
+|0.5| 0.1.2-0.2.X |
 
 # Licensing
 The project is under dual license MIT and Apache 2.0, so joink to your hearts content, just remember the license agreements.
