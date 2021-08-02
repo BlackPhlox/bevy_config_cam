@@ -1,4 +1,3 @@
-//Base
 use bevy::prelude::*;
 use bevy_config_cam::*;
 

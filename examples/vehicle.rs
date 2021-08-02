@@ -99,6 +99,7 @@ fn setup(
     cams.camera_modes = vec![Box::new(FollowBehind)];
 }
 
+//Recursive visibility toggle not working in 0.5
 //https://github.com/bevyengine/bevy/issues/838
 fn set_visible_recursive(
     is_visible: bool,
