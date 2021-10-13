@@ -140,15 +140,15 @@ impl Plugin for ConfigCam {
             .add_state(PluginState::Enabled)
             .add_state(CameraState::LookAt)
             .add_state(ScrollType::MovementSpeed)
-            .add_system(toggle_camera_parent.system())
-            .add_system(switch_scroll_type.system())
-            .add_system(scroll.system())
-            .add_system(cycle_cam_state.system())
+            .add_system(toggle_camera_parent.system().after("move"))
+            .add_system(switch_scroll_type.system().after("move"))
+            .add_system(scroll.system().after("move"))
+            .add_system(cycle_cam_state.system().after("move"))
             .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
             .add_system_set(
                 SystemSet::on_update(PluginState::Enabled)
-                    .with_system(move_player.system())
-                    .with_system(move_camera.system()),
+                    .with_system(move_player.system().after("move"))
+                    .with_system(move_camera.system().label("move")),
             );
     }
 }
