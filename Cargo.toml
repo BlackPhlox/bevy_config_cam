@@ -1,6 +1,6 @@
 [package]
 name = "bevy_config_cam"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Black Phlox <bphlox@gmail.com>"]
 license = "MIT OR ISC"
 edition = "2018"
@@ -12,7 +12,6 @@ keywords = ["gamedev", "bevy", "camera", "fps", "3d", ]
 categories = ["game-development", "game-engines", ]
 exclude = [
     "assets/*",
-    "credits/*",
     ".github/*",
 ]
 
