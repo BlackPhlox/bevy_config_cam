@@ -79,7 +79,7 @@ fn set_closest_target(
     if transforms.iter().count() == 0 {
         return;
     }
-    
+
     let mut q0 = query.q0();
     let (_t1, e1, t1) = q0.single_mut();
     let (_, t) = transforms.single_mut();
