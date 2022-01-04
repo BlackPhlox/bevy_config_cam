@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_config_cam::*;
 
 fn main() {
-    App::build()
+    App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
@@ -17,7 +17,7 @@ fn main() {
             player_asset: "models/craft_speederA.glb#Scene0",
             ..Default::default()
         })
-        .add_startup_system(setup.system())
+        .add_startup_system(setup)
         .run();
 }
 
@@ -48,7 +48,7 @@ fn setup(
     );
 
     // light
-    commands.spawn_bundle(LightBundle {
+    commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });

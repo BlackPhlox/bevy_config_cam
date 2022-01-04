@@ -10,11 +10,11 @@ fn main() {
             speed: 80.0,          // default: 12.0
             ..Default::default()
         })
-        .add_startup_system(setup.system())
-        .add_system(animate_translation.system())
-        .add_system(animate_rotation.system())
-        .add_system(animate_scale.system())
-        .add_system(animate_text.system())
+        .add_startup_system(setup)
+        .add_system(animate_translation)
+        .add_system(animate_rotation)
+        .add_system(animate_scale)
+        .add_system(animate_text)
         .run();
 }
 

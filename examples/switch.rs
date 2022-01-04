@@ -19,8 +19,8 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_state(Cameras::CubeCam)
-        .add_startup_system(setup.system())
-        .add_system(change_selected_camera.system())
+        .add_startup_system(setup)
+        .add_system(change_selected_camera)
         .run();
 }
 

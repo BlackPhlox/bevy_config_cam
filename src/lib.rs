@@ -7,7 +7,6 @@ use bevy::{
         camera::Camera,
         camera::CameraProjection,
         camera::{ActiveCameras, PerspectiveProjection},
-        render_graph::base::camera::CAMERA_3D,
     },
     window::Windows,
 };
@@ -53,6 +52,7 @@ macro_rules! next_enum {
     };
 }
 
+#[derive(Component)]
 pub struct PlayerMove;
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum PluginState {
@@ -133,22 +133,22 @@ impl Default for PlayerSettings {
 
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.init_resource::<CamLogic>()
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
             .add_state(CameraState::LookAt)
             .add_state(ScrollType::MovementSpeed)
-            .add_system(toggle_camera_parent.system().after("move"))
-            .add_system(switch_scroll_type.system().after("move"))
-            .add_system(scroll.system().after("move"))
-            .add_system(cycle_cam_state.system().after("move"))
-            .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup.system()))
+            .add_system(toggle_camera_parent.after("move"))
+            .add_system(switch_scroll_type.after("move"))
+            .add_system(scroll.after("move"))
+            .add_system(cycle_cam_state.after("move"))
+            .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup))
             .add_system_set(
                 SystemSet::on_update(PluginState::Enabled)
-                    .with_system(move_player.system().after("move"))
-                    .with_system(move_camera.system().label("move")),
+                    .with_system(move_player.after("move"))
+                    .with_system(move_camera.label("move")),
             );
     }
 }
@@ -322,7 +322,10 @@ fn move_camera(
     state: Res<State<CameraState>>,
     mut cl: ResMut<CamLogic>,
     mut settings: ResMut<MovementSettings>,
-    mut transforms: QuerySet<(Query<(&mut Transform, &Camera)>, Query<&Transform>)>,
+    mut transforms: QuerySet<(
+        QueryState<(&mut Transform, &Camera)>,
+        QueryState<&Transform>,
+    )>,
 ) {
     let mut delta_trans = Transform::identity();
     settings.disable_look = true;
@@ -337,9 +340,10 @@ fn move_camera(
         CameraState::LookAt => {
             // if there is both a player and a bonus, target the mid-point of them
             if let (Some(player_entity), Some(bonus_entity)) = (cl.player.entity, cl.target) {
+                let transform_query = transforms.q1();
                 if let (Ok(player_transform), Ok(bonus_transform)) = (
-                    transforms.q1().get(player_entity),
-                    transforms.q1().get(bonus_entity),
+                    transform_query.get(player_entity),
+                    transform_query.get(bonus_entity),
                 ) {
                     cl.camera_should_focus = player_transform
                         .translation
@@ -415,8 +419,8 @@ fn move_camera(
         cl.camera_is_focus += camera_motion;
     }
     // look at that new camera's actual focus
-    for (mut transform, camera) in transforms.q0_mut().iter_mut() {
-        if camera.name == Some(CAMERA_3D.to_string()) {
+    for (mut transform, camera) in transforms.q0().iter_mut() {
+        if camera.name == Some("Camera3d".to_string()) {
             if delta_trans.translation != Vec3::ZERO {
                 *transform = delta_trans
             } else {
@@ -431,31 +435,36 @@ fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCameras>,
     mut settings: ResMut<MovementSettings>,
     mut query: QuerySet<(
-        Query<(&FlyCam, &mut Camera)>,
-        Query<(&PlayerCam, &mut Camera)>,
+        QueryState<(&FlyCam, &mut Camera)>,
+        QueryState<(&PlayerCam, &mut Camera)>,
     )>,
 ) {
     if settings.locked_to_player && !settings.ltp {
         act_cams.remove("Camera3d");
 
-        let (_, mut b) = query.q1_mut().single_mut().unwrap();
+        let mut q1 = query.q1();
+        let (_, mut b) = q1.single_mut();
         b.name = Some("Camera3d".to_string());
 
         act_cams.add("Camera3d");
 
-        let (_, mut b) = query.q0_mut().single_mut().unwrap();
+        let mut q0 = query.q0();
+        let (_, mut b) = q0.single_mut();
         b.name = Some("Test".to_string());
 
         settings.ltp = true;
     } else if !settings.locked_to_player && settings.ltp {
         act_cams.remove("Camera3d");
 
-        let (_, mut b) = query.q0_mut().single_mut().unwrap();
+        let mut q0 = query.q0();
+        let (_, mut b) = q0.single_mut();
         b.name = Some("Camera3d".to_string());
 
         act_cams.add("Camera3d");
 
-        let (_, mut b) = query.q1_mut().single_mut().unwrap();
+        let mut q1 = query.q1();
+        let (_, mut b) = q1.single_mut();
+
         b.name = Some("Test".to_string());
 
         settings.ltp = false;
@@ -592,7 +601,10 @@ impl Default for MovementSettings {
 }
 
 /// Used in queries when you want flycams and not other cameras
+
+#[derive(Component)]
 struct FlyCam;
+#[derive(Component)]
 struct PlayerCam;
 
 /// Grabs/ungrabs mouse cursor
@@ -710,26 +722,26 @@ fn cursor_grab(keys: Res<Input<KeyCode>>, mut windows: ResMut<Windows>) {
 /// Contains everything needed to add first-person fly camera behavior to your game
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
-            .add_startup_system(setup_player.system())
-            .add_startup_system(initial_grab_cursor.system())
-            .add_system(player_move.system().before("move"))
-            .add_system(player_look.system().after("move"))
-            .add_system(cursor_grab.system().after("move"));
+            .add_startup_system(setup_player)
+            .add_startup_system(initial_grab_cursor)
+            .add_system(player_move.before("move"))
+            .add_system(player_look.after("move"))
+            .add_system(cursor_grab.after("move"));
     }
 }
 
 /// Same as `PlayerPlugin` but does not spawn a camera
 pub struct NoCameraPlayerPlugin;
 impl Plugin for NoCameraPlayerPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
-            .add_startup_system(initial_grab_cursor.system())
-            .add_system(player_move.system().before("move"))
-            .add_system(player_look.system().after("move"))
-            .add_system(cursor_grab.system().after("move"));
+            .add_startup_system(initial_grab_cursor)
+            .add_system(player_move.before("move"))
+            .add_system(player_look.after("move"))
+            .add_system(cursor_grab.after("move"));
     }
 }

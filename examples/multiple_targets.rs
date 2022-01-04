@@ -17,8 +17,8 @@ fn main() {
             player_asset: "models/craft_speederA.glb#Scene0",
             ..Default::default()
         })
-        .add_startup_system(setup.system())
-        .add_system(set_closest_target.system())
+        .add_startup_system(setup)
+        .add_system(set_closest_target)
         .run();
 }
 
