@@ -1,8 +1,8 @@
-use bevy::{prelude::*, text::Text2dSize};
+use bevy::prelude::*;
 use bevy_config_cam::{ConfigCam, MovementSettings};
 
 fn main() {
-    App::build()
+    App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
         .insert_resource(MovementSettings {
@@ -18,8 +18,12 @@ fn main() {
         .run();
 }
 
+#[derive(Component)]
 struct AnimateTranslation;
+
+#[derive(Component)]
 struct AnimateRotation;
+#[derive(Component)]
 struct AnimateScale;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {

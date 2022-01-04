@@ -8,14 +8,14 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 // Used in queries when you want filter between cameras
-#[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter, Component)]
 enum Cameras {
     CubeCam,
     TopDownCam,
 }
 
 fn main() {
-    App::build()
+    App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_state(Cameras::CubeCam)
@@ -44,7 +44,7 @@ fn setup(
         ..Default::default()
     });
     // light
-    commands.spawn_bundle(LightBundle {
+    commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
