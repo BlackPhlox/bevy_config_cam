@@ -14,21 +14,6 @@ use bevy::{
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-/*
-pub trait NextEnum: IntoEnumIterator {
-    fn next_enum<E>(pred: S)
-    where
-    E: IntoEnumIterator,
-    S: ResMut<State<E>>,
-    {
-        let a = E::iter().enumerate();
-        a.nth(
-            a.find(|a| a.1 == *pred.current())
-        )
-    }
-}
-*/
-
 #[macro_export]
 macro_rules! next_enum {
     ($l:ident, $k:expr) => {
@@ -131,6 +116,9 @@ impl Default for PlayerSettings {
     }
 }
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone,SystemLabel)]
+struct MovementUpdate;
+
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
@@ -140,15 +128,15 @@ impl Plugin for ConfigCam {
             .add_state(PluginState::Enabled)
             .add_state(CameraState::LookAt)
             .add_state(ScrollType::MovementSpeed)
-            .add_system(toggle_camera_parent.after("move"))
-            .add_system(switch_scroll_type.after("move"))
-            .add_system(scroll.after("move"))
-            .add_system(cycle_cam_state.after("move"))
+            .add_system(toggle_camera_parent.after(MovementUpdate))
+            .add_system(switch_scroll_type.after(MovementUpdate))
+            .add_system(scroll.after(MovementUpdate))
+            .add_system(cycle_cam_state.after(MovementUpdate))
             .add_system_set(SystemSet::on_enter(PluginState::Enabled).with_system(setup))
             .add_system_set(
                 SystemSet::on_update(PluginState::Enabled)
-                    .with_system(move_player.after("move"))
-                    .with_system(move_camera.label("move")),
+                    .with_system(move_player.after(MovementUpdate))
+                    .with_system(move_camera.label(MovementUpdate)),
             );
     }
 }
@@ -727,9 +715,9 @@ impl Plugin for PlayerPlugin {
             .init_resource::<MovementSettings>()
             .add_startup_system(setup_player)
             .add_startup_system(initial_grab_cursor)
-            .add_system(player_move.before("move"))
-            .add_system(player_look.after("move"))
-            .add_system(cursor_grab.after("move"));
+            .add_system(player_move.before(MovementUpdate))
+            .add_system(player_look.after(MovementUpdate))
+            .add_system(cursor_grab.after(MovementUpdate));
     }
 }
 
@@ -740,8 +728,8 @@ impl Plugin for NoCameraPlayerPlugin {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
             .add_startup_system(initial_grab_cursor)
-            .add_system(player_move.before("move"))
-            .add_system(player_look.after("move"))
-            .add_system(cursor_grab.after("move"));
+            .add_system(player_move.before(MovementUpdate))
+            .add_system(player_look.after(MovementUpdate))
+            .add_system(cursor_grab.after(MovementUpdate));
     }
 }
