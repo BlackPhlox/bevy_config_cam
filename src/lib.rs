@@ -116,7 +116,7 @@ impl Default for PlayerSettings {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone,SystemLabel)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemLabel)]
 struct MovementUpdate;
 
 pub struct ConfigCam;
