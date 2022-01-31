@@ -21,7 +21,7 @@ Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam),
 
 # Future Plans
 
-The main goal of this plugin is to first and foremost provide the user with a configurable, extendable and easy-to-use API. After `bevy_config_cam` got released the crate [`dolly`](https://github.com/h3r2tic/dolly) by @h3r2tic. `dolly` provide an framework for which to create, combine and modify camera positioning, exactly what `bevy_config_cam` is looking for. So a migration to `dolly` is in the works in order to improve this plugin main goal. 
+The main goal of this plugin is to first and foremost provide the user with a configurable, extendable and easy-to-use API. [`dolly`](https://github.com/h3r2tic/dolly) by @h3r2tic is a crate that provides an framework for which to create, combine and modify camera positioning, exactly what `bevy_config_cam` is looking for. So a migration to `dolly` is in the works in order to improve this plugin main goal. 
 
 # Showcase
 
