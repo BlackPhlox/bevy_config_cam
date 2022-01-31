@@ -33,7 +33,7 @@ TopDown | TopDownDirection
 
 FollowBehind | Fps
 :-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="width:700px;height:300px;" alt="FollowBehind">  |  <img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="width:700px;height:300px;" alt="Fps">
+<img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="width:600px;height:300px;" alt="FollowBehind">  |  <img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="width:700px;height:300px;" alt="Fps">
 
 Free | ?
 :-------------------------:|:-------------------------:
