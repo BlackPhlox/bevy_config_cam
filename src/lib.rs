@@ -5,8 +5,8 @@ use bevy::{
     prelude::*,
     render::{
         camera::Camera,
-        camera::{CameraProjection, CameraPlugin},
         camera::{ActiveCameras, PerspectiveProjection},
+        camera::{CameraPlugin, CameraProjection},
     },
     window::Windows,
 };
