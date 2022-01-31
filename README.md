@@ -25,15 +25,15 @@ Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam),
 
 LookAt | FollowStatic
 :-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" alt="LookAt">  |  <img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" alt="FollowStatic">
+<img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" style="width:700px;height:300px;" alt="LookAt">  |  <img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" style="width:700px;height:300px;" alt="FollowStatic">
 
 TopDown | TopDownDirection
 :-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" alt="TopDown"> |  <img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" alt="TopDownDirection">
+<img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" style="width:700px;height:300px;" alt="TopDown"> |  <img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" style="width:700px;height:300px;" alt="TopDownDirection">
 
 FollowBehind | Fps
 :-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" alt="FollowBehind">  |  <img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" alt="Fps">
+<img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="width:700px;height:300px;" alt="FollowBehind">  |  <img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="width:700px;height:300px;" alt="Fps">
 
 Free | ?
 :-------------------------:|:-------------------------:
