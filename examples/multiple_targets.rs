@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_config_cam::*;
 
 fn main() {
-    App::build()
+    App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
@@ -17,12 +17,14 @@ fn main() {
             player_asset: "models/craft_speederA.glb#Scene0",
             ..Default::default()
         })
-        .add_startup_system(setup.system())
-        .add_system(set_closest_target.system())
+        .add_startup_system(setup)
+        .add_system(set_closest_target)
         .run();
 }
 
+#[derive(Component)]
 struct T1;
+#[derive(Component)]
 struct T2;
 
 /// set up a simple 3D scene
@@ -59,7 +61,7 @@ fn setup(
         .insert(T2);
 
     // light
-    commands.spawn_bundle(LightBundle {
+    commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
@@ -68,20 +70,23 @@ fn setup(
 fn set_closest_target(
     mut cl: ResMut<CamLogic>,
     mut transforms: Query<(&PlayerMove, &Transform)>,
-    query: QuerySet<(
-        Query<(&T1, Entity, &Transform)>,
-        Query<(&T2, Entity, &Transform)>,
+    mut query: QuerySet<(
+        QueryState<(&T1, Entity, &Transform)>,
+        QueryState<(&T2, Entity, &Transform)>,
     )>,
 ) {
     //Check to prevent panic on first loop
     if transforms.iter().count() == 0 {
         return;
     }
-    let (_t1, e1, t1) = query.q0().single().unwrap();
-    let (_t2, e2, t2) = query.q1().single().unwrap();
-    let (_, t) = transforms.single_mut().unwrap();
 
+    let mut q0 = query.q0();
+    let (_t1, e1, t1) = q0.single_mut();
+    let (_, t) = transforms.single_mut();
     let t1dist = t.translation.distance(t1.translation);
+
+    let mut q1 = query.q1();
+    let (_t2, e2, t2) = q1.single_mut();
     let t2dist = t.translation.distance(t2.translation);
 
     if t1dist < t2dist && t1dist < 5. {

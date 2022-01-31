@@ -74,16 +74,16 @@ Adding this plugin to your project is *very* simple, it only requires you to wri
 Add the correct version to your `Cargo.toml`, you can find the version you are looking for under the support section. The thing you should be adding should look like this (only add the line marked by `# <--`):
 ```toml
 [dependencies]
-bevy = { version = "0.5"}
+bevy = { version = "0.6"}
 # ...
-bevy_config_cam = { version = "0.1.3"} # <-- 
+bevy_config_cam = { version = "0.2.0"} # <-- 
 ```
 
 ### Step 2. - Add to project
 
 ```rust
 fn main() {
-    App::build()
+    App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam) // <--
@@ -119,9 +119,10 @@ Note: That some of them are overwritten by accessing the settings or the changin
 |bevy|bevy_config_cam|
 |---|---|
 |0.5|0.1.X|
+|0.6|0.2.X|
 
 # Licensing
-The project is under dual license MIT and ISC (functionally equivalent, though ISC removing some language that is no longer necessary), so yoink to your hearts content, just remember the license agreements.
+The project is under dual license MIT and Apache-2.0, so yoink to your hearts content, just remember the license agreements.
 
 # Contributing
 Yes this project is still very much WIP, so PRs are very welcome
