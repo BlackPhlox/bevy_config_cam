@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::camera::{ActiveCameras, Camera},
+    render::camera::{ActiveCameras, Camera, CameraPlugin},
 };
 
 use bevy_config_cam::next_enum;
@@ -64,7 +64,7 @@ fn setup(
                 name: Some("Inactive".to_string()),
                 ..Default::default()
             },
-            transform: Transform::from_xyz(-2.0, 10.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(0.0, 10.0, 0.1).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
         .insert(Cameras::TopDownCam);
@@ -75,7 +75,7 @@ fn switch_camera(
     camera_state: ResMut<State<Cameras>>,
     mut query: Query<(&Cameras, &mut Camera)>,
 ) {
-    act_cams.remove("Camera3d");
+    act_cams.remove(CameraPlugin::CAMERA_3D);
     for (_, mut b) in query.iter_mut() {
         b.name = Some("Inactive".to_string());
     }
@@ -83,9 +83,9 @@ fn switch_camera(
         .iter_mut()
         .filter(|(c, _)| camera_state.current().eq(c))
     {
-        b.name = Some("Camera3d".to_string());
+        b.name = Some(CameraPlugin::CAMERA_3D.to_string());
     }
-    act_cams.add("Camera3d");
+    act_cams.add(CameraPlugin::CAMERA_3D);
 }
 
 #[allow(unused_must_use)]
@@ -96,8 +96,8 @@ fn change_selected_camera(
     query: Query<(&Cameras, &mut Camera)>,
 ) {
     if keys.just_pressed(KeyCode::E) {
+        println!("Camera: {:?}", selected_cam);
         let result = next_enum!(Cameras, selected_cam);
-        println!("Camera: {:?}", result);
         selected_cam.set(result);
 
         switch_camera(act_cams, selected_cam, query);
