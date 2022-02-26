@@ -27,16 +27,16 @@ strum = "0.21.0"
 strum_macros = "0.21.1"
 
 [dependencies.bevy]
-version = "0.6"
+git = "https://github.com/bevyengine/bevy.git"
 features = ["render"]
 default-features = false
 
 [dev-dependencies.bevy]
-version = "0.6"
+git = "https://github.com/bevyengine/bevy.git"
 features = ["bevy_winit", "bevy_gltf"]
 default-features = false
 
 [target.'cfg(target_os = "linux")'.dev-dependencies.bevy]
-version = "0.6"
+git = "https://github.com/bevyengine/bevy.git"
 features = ["x11", "wayland"]
 default-features = false

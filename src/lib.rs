@@ -684,18 +684,20 @@ fn player_look(
         return;
     }
     let window = windows.get_primary().unwrap();
+    let mut state_delta = state.as_mut();
     for (_camera, mut transform) in query.iter_mut() {
-        for ev in state.reader_motion.iter(&motion) {
+        for ev in state_delta.reader_motion.iter(&motion) {
+            
             if window.cursor_locked() {
-                state.pitch -= (settings.sensitivity * ev.delta.y * window.height()).to_radians();
-                state.yaw -= (settings.sensitivity * ev.delta.x * window.width()).to_radians();
+                state_delta.pitch -= (settings.sensitivity * ev.delta.y * window.height()).to_radians();
+                state_delta.yaw -= (settings.sensitivity * ev.delta.x * window.width()).to_radians();
             }
 
-            state.pitch = state.pitch.clamp(-1.54, 1.54);
+            state_delta.pitch = state_delta.pitch.clamp(-1.54, 1.54);
 
             // Order is important to prevent unintended roll
-            transform.rotation = Quat::from_axis_angle(Vec3::Y, state.yaw)
-                * Quat::from_axis_angle(Vec3::X, state.pitch);
+            transform.rotation = Quat::from_axis_angle(Vec3::Y, state_delta.yaw)
+                * Quat::from_axis_angle(Vec3::X, state_delta.pitch);
         }
     }
 }
