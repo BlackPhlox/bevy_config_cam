@@ -687,10 +687,11 @@ fn player_look(
     let mut state_delta = state.as_mut();
     for (_camera, mut transform) in query.iter_mut() {
         for ev in state_delta.reader_motion.iter(&motion) {
-            
             if window.cursor_locked() {
-                state_delta.pitch -= (settings.sensitivity * ev.delta.y * window.height()).to_radians();
-                state_delta.yaw -= (settings.sensitivity * ev.delta.x * window.width()).to_radians();
+                state_delta.pitch -=
+                    (settings.sensitivity * ev.delta.y * window.height()).to_radians();
+                state_delta.yaw -=
+                    (settings.sensitivity * ev.delta.x * window.width()).to_radians();
             }
 
             state_delta.pitch = state_delta.pitch.clamp(-1.54, 1.54);
