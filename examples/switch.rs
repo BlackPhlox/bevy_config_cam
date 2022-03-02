@@ -9,7 +9,7 @@ use strum_macros::EnumIter;
 
 // Used in queries when you want filter between cameras
 #[derive(Clone, Eq, PartialEq, Debug, Hash, EnumIter, Component)]
-enum Cameras {
+enum SwitchableCameras {
     CubeCam,
     TopDownCam,
 }
@@ -18,9 +18,10 @@ fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
-        .add_state(Cameras::CubeCam)
+        .add_state(SwitchableCameras::CubeCam)
         .add_startup_system(setup)
-        .add_system(change_selected_camera)
+        .add_system(cycle_camera_state)
+        .add_system(switch_camera)
         .run();
 }
 
@@ -55,7 +56,7 @@ fn setup(
             transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
-        .insert(Cameras::CubeCam);
+        .insert(SwitchableCameras::CubeCam);
 
     // topdown camera
     commands
@@ -67,39 +68,43 @@ fn setup(
             transform: Transform::from_xyz(0.0, 10.0, 0.1).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
-        .insert(Cameras::TopDownCam);
+        .insert(SwitchableCameras::TopDownCam);
 }
 
 fn switch_camera(
-    mut act_cams: ResMut<ActiveCameras>,
-    camera_state: ResMut<State<Cameras>>,
-    mut query: Query<(&Cameras, &mut Camera)>,
+    mut active_cams: ResMut<ActiveCameras>,
+    cam_state: ResMut<State<SwitchableCameras>>,
+    mut query: Query<(&SwitchableCameras, &mut Camera)>,
 ) {
-    act_cams.remove(CameraPlugin::CAMERA_3D);
-    for (_, mut b) in query.iter_mut() {
-        b.name = Some("Inactive".to_string());
+    // remove current camera
+    active_cams.remove(CameraPlugin::CAMERA_3D);
+
+    // set all cameras to inactive
+    for (_, mut bevy_cam) in query.iter_mut() {
+        bevy_cam.name = Some("Inactive".to_string());
     }
-    for (_, mut b) in query
+
+    // find the camera with the current state, set its name to the 3d camera name
+    for (_, mut bevy_cam) in query
         .iter_mut()
-        .filter(|(c, _)| camera_state.current().eq(c))
+        .filter(|(switchable_cams, _)| cam_state.current().eq(switchable_cams))
     {
-        b.name = Some(CameraPlugin::CAMERA_3D.to_string());
+        bevy_cam.name = Some(CameraPlugin::CAMERA_3D.to_string());
     }
-    act_cams.add(CameraPlugin::CAMERA_3D);
+
+    // add the name of our active camera to the active cameras resource
+    active_cams.add(CameraPlugin::CAMERA_3D);
 }
 
-#[allow(unused_must_use)]
-fn change_selected_camera(
-    mut selected_cam: ResMut<State<Cameras>>,
-    keys: Res<Input<KeyCode>>,
-    act_cams: ResMut<ActiveCameras>,
-    query: Query<(&Cameras, &mut Camera)>,
+fn cycle_camera_state(
+    mut selected_cam: ResMut<State<SwitchableCameras>>,
+    mut keys: ResMut<Input<KeyCode>>,
 ) {
     if keys.just_pressed(KeyCode::E) {
-        println!("Camera: {:?}", selected_cam);
-        let result = next_enum!(Cameras, selected_cam);
-        selected_cam.set(result);
+        let new_cam_state = next_enum!(SwitchableCameras, selected_cam);
+        println!("New camera: {:?}", new_cam_state);
+        selected_cam.set(new_cam_state).unwrap();
 
-        switch_camera(act_cams, selected_cam, query);
+        keys.reset(KeyCode::E);
     }
 }
