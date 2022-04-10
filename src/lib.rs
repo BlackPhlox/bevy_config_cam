@@ -1,9 +1,17 @@
-
-use bevy::{ecs::{event::{ManualEventReader, Events}, schedule::SystemSet}, input::mouse::{MouseMotion, MouseWheel}, prelude::*, render::{
+use bevy::{
+    ecs::{
+        event::{Events, ManualEventReader},
+        schedule::SystemSet,
+    },
+    input::mouse::{MouseMotion, MouseWheel},
+    prelude::*,
+    render::{
         camera::Camera,
-        camera::{PerspectiveProjection, ActiveCamera, Camera3d, set_active_camera},
-        camera::{CameraPlugin, CameraProjection},
-    }, window::Windows};
+        camera::CameraProjection,
+        camera::{ActiveCamera, Camera3d, PerspectiveProjection},
+    },
+    window::Windows,
+};
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -299,10 +307,7 @@ fn move_camera(
     state: Res<State<CameraState>>,
     mut cl: ResMut<CamLogic>,
     mut settings: ResMut<MovementSettings>,
-    mut transforms: ParamSet<(
-        Query<&mut Transform, With<Camera3d>>,
-        Query<&Transform>,
-    )>,
+    mut transforms: ParamSet<(Query<&mut Transform, With<Camera3d>>, Query<&Transform>)>,
 ) {
     let mut delta_trans = Transform::identity();
     settings.disable_look = true;
@@ -409,10 +414,7 @@ fn move_camera(
 fn toggle_camera_parent(
     mut act_cams: ResMut<ActiveCamera<Camera3d>>,
     mut settings: ResMut<MovementSettings>,
-    mut query: ParamSet<(
-        Query<(&FlyCam, Entity)>,
-        Query<(&PlayerCam, Entity)>,
-    )>,
+    mut query: ParamSet<(Query<(&FlyCam, Entity)>, Query<(&PlayerCam, Entity)>)>,
 ) {
     if settings.locked_to_player && !settings.ltp {
         let p1 = query.p1();

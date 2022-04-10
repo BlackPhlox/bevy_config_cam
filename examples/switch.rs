@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::camera::{Camera3d, ActiveCamera},
+    render::camera::{ActiveCamera, Camera3d},
 };
 
 use bevy_config_cam::next_enum;
@@ -75,9 +75,10 @@ fn switch_camera(
     // find the camera with the current state, set its name to the 3d camera name
     query
         .iter_mut()
-        .filter(|(switchable_cams, _)| cam_state.current().eq(switchable_cams)).for_each(|(_, camera_entity): (&SwitchableCameras, Entity)| {
-        active_cams.set(camera_entity);
-    });
+        .filter(|(switchable_cams, _)| cam_state.current().eq(switchable_cams))
+        .for_each(|(_, camera_entity): (&SwitchableCameras, Entity)| {
+            active_cams.set(camera_entity);
+        });
 }
 
 fn cycle_camera_state(
