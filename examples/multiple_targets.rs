@@ -70,9 +70,9 @@ fn setup(
 fn set_closest_target(
     mut cl: ResMut<CamLogic>,
     mut transforms: Query<(&PlayerMove, &Transform)>,
-    mut query: QuerySet<(
-        QueryState<(&T1, Entity, &Transform)>,
-        QueryState<(&T2, Entity, &Transform)>,
+    mut query: ParamSet<(
+        Query<(&T1, Entity, &Transform)>,
+        Query<(&T2, Entity, &Transform)>,
     )>,
 ) {
     //Check to prevent panic on first loop
@@ -80,13 +80,13 @@ fn set_closest_target(
         return;
     }
 
-    let mut q0 = query.q0();
-    let (_t1, e1, t1) = q0.single_mut();
+    let mut p0 = query.p0();
+    let (_t1, e1, t1) = p0.single_mut();
     let (_, t) = transforms.single_mut();
     let t1dist = t.translation.distance(t1.translation);
 
-    let mut q1 = query.q1();
-    let (_t2, e2, t2) = q1.single_mut();
+    let mut p1 = query.p1();
+    let (_t2, e2, t2) = p1.single_mut();
     let t2dist = t.translation.distance(t2.translation);
 
     if t1dist < t2dist && t1dist < 5. {

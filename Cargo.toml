@@ -27,19 +27,19 @@ strum = "0.21.0"
 strum_macros = "0.21.1"
 
 [dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "b697e73c3d861c209152ccfb140ae00fbc6e9925"
+version = "0.7.0-dev"
 features = ["render"]
 default-features = false
 
 [dev-dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "b697e73c3d861c209152ccfb140ae00fbc6e9925"
+version = "0.7.0-dev"
 features = ["bevy_winit", "bevy_gltf"]
 default-features = false
 
 [target.'cfg(target_os = "linux")'.dev-dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "b697e73c3d861c209152ccfb140ae00fbc6e9925"
+version = "0.7.0-dev"
 features = ["x11", "wayland"]
 default-features = false
+
+[patch.crates-io]
+bevy = { git = "https://github.com/bevyengine/bevy", rev = "e8cd2fc7275d0799115d6db57090c2f99d9a99a5" }

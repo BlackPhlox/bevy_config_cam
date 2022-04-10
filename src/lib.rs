@@ -1,15 +1,9 @@
-use bevy::{
-    app::{Events, ManualEventReader},
-    ecs::schedule::SystemSet,
-    input::mouse::{MouseMotion, MouseWheel},
-    prelude::*,
-    render::{
+
+use bevy::{ecs::{event::{ManualEventReader, Events}, schedule::SystemSet}, input::mouse::{MouseMotion, MouseWheel}, prelude::*, render::{
         camera::Camera,
-        camera::{ActiveCameras, PerspectiveProjection},
+        camera::{PerspectiveProjection, ActiveCamera, Camera3d, set_active_camera},
         camera::{CameraPlugin, CameraProjection},
-    },
-    window::Windows,
-};
+    }, window::Windows};
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -212,10 +206,6 @@ fn setup(
             .with_children(|parent| {
                 parent
                     .spawn_bundle(PerspectiveCameraBundle {
-                        camera: Camera {
-                            name: Some("player".to_string()),
-                            ..Default::default()
-                        },
                         transform: Transform::from_xyz(-2.0, 5.0, 5.0)
                             .looking_at(Vec3::ZERO, Vec3::Y),
                         ..Default::default()
@@ -229,7 +219,6 @@ fn setup(
     commands
         .spawn_bundle(PerspectiveCameraBundle {
             camera: Camera {
-                name: Some(CameraPlugin::CAMERA_3D.to_string()),
                 ..Default::default()
             },
             transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -310,9 +299,9 @@ fn move_camera(
     state: Res<State<CameraState>>,
     mut cl: ResMut<CamLogic>,
     mut settings: ResMut<MovementSettings>,
-    mut transforms: QuerySet<(
-        QueryState<(&mut Transform, &Camera)>,
-        QueryState<&Transform>,
+    mut transforms: ParamSet<(
+        Query<&mut Transform, With<Camera3d>>,
+        Query<&Transform>,
     )>,
 ) {
     let mut delta_trans = Transform::identity();
@@ -328,7 +317,7 @@ fn move_camera(
         CameraState::LookAt => {
             // if there is both a player and a bonus, target the mid-point of them
             if let (Some(player_entity), Some(bonus_entity)) = (cl.player.entity, cl.target) {
-                let transform_query = transforms.q1();
+                let transform_query = transforms.p1();
                 if let (Ok(player_transform), Ok(bonus_transform)) = (
                     transform_query.get(player_entity),
                     transform_query.get(bonus_entity),
@@ -339,7 +328,7 @@ fn move_camera(
                 }
             // otherwise, if there is only a player, target the player
             } else if let Some(player_entity) = cl.player.entity {
-                if let Ok(player_transform) = transforms.q1().get(player_entity) {
+                if let Ok(player_transform) = transforms.p1().get(player_entity) {
                     cl.camera_should_focus = player_transform.translation;
                 }
             // otherwise, target the middle
@@ -349,7 +338,7 @@ fn move_camera(
         }
         _ => {
             if let Some(player_entity) = cl.player.entity {
-                if let Ok(player_transform) = transforms.q1().get(player_entity) {
+                if let Ok(player_transform) = transforms.p1().get(player_entity) {
                     match *state.current() {
                         CameraState::Fps => {
                             delta_trans.translation = player_transform.translation;
@@ -407,54 +396,34 @@ fn move_camera(
         cl.camera_is_focus += camera_motion;
     }
     // look at that new camera's actual focus
-    for (mut transform, camera) in transforms.q0().iter_mut() {
-        if camera.name == Some(CameraPlugin::CAMERA_3D.to_string()) {
-            if delta_trans.translation != Vec3::ZERO {
-                *transform = delta_trans
-            } else {
-                *transform = transform.looking_at(cl.camera_is_focus, Vec3::Y)
-            }
+    for mut transform in transforms.p0().iter_mut() {
+        if delta_trans.translation != Vec3::ZERO {
+            *transform = delta_trans
+        } else {
+            *transform = transform.looking_at(cl.camera_is_focus, Vec3::Y)
         }
     }
 }
 
 #[allow(clippy::type_complexity)]
 fn toggle_camera_parent(
-    mut act_cams: ResMut<ActiveCameras>,
+    mut act_cams: ResMut<ActiveCamera<Camera3d>>,
     mut settings: ResMut<MovementSettings>,
-    mut query: QuerySet<(
-        QueryState<(&FlyCam, &mut Camera)>,
-        QueryState<(&PlayerCam, &mut Camera)>,
+    mut query: ParamSet<(
+        Query<(&FlyCam, Entity)>,
+        Query<(&PlayerCam, Entity)>,
     )>,
 ) {
     if settings.locked_to_player && !settings.ltp {
-        act_cams.remove(CameraPlugin::CAMERA_3D);
-
-        let mut q1 = query.q1();
-        let (_, mut b) = q1.single_mut();
-        b.name = Some(CameraPlugin::CAMERA_3D.to_string());
-
-        act_cams.add(CameraPlugin::CAMERA_3D);
-
-        let mut q0 = query.q0();
-        let (_, mut b) = q0.single_mut();
-        b.name = Some("Test".to_string());
+        let p1 = query.p1();
+        let (_, b) = p1.single();
+        act_cams.set(b);
 
         settings.ltp = true;
     } else if !settings.locked_to_player && settings.ltp {
-        act_cams.remove(CameraPlugin::CAMERA_3D);
-
-        let mut q0 = query.q0();
-        let (_, mut b) = q0.single_mut();
-        b.name = Some(CameraPlugin::CAMERA_3D.to_string());
-
-        act_cams.add(CameraPlugin::CAMERA_3D);
-
-        let mut q1 = query.q1();
-        let (_, mut b) = q1.single_mut();
-
-        b.name = Some("Test".to_string());
-
+        let pr = query.p0();
+        let (_, b) = pr.single();
+        act_cams.set(b);
         settings.ltp = false;
     }
 }
