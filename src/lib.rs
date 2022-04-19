@@ -178,7 +178,7 @@ fn cycle_cam_state(
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut cl: ResMut<CamLogic>,
+    mut _cl: ResMut<CamLogic>,
     settings: Res<PlayerSettings>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -209,7 +209,7 @@ fn setup(
         })
     };
 
-    cl.player.entity = Some(
+    _cl.player.entity = Some(
         b.insert(PlayerMove)
             .with_children(|parent| {
                 parent

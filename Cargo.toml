@@ -28,7 +28,7 @@ strum_macros = "0.24.0"
 
 [dependencies.bevy]
 version = "0.7"
-features = ["bevy_render"]
+features = ["bevy_render","bevy_pbr"]
 default-features = false
 
 [dev-dependencies.bevy]
