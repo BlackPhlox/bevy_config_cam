@@ -78,9 +78,9 @@ Adding this plugin to your project is *very* simple, it only requires you to wri
 Add the correct version to your `Cargo.toml`, you can find the version you are looking for under the support section. The thing you should be adding should look like this (only add the line marked by `# <--`):
 ```toml
 [dependencies]
-bevy = { version = "0.6"}
+bevy = { version = "0.7"}
 # ...
-bevy_config_cam = { version = "0.2.0"} # <-- 
+bevy_config_cam = { version = "0.3.0"} # <-- 
 ```
 
 ### Step 2. - Add to project
@@ -124,6 +124,7 @@ Note: That some of them are overwritten by accessing the settings or the changin
 |---|---|
 |0.5|0.1.X|
 |0.6|0.2.X|
+|0.7|0.3.X|
 
 # Licensing
 The project is under dual license MIT and Apache-2.0, so yoink to your hearts content, just remember the license agreements.
