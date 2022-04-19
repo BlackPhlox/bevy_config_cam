@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::camera::{ActiveCameras, Camera, CameraPlugin},
+    render::camera::{ActiveCamera, Camera3d},
 };
 
 use bevy_config_cam::next_enum;
@@ -61,10 +61,6 @@ fn setup(
     // topdown camera
     commands
         .spawn_bundle(PerspectiveCameraBundle {
-            camera: Camera {
-                name: Some("Inactive".to_string()),
-                ..Default::default()
-            },
             transform: Transform::from_xyz(0.0, 10.0, 0.1).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
@@ -72,28 +68,17 @@ fn setup(
 }
 
 fn switch_camera(
-    mut active_cams: ResMut<ActiveCameras>,
+    mut active_cams: ResMut<ActiveCamera<Camera3d>>,
     cam_state: ResMut<State<SwitchableCameras>>,
-    mut query: Query<(&SwitchableCameras, &mut Camera)>,
+    mut query: Query<(&SwitchableCameras, Entity), With<Camera3d>>,
 ) {
-    // remove current camera
-    active_cams.remove(CameraPlugin::CAMERA_3D);
-
-    // set all cameras to inactive
-    for (_, mut bevy_cam) in query.iter_mut() {
-        bevy_cam.name = Some("Inactive".to_string());
-    }
-
     // find the camera with the current state, set its name to the 3d camera name
-    for (_, mut bevy_cam) in query
+    query
         .iter_mut()
         .filter(|(switchable_cams, _)| cam_state.current().eq(switchable_cams))
-    {
-        bevy_cam.name = Some(CameraPlugin::CAMERA_3D.to_string());
-    }
-
-    // add the name of our active camera to the active cameras resource
-    active_cams.add(CameraPlugin::CAMERA_3D);
+        .for_each(|(_, camera_entity): (&SwitchableCameras, Entity)| {
+            active_cams.set(camera_entity);
+        });
 }
 
 fn cycle_camera_state(

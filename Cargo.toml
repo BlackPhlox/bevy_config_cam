@@ -1,6 +1,6 @@
 [package]
 name = "bevy_config_cam"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Black Phlox <bphlox@gmail.com>"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
@@ -23,23 +23,15 @@ name = "bevy_config_cam"
 
 [dependencies]
 rand = "0.8.0"
-strum = "0.21.0"
-strum_macros = "0.21.1"
+strum = "0.24.0"
+strum_macros = "0.24.0"
 
 [dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "b697e73c3d861c209152ccfb140ae00fbc6e9925"
-features = ["render"]
+version = "0.7"
+features = ["bevy_render","bevy_pbr"]
 default-features = false
 
 [dev-dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "b697e73c3d861c209152ccfb140ae00fbc6e9925"
-features = ["bevy_winit", "bevy_gltf"]
-default-features = false
-
-[target.'cfg(target_os = "linux")'.dev-dependencies.bevy]
-git = "https://github.com/bevyengine/bevy.git"
-rev = "b697e73c3d861c209152ccfb140ae00fbc6e9925"
-features = ["x11", "wayland"]
+version = "0.7"
+features = ["bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "x11", "wayland"]
 default-features = false
