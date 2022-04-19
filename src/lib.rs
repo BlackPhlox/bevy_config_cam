@@ -128,7 +128,7 @@ impl Plugin for ConfigCam {
             .add_plugin(NoCameraPlayerPlugin)
             .init_resource::<PlayerSettings>()
             .add_state(PluginState::Enabled)
-            .add_state(CameraState::LookAt)
+            .add_state(CameraState::FollowBehind)
             .add_state(ScrollType::MovementSpeed)
             .add_system(toggle_camera_parent.after(MovementUpdate))
             .add_system(switch_scroll_type.after(MovementUpdate))
