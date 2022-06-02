@@ -8,7 +8,7 @@ use bevy::{
     render::{
         camera::Camera,
         camera::CameraProjection,
-        camera::{ActiveCamera, Camera3d, PerspectiveProjection},
+        camera::PerspectiveProjection,
     },
     window::Windows,
 };
@@ -213,7 +213,7 @@ fn setup(
         b.insert(PlayerMove)
             .with_children(|parent| {
                 parent
-                    .spawn_bundle(PerspectiveCameraBundle {
+                    .spawn_bundle(Camera3dBundle {
                         transform: Transform::from_xyz(-2.0, 5.0, 5.0)
                             .looking_at(Vec3::ZERO, Vec3::Y),
                         ..Default::default()
@@ -225,7 +225,7 @@ fn setup(
 
     // camera
     commands
-        .spawn_bundle(PerspectiveCameraBundle {
+        .spawn_bundle(Camera3dBundle {
             camera: Camera {
                 ..Default::default()
             },
@@ -412,20 +412,24 @@ fn move_camera(
 
 #[allow(clippy::type_complexity)]
 fn toggle_camera_parent(
-    mut act_cams: ResMut<ActiveCamera<Camera3d>>,
+    mut act_cams: Query<&mut Camera>,
     mut settings: ResMut<MovementSettings>,
     mut query: ParamSet<(Query<(&FlyCam, Entity)>, Query<(&PlayerCam, Entity)>)>,
 ) {
     if settings.locked_to_player && !settings.ltp {
         let p1 = query.p1();
         let (_, b) = p1.single();
-        act_cams.set(b);
+        act_cams.iter_mut().for_each(|mut cam| {
+            cam.set(Box::new(b));
+        });
 
         settings.ltp = true;
     } else if !settings.locked_to_player && settings.ltp {
         let pr = query.p0();
         let (_, b) = pr.single();
-        act_cams.set(b);
+        act_cams.iter_mut().for_each(|mut cam| {
+            cam.set(Box::new(b));
+        });
         settings.ltp = false;
     }
 }
@@ -472,8 +476,8 @@ fn scroll(
                     project.update(prim.width(), prim.height());
 
                     //Update camera with the new fov
-                    camera.projection_matrix = project.get_projection_matrix();
-                    camera.depth_calculation = project.depth_calculation();
+                    //camera.projection_matrix = project.get_projection_matrix();
+                    //camera.depth_calculation = project.depth_calculation();
 
                     println!("FOV: {:?}", project.fov);
                 }
@@ -580,7 +584,7 @@ fn initial_grab_cursor(mut windows: ResMut<Windows>) {
 /// Spawns the `Camera3dBundle` to be controlled
 fn setup_player(mut commands: Commands) {
     commands
-        .spawn_bundle(PerspectiveCameraBundle {
+        .spawn_bundle(Camera3dBundle {
             transform: Transform::from_xyz(-2.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })

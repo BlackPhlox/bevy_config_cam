@@ -1,6 +1,6 @@
 [package]
 name = "bevy_config_cam"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Black Phlox <bphlox@gmail.com>"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
@@ -14,7 +14,6 @@ exclude = [
     "assets/*",
     ".github/*",
 ]
-resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -25,13 +24,16 @@ name = "bevy_config_cam"
 rand = "0.8.0"
 strum = "0.24.0"
 strum_macros = "0.24.0"
+bevy_dolly = { path = "../bevy_dolly" }
 
 [dependencies.bevy]
-version = "0.7"
+#version = "0.7"
+path = "../bevy"
 features = ["bevy_render","bevy_pbr"]
 default-features = false
 
 [dev-dependencies.bevy]
-version = "0.7"
+#version = "0.7"
+path = "../bevy"
 features = ["bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "x11", "wayland"]
 default-features = false
