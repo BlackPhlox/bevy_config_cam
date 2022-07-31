@@ -1,7 +1,4 @@
-use bevy::{
-    math::Vec3,
-    prelude::{App, Camera, Changed, Entity, Plugin, Query, Res, Time, Transform},
-};
+use bevy::prelude::{App, Camera, Changed, Entity, Plugin, Query, Res, Time, Transform};
 use bevy_dolly::prelude::*;
 
 pub struct ConfigCam;

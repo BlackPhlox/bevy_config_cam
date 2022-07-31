@@ -1,7 +1,8 @@
-//Base
+fn main() {}
+
+/*
 use bevy::prelude::*;
 use bevy_config_cam::*;
-
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
@@ -97,3 +98,5 @@ fn set_closest_target(
         cl.target = None;
     }
 }
+
+*/

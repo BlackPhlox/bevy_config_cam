@@ -70,7 +70,6 @@ fn setup(
         },
         ..Default::default()
     });
-    //.insert(FlyCam);
 }
 
 fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut query: Query<&mut Rig>) {

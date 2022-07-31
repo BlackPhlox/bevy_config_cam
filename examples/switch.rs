@@ -1,3 +1,5 @@
+fn main() {}
+/*
 use bevy::{
     prelude::*,
     render::camera::{ActiveCamera, Camera3d},
@@ -93,3 +95,4 @@ fn cycle_camera_state(
         keys.reset(KeyCode::E);
     }
 }
+*/
