@@ -6,6 +6,7 @@ jobs:
   clean:
     name: Clean
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
     - name: Remove cargo registry
       run: |
