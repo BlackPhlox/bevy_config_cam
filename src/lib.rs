@@ -1,4 +1,7 @@
-use bevy::prelude::{App, Camera, Changed, Entity, Plugin, Query, Res, Time, Transform};
+use bevy::{
+    math::Vec3,
+    prelude::{App, Camera, Changed, Entity, Plugin, Query, Res, Time, Transform},
+};
 use bevy_dolly::prelude::*;
 
 pub struct ConfigCam;
@@ -13,7 +16,7 @@ fn config_cam_change_detection(
     time: Res<Time>,
     mut query: Query<(Entity, &mut Rig), Changed<Rig>>,
 ) {
-    for (entity, mut rig) in &mut query {
+    for (_entity, mut rig) in &mut query {
         //let d = rig.drivers.iter().map(|f| format!("{:?}", f)).collect::<Vec<String>>().join(", ");
         //info!("{:?} changed: {:?}", entity, d);
 

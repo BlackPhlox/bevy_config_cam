@@ -1,8 +1,7 @@
 //Base
-use bevy::prelude::*;
-use bevy::render::camera::ScalingMode;
+use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
-use bevy_dolly::prelude::*;
+use bevy_dolly::{dolly::glam, prelude::*};
 
 fn main() {
     App::new()
@@ -44,7 +43,7 @@ fn setup(
         Rig::builder()
             .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-30.0))
             .with(Smooth::new_rotation(1.5))
-            .with(Arm::new(Vec3::Z * 4.0))
+            .with(Arm::new(glam::Vec3::Z * 4.0))
             .build(),
     );
 
