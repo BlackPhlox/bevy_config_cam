@@ -3,24 +3,33 @@ on: [push, pull_request]
 name: CI
 
 jobs:
-  #update:
-  #  name: Update
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v2
-  #    - uses: actions-rs/toolchain@v1
-  #      with:
-  #        profile: minimal
-  #        toolchain: stable
-  #        override: true
-  #    - uses: actions-rs/cargo@v1
-  #      with:
-  #        command: update
+  clean:
+    name: Clean
+    runs-on: ubuntu-latest
+    steps:
+    - name: Remove cargo registry
+      run: |
+        rm ~/.cargo/registry/index
+
+  update:
+    name: Update
+    runs-on: ubuntu-latest
+    needs: clean
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: update
 
   check:
     name: Check
     runs-on: ubuntu-latest
-    #needs: update
+    needs: update
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -35,7 +44,7 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    #needs: update
+    needs: update
     steps:
       - uses: actions/checkout@v2
       - name: Update apt
@@ -74,7 +83,7 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
-    #needs: update
+    needs: update
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
