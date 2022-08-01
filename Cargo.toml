@@ -26,6 +26,7 @@ rand = "0.8"
 strum = "0.24"
 strum_macros = "0.24"
 bevy_dolly = { path="../bevy_dolly" }
+driver_marker_derive = { path = "driver_marker_derive" }
 
 [dependencies.bevy]
 version = "0.8.0"

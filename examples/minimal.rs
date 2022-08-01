@@ -39,16 +39,29 @@ fn setup(
         ..Default::default()
     });
 
-    commands.spawn().insert(
-        Rig::builder()
-            .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-30.0))
-            .with(Smooth::new_rotation(1.5))
-            .with(Arm::new(glam::Vec3::Z * 4.0))
-            .build(),
-    );
+    commands
+        .spawn()
+        .insert(
+            Rig::builder()
+                .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-45.0))
+                .with(Smooth::new_rotation(1.5))
+                .with(Arm::new(glam::Vec3::Z * 4.0))
+                .build(),
+        )
+        .insert(FPV);
+
+    commands
+        .spawn()
+        .insert(
+            Rig::builder()
+                .with(YawPitch::new().yaw_degrees(0.0).pitch_degrees(-90.0))
+                .with(Smooth::new_rotation(1.5))
+                .with(Arm::new(glam::Vec3::Z * 4.0))
+                .build(),
+        )
+        .insert(FPV2);
 
     commands.spawn_bundle(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 5.0, 0.01).looking_at(Vec3::ZERO, Vec3::Y),
         camera: Camera {
             is_active: true,
             ..Default::default()
@@ -62,6 +75,7 @@ fn setup(
         ..Default::default()
     });
 
+    /*
     commands.spawn_bundle(Camera3dBundle {
         transform: Transform::from_xyz(5., 2.0, 0.).looking_at(Vec3::ZERO, Vec3::Y),
         camera: Camera {
@@ -70,6 +84,7 @@ fn setup(
         },
         ..Default::default()
     });
+    */
 }
 
 fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut query: Query<&mut Rig>) {
