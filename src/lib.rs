@@ -30,11 +30,15 @@ pub(crate) fn update_look_at(
     mut targets: Query<(&mut Transform, With<Target>)>,
     mut rigs: DriverRigs,
 ) {
-    let mut avg = Vec3::ONE;
+    let mut avg = Vec3::ZERO;
 
     for (t, _b) in &mut targets {
-        avg = t.translation;
+        avg += t.translation;
     }
+    
+    //https://math.stackexchange.com/questions/80923/average-of-multiple-vectors
+    let total_targets = targets.iter().count();
+    avg = avg / total_targets as f32; 
 
     rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la| {
         la.target = avg;
