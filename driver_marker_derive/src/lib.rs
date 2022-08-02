@@ -19,17 +19,17 @@ fn impl_driver_marker_macro(ast: &syn::DeriveInput) -> TokenStream {
     let f = format!("{}", name);
     let gen = quote! {
         impl DriverMarker for #name {
-            fn get_component(&self) -> &str {
+            fn get_name(&self) -> &str {
                 #f
             }
 
-            fn add_component(&self, commands: &mut Commands, entity: Entity){
+            fn add_to(&self, commands: &mut Commands, entity: Entity){
                 commands
                     .entity(entity)
                     .insert(#name);
             }
 
-            fn remove_component(&self, commands: &mut Commands, entity: Entity){
+            fn remove_from(&self, commands: &mut Commands, entity: Entity){
                 commands
                     .entity(entity)
                     .remove::<#name>();

@@ -1,16 +1,21 @@
-//Base
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
-use bevy_dolly::prelude::*;
+use bevy_dolly::{dolly::glam, prelude::*};
+use driver_marker_derive::DriverMarker;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
+        .add_dolly_component(OrbitTopDown)
+        .insert_resource(Drivers::new(vec![Box::new(Orbit), Box::new(OrbitTopDown)]))
         .add_startup_system(setup)
         .add_system(update_yaw_driver)
         .run();
 }
+
+#[derive(Component, DriverMarker, Clone, Copy, Debug)]
+pub struct OrbitTopDown;
 
 /// set up a simple 3D scene
 fn setup(
@@ -38,6 +43,17 @@ fn setup(
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
+
+    commands
+        .spawn()
+        .insert(
+            Rig::builder()
+                .with(YawPitch::new().yaw_degrees(0.0).pitch_degrees(-90.0))
+                .with(Smooth::new_rotation(1.5))
+                .with(Arm::new(glam::Vec3::Z * 4.0))
+                .build(),
+        )
+        .insert(OrbitTopDown);
 
     commands.spawn_bundle(Camera3dBundle {
         camera: Camera {

@@ -1,14 +1,8 @@
 use bevy::{
-    ecs::component::TableStorage,
     input::Input,
-    prelude::{
-        App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, ReflectComponent, Res,
-        ResMut,
-    },
-    reflect::{reflect_trait, Reflect, TypeRegistry},
-    render::camera,
+    prelude::{App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut},
 };
-use bevy_dolly::prelude::*;
+use bevy_dolly::{dolly::glam, prelude::*};
 use driver_marker_derive::DriverMarker;
 
 pub struct ConfigCam;
@@ -16,35 +10,61 @@ impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
-            .add_dolly_component(FPV)
-            .add_dolly_component(FPV2)
+            .add_dolly_component(Orbit)
+            .add_startup_system(default_setup)
             .add_system(change_driver_system)
             .add_system(update_driver_system); //.add_dolly_component(FPV)
     }
 }
 
 #[derive(Component, DriverMarker, Clone, Copy, Debug)]
-pub struct FPV;
+pub struct Orbit;
 
-#[derive(Component, DriverMarker, Clone, Copy, Debug)]
-pub struct FPV2;
+fn default_setup(mut commands: Commands) {
+    commands
+        .spawn()
+        .insert(
+            Rig::builder()
+                .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-45.0))
+                .with(Smooth::new_rotation(1.5))
+                .with(Arm::new(glam::Vec3::Z * 4.0))
+                .build(),
+        )
+        .insert(Orbit);
+}
 
 pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 
 impl Default for Drivers {
     fn default() -> Self {
-        Self(vec![Box::new(FPV), Box::new(FPV2)])
+        Self(vec![Box::new(Orbit)])
+    }
+}
+
+impl Drivers {
+    pub fn new(driver_markers: Vec<Box<dyn DriverMarker>>) -> Self {
+        Self(driver_markers)
     }
 }
 
 pub trait DriverMarker: Sync + Send + 'static {
-    fn get_component(&self) -> &str;
-    fn add_component(&self, commands: &mut Commands, entity: Entity);
-    fn remove_component(&self, commands: &mut Commands, entity: Entity);
+    fn get_name(&self) -> &str;
+    fn add_to(&self, commands: &mut Commands, entity: Entity);
+    fn remove_from(&self, commands: &mut Commands, entity: Entity);
 }
 
 #[derive(Default)]
 pub struct DriverIndex(usize);
+
+impl DriverIndex {
+    pub fn next(&mut self, len: usize) {
+        if self.0 >= len - 1 {
+            self.0 = 0;
+        } else {
+            self.0 += 1;
+        }
+    }
+}
 
 //Use collection with and keeping an index component or the like
 fn change_driver_system(
@@ -53,11 +73,7 @@ fn change_driver_system(
     keys: Res<Input<KeyCode>>,
 ) {
     if keys.just_pressed(KeyCode::T) {
-        if index.0 >= drivers.0.len() - 1 {
-            index.0 = 0;
-        } else {
-            index.0 += 1;
-        }
+        index.next(drivers.0.len());
     }
 }
 
@@ -68,25 +84,25 @@ fn update_driver_system(
     drivers: Res<Drivers>,
 ) {
     if index.is_changed() {
-        for component in &drivers.0 {
-            let a = component.as_ref();
-            let b = a.get_component();
+        for box_component in &drivers.0 {
+            let component = box_component.as_ref();
+            let component_name = component.get_name();
 
             if let Some(h) = drivers.0.get(index.0) {
-                if b.eq(h.get_component()) {
+                if component_name.eq(h.get_name()) {
                     //Add new driver component
                     //Remove old driver component
                     for (entity, camera) in q.iter() {
                         if camera.is_active {
-                            a.add_component(&mut commands, entity);
-                            println!("Adding {:?} to Camera {:?}", b, entity);
+                            component.add_to(&mut commands, entity);
+                            println!("Adding {:?} to Camera {:?}", component_name, entity);
                         }
                     }
                 } else {
                     for (entity, camera) in q.iter() {
                         if camera.is_active {
-                            a.remove_component(&mut commands, entity);
-                            println!("Remove {:?} from Camera {:?}", b, entity);
+                            component.remove_from(&mut commands, entity);
+                            println!("Remove {:?} from Camera {:?}", component_name, entity);
                         }
                     }
                 }
