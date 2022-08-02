@@ -35,10 +35,10 @@ pub(crate) fn update_look_at(
     for (t, _b) in &mut targets {
         avg += t.translation;
     }
-    
+
     //https://math.stackexchange.com/questions/80923/average-of-multiple-vectors
     let total_targets = targets.iter().count();
-    avg = avg / total_targets as f32; 
+    avg /= total_targets as f32;
 
     rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la| {
         la.target = avg;
