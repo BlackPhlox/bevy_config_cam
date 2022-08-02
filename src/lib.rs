@@ -4,8 +4,8 @@ use bevy::{
     input::Input,
     prelude::{
         App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
-        With,
-    },
+        With, Vec3,
+    }, ecs::system::SystemParam,
 };
 use bevy_dolly::{dolly::glam, prelude::*};
 use driver_marker_derive::DriverMarker;
@@ -15,9 +15,7 @@ impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
-            .add_dolly_component(LookAt)
-            .add_dolly_component(Follow)
-            .add_dolly_component(Orbit)
+            .add_dolly_component(Pinned)
             .add_dolly_component(FPV)
             .add_startup_system(default_setup)
             .add_system(change_driver_system)
@@ -27,68 +25,57 @@ impl Plugin for ConfigCam {
     }
 }
 
-#[derive(Component)]
-pub struct Target;
-
 pub(crate) fn update_look_at(
     mut targets: Query<(&mut Transform, With<Target>)>,
-    mut query: Query<&mut Rig, With<LookAt>>,
+    mut rigs: DriverRigs
 ) {
-    for mut rig in &mut query {
-        if let Some(camera_driver) = rig.try_driver_mut::<bevy_dolly::prelude::LookAt>() {
-            for (t, _b) in &mut targets {
-                camera_driver.target = t.translation;
-            }
-        }
+    let mut avg = Vec3::ONE;
+    
+    for (t, _b) in &mut targets {
+        avg = t.translation;
     }
+
+    rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la |
+    {
+        la.target = avg;
+    });
 }
 
 pub(crate) fn update_yaw_driver(
     keys: Res<Input<KeyCode>>,
-    mut query: Query<&mut Rig, With<Orbit>>,
+    mut rigs: DriverRigs
 ) {
-    for mut rig in &mut query {
-        if let Some(camera_driver) = rig.try_driver_mut::<YawPitch>() {
-            if keys.just_pressed(KeyCode::Z) {
-                camera_driver.rotate_yaw_pitch(-90.0, 0.0);
-            }
-            if keys.just_pressed(KeyCode::X) {
-                camera_driver.rotate_yaw_pitch(90.0, 0.0);
-            }
+    //Waiting for 1.63 for stable
+    //https://github.com/rust-lang/rust/issues/83701
+    rigs.try_for_each_driver_mut::<YawPitch>(|yp|
+    {
+        if keys.just_pressed(KeyCode::Z) {
+            yp.rotate_yaw_pitch(-90.0, 0.0);
         }
-    }
+        if keys.just_pressed(KeyCode::X) {
+            yp.rotate_yaw_pitch(90.0, 0.0);
+        }
+    });
 }
 
-#[derive(Component, DriverMarker, Clone, Copy, Debug)]
-pub struct LookAt;
+// Target at is just a valid option for Follow, Orbit and FPV
+// Have the camera point at one or the summed vector direction
+// of all entities with the Target Component
+#[derive(Component)]
+pub struct Target;
 
 #[derive(Component, DriverMarker, Clone, Copy, Debug)]
-pub struct Follow;
-
-#[derive(Component, DriverMarker, Clone, Copy, Debug)]
-pub struct Orbit;
+pub struct Pinned;
+//Substates:
+//Locked Rotation
+//Free
 
 #[derive(Component, DriverMarker, Clone, Copy, Debug)]
 pub struct FPV;
 
 fn default_setup(mut commands: Commands) {
     //Should be default player entity
-    commands.spawn().insert(Target);
-
-    commands
-        .spawn()
-        .insert(
-            Rig::builder()
-                .with(Position::new(glam::Vec3::new(1., 1., 1.) * 3.0))
-                .with(bevy_dolly::prelude::LookAt::new(glam::Vec3::new(
-                    0., 0., 0.,
-                )))
-                .build(),
-        )
-        .insert(LookAt);
-
-    //Missing Follow
-    commands.spawn().insert(Follow);
+    //commands.spawn().insert(Target);
 
     commands
         .spawn()
@@ -97,12 +84,30 @@ fn default_setup(mut commands: Commands) {
                 .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-45.0))
                 .with(Smooth::new_rotation(1.5))
                 .with(Arm::new(glam::Vec3::Z * 4.0))
+                .with(bevy_dolly::prelude::LookAt::new(glam::Vec3::new(
+                    0., 0., 0.,
+                )))
                 .build(),
         )
-        .insert(Orbit);
+        .insert(Pinned);
 
     //Missing FPV
     commands.spawn().insert(FPV);
+}
+
+#[derive(SystemParam)]
+struct DriverRigs<'w, 's> {
+    rigs: Query<'w, 's, &'static mut Rig>,
+}
+
+impl<'w, 's> DriverRigs<'w, 's> {
+    fn try_for_each_driver_mut<T>(&mut self, f: impl FnOnce(&mut T) -> () + std::marker::Copy) where T: bevy_dolly::prelude::RigDriver<bevy_dolly::prelude::RightHanded> {
+        for mut rig in &mut self.rigs {
+            if let Some(camera_driver) = rig.try_driver_mut::<T>() {
+                f(camera_driver);
+            }
+        }
+    }
 }
 
 pub struct Drivers(Vec<Box<dyn DriverMarker>>);
@@ -110,9 +115,7 @@ pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 impl Default for Drivers {
     fn default() -> Self {
         Self(vec![
-            Box::new(LookAt),
-            Box::new(Follow),
-            Box::new(Orbit),
+            Box::new(Pinned),
             Box::new(FPV),
         ])
     }
