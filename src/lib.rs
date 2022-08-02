@@ -10,17 +10,47 @@ impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
+            .add_dolly_component(LookAt)
             .add_dolly_component(Orbit)
             .add_startup_system(default_setup)
             .add_system(change_driver_system)
-            .add_system(update_driver_system); //.add_dolly_component(FPV)
+            .add_system(update_driver_system)
+            .add_system(update_yaw_driver);
     }
 }
+
+fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut query: Query<&mut Rig>) {
+    for mut rig in &mut query {
+        if let Some(camera_driver) = rig.try_driver_mut::<YawPitch>() {
+            if keys.just_pressed(KeyCode::Z) {
+                camera_driver.rotate_yaw_pitch(-90.0, 0.0);
+            }
+            if keys.just_pressed(KeyCode::X) {
+                camera_driver.rotate_yaw_pitch(90.0, 0.0);
+            }
+        }
+    }
+}
+
+#[derive(Component, DriverMarker, Clone, Copy, Debug)]
+pub struct LookAt;
 
 #[derive(Component, DriverMarker, Clone, Copy, Debug)]
 pub struct Orbit;
 
 fn default_setup(mut commands: Commands) {
+    commands
+        .spawn()
+        .insert(
+            Rig::builder()
+                .with(Position::new(glam::Vec3::new(1., 1., 1.) * 3.0))
+                .with(bevy_dolly::prelude::LookAt::new(
+                    glam::Vec3::new(
+                    0., 0., 0.,)))
+                .build(),
+        )
+        .insert(LookAt);
+
     commands
         .spawn()
         .insert(
@@ -37,7 +67,7 @@ pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 
 impl Default for Drivers {
     fn default() -> Self {
-        Self(vec![Box::new(Orbit)])
+        Self(vec![Box::new(LookAt), Box::new(Orbit)])
     }
 }
 

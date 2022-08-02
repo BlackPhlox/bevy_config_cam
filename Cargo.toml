@@ -25,7 +25,7 @@ name = "bevy_config_cam"
 rand = "0.8"
 strum = "0.24"
 strum_macros = "0.24"
-bevy_dolly = { path="../bevy_dolly" }
+bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly", branch = "0.8" }
 driver_marker_derive = { path = "driver_marker_derive" }
 
 [dependencies.bevy]

@@ -1,14 +1,12 @@
 //Base
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
-use bevy_dolly::prelude::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
         .add_startup_system(setup)
-        .add_system(update_yaw_driver)
         .run();
 }
 
@@ -52,17 +50,4 @@ fn setup(
         .into(),
         ..Default::default()
     });
-}
-
-fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut query: Query<&mut Rig>) {
-    for mut rig in &mut query {
-        if let Some(camera_driver) = rig.try_driver_mut::<YawPitch>() {
-            if keys.just_pressed(KeyCode::Z) {
-                camera_driver.rotate_yaw_pitch(-90.0, 0.0);
-            }
-            if keys.just_pressed(KeyCode::X) {
-                camera_driver.rotate_yaw_pitch(90.0, 0.0);
-            }
-        }
-    }
 }
