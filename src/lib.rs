@@ -46,9 +46,9 @@ fn default_setup(mut commands: Commands) {
         .insert(
             Rig::builder()
                 .with(Position::new(glam::Vec3::new(1., 1., 1.) * 3.0))
-                .with(bevy_dolly::prelude::LookAt::new(
-                    glam::Vec3::new(
-                    0., 0., 0.,)))
+                .with(bevy_dolly::prelude::LookAt::new(glam::Vec3::new(
+                    0., 0., 0.,
+                )))
                 .build(),
         )
         .insert(LookAt);
