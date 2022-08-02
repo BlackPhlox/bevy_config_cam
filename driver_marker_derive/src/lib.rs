@@ -19,6 +19,10 @@ fn impl_driver_marker_macro(ast: &syn::DeriveInput) -> TokenStream {
     let f = format!("{}", name);
     let gen = quote! {
         impl DriverMarker for #name {
+            fn get_id(&self) -> TypeId {
+                TypeId::of::<#name>()
+            }
+
             fn get_name(&self) -> &str {
                 #f
             }

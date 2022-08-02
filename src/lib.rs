@@ -1,3 +1,5 @@
+use std::any::TypeId;
+
 use bevy::{
     input::Input,
     prelude::{App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut},
@@ -78,6 +80,7 @@ impl Drivers {
 }
 
 pub trait DriverMarker: Sync + Send + 'static {
+    fn get_id(&self) -> TypeId;
     fn get_name(&self) -> &str;
     fn add_to(&self, commands: &mut Commands, entity: Entity);
     fn remove_from(&self, commands: &mut Commands, entity: Entity);
@@ -116,23 +119,23 @@ fn update_driver_system(
     if index.is_changed() {
         for box_component in &drivers.0 {
             let component = box_component.as_ref();
-            let component_name = component.get_name();
+            let component_id = component.get_id();
 
             if let Some(h) = drivers.0.get(index.0) {
-                if component_name.eq(h.get_name()) {
+                if component_id.eq(&h.get_id()) {
                     //Add new driver component
                     //Remove old driver component
                     for (entity, camera) in q.iter() {
                         if camera.is_active {
                             component.add_to(&mut commands, entity);
-                            println!("Adding {:?} to Camera {:?}", component_name, entity);
+                            println!("Adding {:?} to Camera {:?}", component.get_name(), entity);
                         }
                     }
                 } else {
                     for (entity, camera) in q.iter() {
                         if camera.is_active {
                             component.remove_from(&mut commands, entity);
-                            println!("Remove {:?} from Camera {:?}", component_name, entity);
+                            println!("Remove {:?} from Camera {:?}", component.get_name(), entity);
                         }
                     }
                 }
