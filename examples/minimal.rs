@@ -1,4 +1,3 @@
-//Base
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
 

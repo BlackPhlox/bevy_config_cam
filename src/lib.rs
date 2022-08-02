@@ -2,7 +2,10 @@ use std::any::TypeId;
 
 use bevy::{
     input::Input,
-    prelude::{App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut},
+    prelude::{
+        App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
+        With,
+    },
 };
 use bevy_dolly::{dolly::glam, prelude::*};
 use driver_marker_derive::DriverMarker;
@@ -13,15 +16,37 @@ impl Plugin for ConfigCam {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
             .add_dolly_component(LookAt)
+            .add_dolly_component(Follow)
             .add_dolly_component(Orbit)
+            .add_dolly_component(FPV)
             .add_startup_system(default_setup)
             .add_system(change_driver_system)
             .add_system(update_driver_system)
+            .add_system(update_look_at)
             .add_system(update_yaw_driver);
     }
 }
 
-fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut query: Query<&mut Rig>) {
+#[derive(Component)]
+pub struct Target;
+
+pub(crate) fn update_look_at(
+    mut targets: Query<(&mut Transform, With<Target>)>,
+    mut query: Query<&mut Rig, With<LookAt>>,
+) {
+    for mut rig in &mut query {
+        if let Some(camera_driver) = rig.try_driver_mut::<bevy_dolly::prelude::LookAt>() {
+            for (t, _b) in &mut targets {
+                camera_driver.target = t.translation;
+            }
+        }
+    }
+}
+
+pub(crate) fn update_yaw_driver(
+    keys: Res<Input<KeyCode>>,
+    mut query: Query<&mut Rig, With<Orbit>>,
+) {
     for mut rig in &mut query {
         if let Some(camera_driver) = rig.try_driver_mut::<YawPitch>() {
             if keys.just_pressed(KeyCode::Z) {
@@ -38,9 +63,18 @@ fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut query: Query<&mut Rig>) {
 pub struct LookAt;
 
 #[derive(Component, DriverMarker, Clone, Copy, Debug)]
+pub struct Follow;
+
+#[derive(Component, DriverMarker, Clone, Copy, Debug)]
 pub struct Orbit;
 
+#[derive(Component, DriverMarker, Clone, Copy, Debug)]
+pub struct FPV;
+
 fn default_setup(mut commands: Commands) {
+    //Should be default player entity
+    commands.spawn().insert(Target);
+
     commands
         .spawn()
         .insert(
@@ -53,6 +87,9 @@ fn default_setup(mut commands: Commands) {
         )
         .insert(LookAt);
 
+    //Missing Follow
+    commands.spawn().insert(Follow);
+
     commands
         .spawn()
         .insert(
@@ -63,13 +100,21 @@ fn default_setup(mut commands: Commands) {
                 .build(),
         )
         .insert(Orbit);
+
+    //Missing FPV
+    commands.spawn().insert(FPV);
 }
 
 pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 
 impl Default for Drivers {
     fn default() -> Self {
-        Self(vec![Box::new(LookAt), Box::new(Orbit)])
+        Self(vec![
+            Box::new(LookAt),
+            Box::new(Follow),
+            Box::new(Orbit),
+            Box::new(FPV),
+        ])
     }
 }
 

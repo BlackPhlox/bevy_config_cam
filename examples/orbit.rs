@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
 use bevy_dolly::{dolly::glam, prelude::*};
 use driver_marker_derive::DriverMarker;
+use std::any::TypeId;
 
 fn main() {
     App::new()
@@ -10,7 +11,6 @@ fn main() {
         .add_dolly_component(OrbitTopDown)
         .insert_resource(Drivers::new(vec![Box::new(Orbit), Box::new(OrbitTopDown)]))
         .add_startup_system(setup)
-        .add_system(update_yaw_driver)
         .run();
 }
 
