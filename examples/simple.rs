@@ -2,7 +2,6 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
-use bevy_dolly::prelude::Rig;
 
 fn main() {
     App::new()
@@ -33,7 +32,7 @@ fn setup(
     commands
         .spawn_bundle(SpatialBundle::from_transform(Transform {
             rotation: Quat::IDENTITY,
-            translation: Vec3::new(2.,0.,0.),
+            translation: Vec3::new(2., 0., 0.),
             ..default()
         }))
         .with_children(|cell| {
@@ -44,7 +43,8 @@ fn setup(
                 ..Default::default()
             });
         })
-        .insert(Rotates).insert(Target);
+        .insert(Rotates)
+        .insert(Target);
 
     // light
     commands.spawn_bundle(PointLightBundle {
@@ -67,7 +67,6 @@ fn setup(
     });
 }
 
-
 #[derive(Component)]
 struct Rotates;
 
@@ -82,13 +81,11 @@ fn rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<Rotates
 fn remove_target_system(
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
-    q: Query<Entity, (With<Rotates>, With<Target>)>
+    q: Query<Entity, (With<Rotates>, With<Target>)>,
 ) {
     if keys.just_pressed(KeyCode::G) {
         for e in &q {
-            commands
-                .entity(e)
-                .remove::<Target>();
+            commands.entity(e).remove::<Target>();
         }
     }
 }
@@ -96,13 +93,11 @@ fn remove_target_system(
 fn add_target_system(
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
-    q: Query<Entity, (With<Rotates>, Without<Target>)>
+    q: Query<Entity, (With<Rotates>, Without<Target>)>,
 ) {
     if keys.just_pressed(KeyCode::G) {
         for e in &q {
-            commands
-                .entity(e)
-                .insert(Target);
+            commands.entity(e).insert(Target);
         }
     }
 }

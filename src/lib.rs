@@ -1,11 +1,12 @@
 use std::any::TypeId;
 
 use bevy::{
+    ecs::system::SystemParam,
     input::Input,
     prelude::{
         App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
-        With, Vec3,
-    }, ecs::system::SystemParam,
+        Vec3, With,
+    },
 };
 use bevy_dolly::{dolly::glam, prelude::*};
 use driver_marker_derive::DriverMarker;
@@ -27,28 +28,23 @@ impl Plugin for ConfigCam {
 
 pub(crate) fn update_look_at(
     mut targets: Query<(&mut Transform, With<Target>)>,
-    mut rigs: DriverRigs
+    mut rigs: DriverRigs,
 ) {
     let mut avg = Vec3::ONE;
-    
+
     for (t, _b) in &mut targets {
         avg = t.translation;
     }
 
-    rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la |
-    {
+    rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la| {
         la.target = avg;
     });
 }
 
-pub(crate) fn update_yaw_driver(
-    keys: Res<Input<KeyCode>>,
-    mut rigs: DriverRigs
-) {
+pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs) {
     //Waiting for 1.63 for stable
     //https://github.com/rust-lang/rust/issues/83701
-    rigs.try_for_each_driver_mut::<YawPitch>(|yp|
-    {
+    rigs.try_for_each_driver_mut::<YawPitch>(|yp| {
         if keys.just_pressed(KeyCode::Z) {
             yp.rotate_yaw_pitch(-90.0, 0.0);
         }
@@ -101,7 +97,10 @@ struct DriverRigs<'w, 's> {
 }
 
 impl<'w, 's> DriverRigs<'w, 's> {
-    fn try_for_each_driver_mut<T>(&mut self, f: impl FnOnce(&mut T) -> () + std::marker::Copy) where T: bevy_dolly::prelude::RigDriver<bevy_dolly::prelude::RightHanded> {
+    fn try_for_each_driver_mut<T>(&mut self, f: impl FnOnce(&mut T) + std::marker::Copy)
+    where
+        T: bevy_dolly::prelude::RigDriver<bevy_dolly::prelude::RightHanded>,
+    {
         for mut rig in &mut self.rigs {
             if let Some(camera_driver) = rig.try_driver_mut::<T>() {
                 f(camera_driver);
@@ -114,10 +113,7 @@ pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 
 impl Default for Drivers {
     fn default() -> Self {
-        Self(vec![
-            Box::new(Pinned),
-            Box::new(FPV),
-        ])
+        Self(vec![Box::new(Pinned), Box::new(FPV)])
     }
 }
 
