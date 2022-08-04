@@ -3,8 +3,8 @@ use std::f32::consts::PI;
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
 
-use std::any::TypeId;
 use driver_marker_derive::DriverMarker;
+use std::any::TypeId;
 
 fn main() {
     App::new()
@@ -26,7 +26,6 @@ derive_alias! {
 
 #[derive(ConfigMarker!, Clone, Copy, Debug)]
 pub struct Pinned2;
-
 
 /// set up a simple 3D scene
 fn setup(

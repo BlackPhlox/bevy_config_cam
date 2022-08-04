@@ -1,7 +1,7 @@
 use std::any::TypeId;
 
 use bevy::{
-    ecs::{system::SystemParam, component::TableStorage},
+    ecs::system::SystemParam,
     input::Input,
     prelude::{
         App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
@@ -85,7 +85,6 @@ fn default_setup(mut commands: Commands) {
     //Default player entity : Cone
     //commands.spawn().insert(Target);
 
-
     commands
         .spawn()
         .insert(
@@ -122,7 +121,7 @@ impl<'w, 's> DriverRigs<'w, 's> {
     }
 }
 
-pub struct Drivers(Vec<Box<dyn DriverMarker<Storage=TableStorage>>>);
+pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 
 impl Default for Drivers {
     fn default() -> Self {
@@ -131,12 +130,12 @@ impl Default for Drivers {
 }
 
 impl Drivers {
-    pub fn new(driver_markers: Vec<Box<dyn DriverMarker<Storage=TableStorage>>>) -> Self {
+    pub fn new(driver_markers: Vec<Box<dyn DriverMarker>>) -> Self {
         Self(driver_markers)
     }
 }
 
-pub trait DriverMarker: Component + Sync + Send + 'static {
+pub trait DriverMarker: Sync + Send + 'static {
     fn get_id(&self) -> TypeId;
     fn get_name(&self) -> &str;
     fn add_to(&self, commands: &mut Commands, entity: Entity);
