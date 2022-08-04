@@ -4,7 +4,6 @@ use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
 
 use driver_marker_derive::DriverMarker;
-use std::any::TypeId;
 
 fn main() {
     App::new()
@@ -17,14 +16,7 @@ fn main() {
         .run();
 }
 
-#[macro_use]
-extern crate macro_rules_attribute;
-
-derive_alias! {
-    #[derive(ConfigMarker!)] = #[derive(Component, DriverMarker)];
-}
-
-#[derive(ConfigMarker!, Clone, Copy, Debug)]
+#[derive(DriverMarker, Component, Clone, Copy, Debug)]
 pub struct Pinned2;
 
 /// set up a simple 3D scene

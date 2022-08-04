@@ -1,7 +1,5 @@
-use std::any::TypeId;
-
 use bevy::{
-    ecs::system::SystemParam,
+    ecs::{component::TableStorage, system::SystemParam},
     input::Input,
     prelude::{
         App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
@@ -10,6 +8,8 @@ use bevy::{
 };
 use bevy_dolly::{dolly::glam, prelude::*};
 use driver_marker_derive::DriverMarker;
+
+pub use std::any::TypeId;
 
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
@@ -46,8 +46,9 @@ pub(crate) fn update_look_at(
 }
 
 pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs) {
-    //Waiting for 1.63 for stable
-    //https://github.com/rust-lang/rust/issues/83701
+    // Waiting for 1.63 for stable, use nightly until August 11 2022
+    // https://forge.rust-lang.org/#current-release-versions
+    // https://github.com/rust-lang/rust/issues/83701
     rigs.try_for_each_driver_mut::<YawPitch>(|yp| {
         if keys.just_pressed(KeyCode::Z) {
             yp.rotate_yaw_pitch(-90.0, 0.0);
@@ -58,26 +59,19 @@ pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs)
     });
 }
 
-#[macro_use]
-extern crate macro_rules_attribute;
-
-derive_alias! {
-    #[derive(ConfigMarker!)] = #[derive(Component, DriverMarker)];
-}
-
 // Target at is just a valid option for Follow, Orbit and FPV
 // Have the camera point at one or the summed vector direction
 // of all entities with the Target Component
 #[derive(Component)]
 pub struct Target;
 
-#[derive(ConfigMarker!, Clone, Copy, Debug)]
+#[derive(DriverMarker, Component, Clone, Copy, Debug)]
 pub struct Pinned;
 //Substates:
 //Locked Rotation
 //Free
 
-#[derive(ConfigMarker!, Clone, Copy, Debug)]
+#[derive(DriverMarker, Component, Clone, Copy, Debug)]
 pub struct FPV;
 
 fn default_setup(mut commands: Commands) {
@@ -135,7 +129,7 @@ impl Drivers {
     }
 }
 
-pub trait DriverMarker: Sync + Send + 'static {
+pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'static {
     fn get_id(&self) -> TypeId;
     fn get_name(&self) -> &str;
     fn add_to(&self, commands: &mut Commands, entity: Entity);
