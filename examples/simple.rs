@@ -3,6 +3,9 @@ use std::f32::consts::PI;
 use bevy::{prelude::*, render::camera::ScalingMode};
 use bevy_config_cam::*;
 
+use std::any::TypeId;
+use driver_marker_derive::DriverMarker;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -13,6 +16,17 @@ fn main() {
         .add_system(remove_target_system)
         .run();
 }
+
+#[macro_use]
+extern crate macro_rules_attribute;
+
+derive_alias! {
+    #[derive(ConfigMarker!)] = #[derive(Component, DriverMarker)];
+}
+
+#[derive(ConfigMarker!, Clone, Copy, Debug)]
+pub struct Pinned2;
+
 
 /// set up a simple 3D scene
 fn setup(

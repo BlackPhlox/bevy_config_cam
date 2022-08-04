@@ -1,7 +1,7 @@
 use std::any::TypeId;
 
 use bevy::{
-    ecs::system::SystemParam,
+    ecs::{system::SystemParam, component::TableStorage},
     input::Input,
     prelude::{
         App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
@@ -58,24 +58,33 @@ pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs)
     });
 }
 
+#[macro_use]
+extern crate macro_rules_attribute;
+
+derive_alias! {
+    #[derive(ConfigMarker!)] = #[derive(Component, DriverMarker)];
+}
+
 // Target at is just a valid option for Follow, Orbit and FPV
 // Have the camera point at one or the summed vector direction
 // of all entities with the Target Component
 #[derive(Component)]
 pub struct Target;
 
-#[derive(Component, DriverMarker, Clone, Copy, Debug)]
+#[derive(ConfigMarker!, Clone, Copy, Debug)]
 pub struct Pinned;
 //Substates:
 //Locked Rotation
 //Free
 
-#[derive(Component, DriverMarker, Clone, Copy, Debug)]
+#[derive(ConfigMarker!, Clone, Copy, Debug)]
 pub struct FPV;
 
 fn default_setup(mut commands: Commands) {
     //Should be default player entity
+    //Default player entity : Cone
     //commands.spawn().insert(Target);
+
 
     commands
         .spawn()
@@ -113,7 +122,7 @@ impl<'w, 's> DriverRigs<'w, 's> {
     }
 }
 
-pub struct Drivers(Vec<Box<dyn DriverMarker>>);
+pub struct Drivers(Vec<Box<dyn DriverMarker<Storage=TableStorage>>>);
 
 impl Default for Drivers {
     fn default() -> Self {
@@ -122,12 +131,12 @@ impl Default for Drivers {
 }
 
 impl Drivers {
-    pub fn new(driver_markers: Vec<Box<dyn DriverMarker>>) -> Self {
+    pub fn new(driver_markers: Vec<Box<dyn DriverMarker<Storage=TableStorage>>>) -> Self {
         Self(driver_markers)
     }
 }
 
-pub trait DriverMarker: Sync + Send + 'static {
+pub trait DriverMarker: Component + Sync + Send + 'static {
     fn get_id(&self) -> TypeId;
     fn get_name(&self) -> &str;
     fn add_to(&self, commands: &mut Commands, entity: Entity);
