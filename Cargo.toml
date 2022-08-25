@@ -26,7 +26,7 @@ rand = "0.8"
 strum = "0.24"
 strum_macros = "0.24"
 macro_rules_attribute = { path = "../macro_rules_attribute-rs" }
-bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly", branch = "0.8" }
+bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly"}
 driver_marker_derive = { path = "driver_marker_derive" }
 
 [dependencies.bevy]
