@@ -63,7 +63,7 @@ The main goal of this plugin is to first and foremost provide the user with a co
     <th>TopDownDirection</th>
   </tr>
   <tr>
-    <td>Any suggestions on other camera modes you want?</br>Let me know by creating an issue :)</td>
+    <td>Any suggestions on other camera modes you want?</br>Let me know by creating an issue or </br>by creating your own using <a href="/examples/simple.rs">this example</a>.</td>
     <td><img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" style="height:400px;" alt="TopDownDirection"></td>
 </table>
 </div>
