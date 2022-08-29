@@ -16,8 +16,8 @@ impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
-            .add_dolly_component(Pinned)
-            .add_dolly_component(FPV)
+            .add_rig_component(Pinned)
+            .add_rig_component(FPV)
             .add_startup_system(default_setup)
             .add_system(change_driver_system)
             .add_system(update_driver_system)
@@ -38,7 +38,7 @@ pub(crate) fn update_look_at(
 
     //https://math.stackexchange.com/questions/80923/average-of-multiple-vectors
     let total_targets = targets.iter().count();
-    avg /= total_targets as f32;
+    //avg /= total_targets as f32;
 
     rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la| {
         la.target = avg;
