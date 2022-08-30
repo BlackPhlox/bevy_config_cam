@@ -38,16 +38,16 @@ The main goal of this plugin is to first and foremost provide the user with a co
     <th>Fps</th>
   </tr>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" style="height:400px;" alt="FollowStatic"></td>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="height:400px;" alt="Fps"></td>    
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" style="height:380px;" alt="FollowStatic"></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="height:380px;" alt="Fps"></td>    
   </tr>
   <tr>
     <th>LookAt</th>
     <th>FollowBehind</th>
   </tr>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" style="height:400px;" alt="LookAt"></td>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="height:400px;" alt="FollowBehind"></td></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" style="height:380px;" alt="LookAt"></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="height:380px;" alt="FollowBehind"></td></td>
     </td>
 </tr>
   <tr>
@@ -55,8 +55,8 @@ The main goal of this plugin is to first and foremost provide the user with a co
     <th>TopDown</th>
   </tr>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" style="height:400px;" alt="Free" ></td>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" style="height:400px;" alt="TopDown"></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" style="height:380px;" alt="Free" ></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" style="height:380px;" alt="TopDown"></td>
 </tr>
   <tr>
     <th>?</th>
@@ -64,7 +64,7 @@ The main goal of this plugin is to first and foremost provide the user with a co
   </tr>
   <tr>
     <td>Any suggestions on other camera modes you want?</br>Let me know by creating an issue or </br>by creating your own using <a href="/examples/simple.rs">this example</a>.</td>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" style="height:400px;" alt="TopDownDirection"></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" style="height:380px;" alt="TopDownDirection"></td>
 </table>
 </div>
 
