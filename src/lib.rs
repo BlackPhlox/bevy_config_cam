@@ -46,9 +46,6 @@ pub(crate) fn update_look_at(
 }
 
 pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs) {
-    // Waiting for 1.63 for stable, use nightly until August 11 2022
-    // https://forge.rust-lang.org/#current-release-versions
-    // https://github.com/rust-lang/rust/issues/83701
     rigs.try_for_each_driver_mut::<YawPitch>(|yp| {
         if keys.just_pressed(KeyCode::Z) {
             yp.rotate_yaw_pitch(-90.0, 0.0);
