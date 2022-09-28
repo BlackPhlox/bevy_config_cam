@@ -1,6 +1,13 @@
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::{
+    pbr::wireframe::{Wireframe, WireframePlugin},
+    prelude::*,
+    render::{
+        camera::ScalingMode,
+        settings::{WgpuFeatures, WgpuSettings},
+    },
+};
 use bevy_config_cam::*;
 
 use driver_marker_derive::DriverMarker;
@@ -8,11 +15,13 @@ use driver_marker_derive::DriverMarker;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugin(WireframePlugin)
         .add_plugin(ConfigCam)
         .add_startup_system(setup)
         .add_system(rotator_system)
         .add_system(add_target_system)
         .add_system(remove_target_system)
+        .add_system(switch_camera)
         .run();
 }
 
@@ -24,6 +33,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     // plane
     commands.spawn_bundle(PbrBundle {
@@ -57,6 +67,40 @@ fn setup(
         ..Default::default()
     });
 
+    let cam: Handle<Mesh> = asset_server.load("models/cam.gltf#Mesh0/Primitive0");
+
+    /*commands.spawn_bundle(SceneBundle {
+        scene: asset_server.load("models/cam.gltf#Scene0"),
+        ..default()
+    }).insert(Wireframe);*/
+
+    commands
+        .spawn_bundle(PbrBundle {
+            mesh: cam.clone(),
+            material: materials
+                .add(
+                    Color::Rgba {
+                        red: 0.,
+                        green: 0.,
+                        blue: 0.,
+                        alpha: 0.,
+                    }
+                    .into(),
+                )
+                .clone(),
+            transform: Transform {
+                translation: Vec3 {
+                    x: 0.0,
+                    y: 0.5,
+                    z: 0.0,
+                },
+                scale: Vec3::new(0.5, 0.5, 0.5),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Wireframe);
+
     commands.spawn_bundle(Camera3dBundle {
         camera: Camera {
             is_active: true,
@@ -70,6 +114,28 @@ fn setup(
         .into(),
         ..Default::default()
     });
+
+    commands.spawn_bundle(Camera3dBundle {
+        camera: Camera {
+            is_active: false,
+            ..Default::default()
+        },
+        projection: OrthographicProjection {
+            scale: 3.0,
+            scaling_mode: ScalingMode::FixedVertical(1.0),
+            ..default()
+        }
+        .into(),
+        ..Default::default()
+    });
+
+    commands.spawn().insert(CameraCount { total: 2, index: 0 });
+}
+
+#[derive(Component)]
+struct CameraCount {
+    total: u16,
+    index: usize,
 }
 
 #[derive(Component)]
@@ -103,6 +169,24 @@ fn add_target_system(
     if keys.just_pressed(KeyCode::G) {
         for e in &q {
             commands.entity(e).insert(Target);
+        }
+    }
+}
+
+fn switch_camera(
+    keys: Res<Input<KeyCode>>,
+    mut commands: Commands,
+    mut q: Query<&Camera>,
+    mut q2: Query<&CameraCount>,
+) {
+    let mut cc = q2.single_mut();
+    if keys.just_pressed(KeyCode::V) {
+        for (i, c) in &mut q.iter_mut().enumerate() {
+            if i + 1 > (cc.total - 1).into() {
+                //cc.index = 0;
+                //c.is_active = true;
+            }
+            if i.eq(&(cc.index + 1 as usize)) {}
         }
     }
 }

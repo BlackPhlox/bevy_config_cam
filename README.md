@@ -1,7 +1,6 @@
 <div align="left">
 <a href="https://github.com/BlackPhlox/bevy_config_cam"><img src="https://raw.githubusercontent.com/BlackPhlox/BlackPhlox/master/config_cam.svg" width="970" height="200" alt="bevy config cam"></a>
 </div>
-</br>
 <div align="center">
 <a href="https://crates.io/crates/bevy_config_cam"><img src="https://img.shields.io/crates/v/bevy_config_cam" alt="link to crates.io"></a>
 <a href="https://docs.rs/bevy_config_cam"><img src="https://docs.rs/bevy_config_cam/badge.svg" alt="link to docs.rs"></a>
@@ -19,29 +18,55 @@ your player asset or the default red player entity.
 
 Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam), this plugin is fairly simple but should be a neat help for developers looking for a camera implementation without going the hassle of reinventing the wheel.
 
-# Future Plans
+# Backend
 
-The main goal of this plugin is to first and foremost provide the user with a configurable, extendable and easy-to-use API. [`dolly`](https://github.com/h3r2tic/dolly) by @h3r2tic is a crate that provides an framework for which to create, combine and modify camera positioning, exactly what `bevy_config_cam` is looking for. So a migration to `dolly` is in the works in order to improve this plugin main goal. 
+The main goal of this plugin is to first and foremost provide the user with a configurable, extendable and easy-to-use API. [`dolly`](https://github.com/h3r2tic/dolly) by @h3r2tic is a crate that provides an framework for which to create, combine and modify camera positioning, exactly what `bevy_config_cam` is looking for. 
+[bevy_dolly](https://github.com/BlackPhlox/bevy_dolly) is the backend for `bevy_config_cam`. 
 
 # Showcase
 
 ## Camera Modes
 
-LookAt | FollowStatic
-:-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" style="width:700px;height:300px;" alt="LookAt">  |  <img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" style="width:700px;height:300px;" alt="FollowStatic">
-
-TopDown | TopDownDirection
-:-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" style="width:700px;height:300px;" alt="TopDown"> |  <img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" style="width:700px;height:300px;" alt="TopDownDirection">
-
-FollowBehind | Fps
-:-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="width:600px;height:300px;" alt="FollowBehind">  |  <img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="width:700px;height:300px;" alt="Fps">
-
-Free | ?
-:-------------------------:|:-------------------------:
-<img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" alt="Free" >  |  Any suggestions on other camera modes you want? Let me know by creating an issue :)
+<div align="center">
+<table>
+  <tr>
+    <th><h2>Static</h2></th>
+    <th><h2>Pinned</h2></th>
+  </tr>
+    <tr>    
+    <th>FollowStatic</th>
+    <th>Fps</th>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" style="height:350px;" alt="FollowStatic"></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="height:350px;" alt="Fps"></td>    
+  </tr>
+  <tr>
+    <th>LookAt</th>
+    <th>FollowBehind</th>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991088-5fb59700-bfc9-11eb-88d1-44a2b2a47cfa.png" style="height:350px;" alt="LookAt"></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991175-7956de80-bfc9-11eb-901c-0164152dd97d.png" style="height:350px;" alt="FollowBehind"></td></td>
+    </td>
+</tr>
+  <tr>
+    <th>Free</th>
+    <th>TopDown</th>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991199-7fe55600-bfc9-11eb-9ae6-b29cec3a3cd7.png" style="height:350px;" alt="Free" ></td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991141-71973a00-bfc9-11eb-90ee-377ffe656ae2.png" style="height:350px;" alt="TopDown"></td>
+</tr>
+  <tr>
+    <th>?</th>
+    <th>TopDownDirection</th>
+  </tr>
+  <tr>
+    <td>Any suggestions on other camera modes you want?</br>Let me know by creating an issue or </br>by creating your own using <a href="/examples/simple.rs">this example</a>.</td>
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991151-7360fd80-bfc9-11eb-9d41-1947c997b98a.png" style="height:350px;" alt="TopDownDirection"></td>
+</table>
+</div>
 
 ## Settings
 
