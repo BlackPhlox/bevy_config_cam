@@ -37,7 +37,7 @@ pub(crate) fn update_look_at(
     }
 
     //https://math.stackexchange.com/questions/80923/average-of-multiple-vectors
-    let total_targets = targets.iter().count();
+    //let total_targets = targets.iter().count();
     //avg /= total_targets as f32;
 
     rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la| {

@@ -14,10 +14,6 @@ use driver_marker_derive::DriverMarker;
 
 fn main() {
     App::new()
-        .insert_resource(WgpuSettings {
-            features: WgpuFeatures::POLYGON_MODE_LINE,
-            ..default()
-        })
         .add_plugins(DefaultPlugins)
         .add_plugin(WireframePlugin)
         .add_plugin(ConfigCam)
@@ -93,6 +89,11 @@ fn setup(
                 )
                 .clone(),
             transform: Transform {
+                translation: Vec3 {
+                    x: 0.0,
+                    y: 0.5,
+                    z: 0.0,
+                },
                 scale: Vec3::new(0.5, 0.5, 0.5),
                 ..Default::default()
             },

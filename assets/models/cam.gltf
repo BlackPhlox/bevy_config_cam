@@ -59,14 +59,14 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 19,
+            "count" : 58,
             "max" : [
                 1,
                 2,
                 1.7000000476837158
             ],
             "min" : [
-                -1,
+                -1.0014973878860474,
                 -1,
                 -1.7000000476837158
             ],
@@ -75,48 +75,48 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 19,
+            "count" : 58,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 19,
+            "count" : 58,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 21,
+            "count" : 72,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 228,
+            "byteLength" : 696,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 228,
-            "byteOffset" : 228
+            "byteLength" : 696,
+            "byteOffset" : 696
         },
         {
             "buffer" : 0,
-            "byteLength" : 152,
-            "byteOffset" : 456
+            "byteLength" : 464,
+            "byteOffset" : 1392
         },
         {
             "buffer" : 0,
-            "byteLength" : 42,
-            "byteOffset" : 608
+            "byteLength" : 144,
+            "byteOffset" : 1856
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 652,
-            "uri" : "data:application/octet-stream;base64,AACAvwAAgD+amdm/AACAvwAAgD+amdm/AACAvwAAgD+amdm/AACAvwAAgL+amdm/AACAvwAAgL+amdm/AACAvwAAgL+amdm/AACAvwAAgD+amdk/AACAvwAAgD+amdk/AACAvwAAgD+amdk/AACAvwAAgL+amdk/AACAvwAAgL+amdk/AACAvwAAgL+amdk/AACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAv2Zmpj+amVm/AACAv2Zmpj+amVk/AACAvwAAAEAAAACA//9/vwAAAAAAAACAMPnkPi/5ZD8AAACAScwlPwAAAAB0DkO///9/vwAAAAAAAACAMPnkPi/5ZL8AAACAScwlPwAAAAB0DkO///9/vwAAAAAAAACAMPnkPi/5ZD8AAACAScwlPwAAAAB0DkM///9/vwAAAAAAAACAMPnkPi/5ZL8AAACAScwlPwAAAAB0DkM/MPnkPi/5ZL8AAACAMPnkPi/5ZD8AAACAScwlPwAAAAB0DkO/ScwlPwAAAAB0DkM/AACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAAAgPwAAQD8AACA/AABAPwAAID8AAEA/AADAPgAAQD8AAMA+AABAPwAAwD4AAEA/AAAgPwAAgD8AACA/AACAPwAAID8AAIA/AADAPgAAgD8AAMA+AACAPwAAwD4AAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AACA/AABAPwAAID8AAIA/AAAgPwAAYD8JAAYAAAAJAAAAAwAFAAIADgAKAAQADAAIAAsADwABAAcADQASABEAEAAAAA=="
+            "byteLength" : 2000,
+            "uri" : "data:application/octet-stream;base64,AACAvwAAgD+amdm/AACAvwAAgD+amdm/AACAvwAAgD+amdm/AACAvwAAgD+amdm/AACAvwAAgL+amdm/AACAvwAAgL+amdm/AACAvwAAgL+amdm/AACAvwAAgL+amdm/AACAvwAAgD+amdk/AACAvwAAgD+amdk/AACAvwAAgD+amdk/AACAvwAAgD+amdk/AACAvwAAgL+amdk/AACAvwAAgL+amdk/AACAvwAAgL+amdk/AACAvwAAgL+amdk/AACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACAAACAPwAAAAAAAACA33x/v2Zmpj+amVm/33x/v2Zmpj+amVm/33x/v2Zmpj+amVm/33x/v2Zmpj+amVk/33x/v2Zmpj+amVk/33x/v2Zmpj+amVk/33x/vwAAAEAAAACA33x/vwAAAEAAAACA33x/vwAAAEAAAACAAACAvwAAAEAAAACAAACAvwAAAEAAAACAAACAvwAAAEAAAACAAACAv2Zmpj+amVm/AACAv2Zmpj+amVm/AACAv2Zmpj+amVm/AACAv2Zmpj+amVk/AACAv2Zmpj+amVk/AACAv2Zmpj+amVk/ETGAvwAAgL+amdm/ETGAvwAAgL+amdm/ETGAvwAAgL+amdm/ETGAvwAAgL+amdm/ETGAvwAAgL+amdk/ETGAvwAAgL+amdk/ETGAvwAAgL+amdk/ETGAvwAAgL+amdk/ETGAvwAAgD+amdk/ETGAvwAAgD+amdk/ETGAvwAAgD+amdk/ETGAvwAAgD+amdk/ETGAvwAAgD+amdm/ETGAvwAAgD+amdm/ETGAvwAAgD+amdm/ETGAvwAAgD+amdm/3p1/PwAAAAAAAACA3p1/PwAAAAAAAACA3p1/PwAAAAAAAACA3p1/PwAAAAAAAACAScwlvwAAAAB0DkM/MPnkvi/5ZL8AAACAAAAAAAAAgL8AAACAAAAAAAAAAAAAAIA/ScwlvwAAAAB0DkM/MPnkvi/5ZD8AAACAAAAAAAAAAAAAAIA/AAAAAAAAgD8AAACAScwlvwAAAAB0DkO/MPnkvi/5ZL8AAACAAAAAAAAAgL8AAACAAAAAAAAAAAAAAIC/ScwlvwAAAAB0DkO/MPnkvi/5ZD8AAACAAAAAAAAAAAAAAIC/AAAAAAAAgD8AAACAScwlvwAAAAB0DkO/ScwlvwAAAAB0DkM/MPnkvi/5ZL8AAACAMPnkvi/5ZD8AAACAAACAvwAAAAAAAACAAAAAAHudRb9lvSI/AAAAAP//fz8AAACAAACAvwAAAAAAAACAAAAAAHudRb9lvSK/AAAAAP//fz8AAACAAACAvwAAAAAAAACAAAAAAHudRb9lvSK/AAAAAHudRb9lvSI/AAAAAHudRb9lvSK/AAAAAHudRb9lvSI/AACAPwAAAAAAAACAAAAAAHudRb9lvSI/AAAAAP//fz8AAACAAACAPwAAAAAAAACAAAAAAHudRb9lvSK/AAAAAP//fz8AAACAAACAPwAAAAAAAACAAAAAAAAAAAAAAIA/AAAAAAAAgD8AAACAMPnkPi/5ZL8AAACASswlPwAAAAB0DkO/AAAAAAAAAAAAAIC/AAAAAAAAgD8AAACAMPnkPi/5ZL8AAACASswlPwAAAAB0DkM/AAAAAAAAgL8AAACAAAAAAAAAAAAAAIC/MPnkPi/5ZD8AAACASswlPwAAAAB0DkM/AAAAAAAAgL8AAACAAAAAAAAAAAAAAIA/MPnkPi/5ZD8AAACASswlPwAAAAB0DkO/MPnkPi/5ZL8AAACAMPnkPi/5ZD8AAACASswlPwAAAAB0DkO/SswlPwAAAAB0DkM/AAAgPwAAQD8AACA/AABAPwAAID8AAEA/AAAgPwAAQD8AAMA+AABAPwAAwD4AAEA/AADAPgAAQD8AAMA+AABAPwAAID8AAIA/AAAgPwAAgD8AACA/AACAPwAAID8AAIA/AADAPgAAgD8AAMA+AACAPwAAwD4AAIA/AADAPgAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAID8AAEA/AAAgPwAAQD8AACA/AABAPwAAID8AAIA/AAAgPwAAgD8AACA/AACAPwAAID8AAGA/AAAgPwAAYD8AACA/AABgPwAAID8AAGA/AAAgPwAAYD8AACA/AABgPwAAID8AAEA/AAAgPwAAQD8AACA/AABAPwAAID8AAIA/AAAgPwAAgD8AACA/AACAPwAAwD4AAEA/AADAPgAAQD8AAMA+AABAPwAAwD4AAEA/AADAPgAAgD8AAMA+AACAPwAAwD4AAIA/AADAPgAAgD8AACA/AACAPwAAID8AAIA/AAAgPwAAgD8AACA/AACAPwAAID8AAEA/AAAgPwAAQD8AACA/AABAPwAAID8AAEA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8EABEAAAANABMABQAIABAADAABABIACQAaABQAFwAfACUAIgAZABYAIQAZACEAJAAbABgAIwAbACMAHQAVABwAHgAVAB4AIAApADUAOAAsACgANgAxAC0AOQA0ADAANwACAAoALgACAC4AMgALAA4AKgALACoALwAGAAMAMwAGADMAJgAPAAcAJwAPACcAKwA="
         }
     ]
 }
