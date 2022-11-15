@@ -1,6 +1,3 @@
-fn main() {}
-
-/*
 use bevy::prelude::*;
 use bevy_config_cam::*;
 fn main() {
@@ -35,7 +32,7 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // plane
-    commands.spawn_bundle(PbrBundle {
+    commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 11.0 })),
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
@@ -43,26 +40,24 @@ fn setup(
 
     //Target 1
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn((PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             transform: Transform::from_xyz(-5.0, 0.5, 0.0),
             ..Default::default()
-        })
-        .insert(T1);
+        }, T1));
 
     //Target 2
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn((PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             transform: Transform::from_xyz(5.0, 0.5, 0.0),
             ..Default::default()
-        })
-        .insert(T2);
+        }, T2));
 
     // light
-    commands.spawn_bundle(PointLightBundle {
+    commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
@@ -98,5 +93,3 @@ fn set_closest_target(
         cl.target = None;
     }
 }
-
-*/

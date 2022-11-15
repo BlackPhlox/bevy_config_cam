@@ -29,11 +29,11 @@ bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly"}
 driver_marker_derive = { path = "driver_marker_derive" }
 
 [dependencies.bevy]
-version = "0.8"
+version = "0.9"
 features = ["bevy_render","bevy_pbr"]
 default-features = false
 
 [dev-dependencies.bevy]
-version = "0.8"
+version = "0.9"
 features = ["bevy_core_pipeline", "bevy_asset", "bevy_scene", "bevy_pbr", "bevy_gltf", "x11", "wayland"]
 default-features = false

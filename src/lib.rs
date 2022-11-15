@@ -2,8 +2,8 @@ use bevy::{
     ecs::{component::TableStorage, system::SystemParam},
     input::Input,
     prelude::{
-        App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Transform,
-        Vec3, With,
+        App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Resource,
+        Transform, Vec3, With,
     },
 };
 use bevy_dolly::{dolly::glam, prelude::*};
@@ -76,22 +76,20 @@ fn default_setup(mut commands: Commands) {
     //Default player entity : Cone
     //commands.spawn().insert(Target);
 
-    commands
-        .spawn()
-        .insert(
-            Rig::builder()
-                .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-45.0))
-                .with(Smooth::new_rotation(1.5))
-                .with(Arm::new(glam::Vec3::Z * 4.0))
-                .with(bevy_dolly::prelude::LookAt::new(glam::Vec3::new(
-                    0., 0., 0.,
-                )))
-                .build(),
-        )
-        .insert(Pinned);
+    commands.spawn((
+        Pinned,
+        Rig::builder()
+            .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-45.0))
+            .with(Smooth::new_rotation(1.5))
+            .with(Arm::new(glam::Vec3::Z * 4.0))
+            .with(bevy_dolly::prelude::LookAt::new(glam::Vec3::new(
+                0., 0., 0.,
+            )))
+            .build(),
+    ));
 
     //Missing FPV
-    commands.spawn().insert(FPV);
+    commands.spawn(FPV);
 }
 
 #[derive(SystemParam)]
@@ -112,6 +110,7 @@ impl<'w, 's> DriverRigs<'w, 's> {
     }
 }
 
+#[derive(Resource)]
 pub struct Drivers(Vec<Box<dyn DriverMarker>>);
 
 impl Default for Drivers {
@@ -133,7 +132,7 @@ pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'stati
     fn remove_from(&self, commands: &mut Commands, entity: Entity);
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct DriverIndex(usize);
 
 impl DriverIndex {

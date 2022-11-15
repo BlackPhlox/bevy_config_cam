@@ -36,7 +36,7 @@ fn setup(
     asset_server: Res<AssetServer>,
 ) {
     // plane
-    commands.spawn_bundle(PbrBundle {
+    commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
@@ -45,21 +45,23 @@ fn setup(
     // cube
 
     commands
-        .spawn_bundle(SpatialBundle::from_transform(Transform {
+        .spawn(SpatialBundle::from_transform(Transform {
             rotation: Quat::IDENTITY,
             translation: Vec3::new(2., 0., 0.),
             ..default()
         }))
         .with_children(|cell| {
-            cell.spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                transform: Transform::from_xyz(0.0, 0.5, 0.0),
-                ..Default::default()
-            });
-        })
-        .insert(Rotates)
-        .insert(Target);
+            cell.spawn((
+                Rotates,
+                Target,
+                PbrBundle {
+                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                    transform: Transform::from_xyz(0.0, 0.5, 0.0),
+                    ..Default::default()
+                },
+            ));
+        });
 
     // light
     commands.spawn_bundle(PointLightBundle {
@@ -129,7 +131,7 @@ fn setup(
         ..Default::default()
     });
 
-    commands.spawn().insert(CameraCount { total: 2, index: 0 });
+    commands.spawn(CameraCount { total: 2, index: 0 });
 }
 
 #[derive(Component)]
