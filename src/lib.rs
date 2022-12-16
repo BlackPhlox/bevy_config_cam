@@ -1,15 +1,17 @@
-mod drive;
-// mod lib2;
+mod driver;
+mod drivers;
 
+use crate::drivers::first_person_view::FPV;
+use crate::drivers::pinned::Pinned;
 use bevy::{
     input::Input,
-    prelude::{
-        App, Commands, Component, KeyCode, Plugin, Query, Res,
-        Transform, Vec3, With,
-    },
+    prelude::{App, Commands, Component, KeyCode, Plugin, Query, Res, Transform, Vec3, With,}
+};
+use driver::{
+    driver_resources::{change_driver_system, update_driver_system},
+    driver_core::{DriverIndex, Drivers, DriverRigs},
 };
 use bevy_dolly::{dolly::glam, prelude::*};
-use drive::{drivers::{DriverIndex, Drivers, DriverRigs}, views::{FPV, Pinned}, driver_control::{change_driver_system, update_driver_system}};
 pub use std::any::TypeId;
 
 // TODO documentation

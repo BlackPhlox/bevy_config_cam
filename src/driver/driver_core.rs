@@ -1,3 +1,5 @@
+
+use crate::{FPV, Pinned};
 use std::any::TypeId;
 
 use bevy::{prelude::{
@@ -5,9 +7,6 @@ use bevy::{prelude::{
     Commands, Component, Query}, ecs::{component::TableStorage, system::SystemParam}};
 use bevy_dolly::prelude::Rig;
 
-use crate::Pinned;
-
-use super::views::FPV;
 
 pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'static {
     fn get_id(&self) -> TypeId;
@@ -43,6 +42,8 @@ pub struct DriverIndex {
 } 
 
 impl DriverIndex {
+
+    /// Goes to next index, loops back to index `0` if already at the last index.
     pub fn next(&mut self, len: usize) {
         if self.index >= len - 1 {
             self.index = 0;
