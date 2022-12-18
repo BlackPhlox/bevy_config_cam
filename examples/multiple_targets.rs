@@ -39,22 +39,26 @@ fn setup(
     });
 
     //Target 1
-    commands
-        .spawn((PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             transform: Transform::from_xyz(-5.0, 0.5, 0.0),
             ..Default::default()
-        }, T1));
+        },
+        T1,
+    ));
 
     //Target 2
-    commands
-        .spawn((PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             transform: Transform::from_xyz(5.0, 0.5, 0.0),
             ..Default::default()
-        }, T2));
+        },
+        T2,
+    ));
 
     // light
     commands.spawn(PointLightBundle {

@@ -1,10 +1,8 @@
-use bevy::prelude::{ResMut, KeyCode, Input, Res, Camera, Query, Entity, Commands};
+use bevy::prelude::{Camera, Commands, Entity, Input, KeyCode, Query, Res, ResMut};
 
 use super::driver_core::{DriverIndex, Drivers};
 
-
 // TODO documentation
-
 
 //Use collection with and keeping an index component or the like
 pub fn change_driver_system(

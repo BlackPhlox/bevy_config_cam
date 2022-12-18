@@ -5,13 +5,13 @@ use crate::drivers::first_person_view::FPV;
 use crate::drivers::pinned::Pinned;
 use bevy::{
     input::Input,
-    prelude::{App, Commands, Component, KeyCode, Plugin, Query, Res, Transform, Vec3, With,}
-};
-use driver::{
-    driver_resources::{change_driver_system, update_driver_system},
-    driver_core::{DriverIndex, Drivers, DriverRigs},
+    prelude::{App, Commands, Component, KeyCode, Plugin, Query, Res, Transform, Vec3, With},
 };
 use bevy_dolly::{dolly::glam, prelude::*};
+use driver::{
+    driver_core::{DriverIndex, DriverRigs, Drivers},
+    driver_resources::{change_driver_system, update_driver_system},
+};
 pub use std::any::TypeId;
 
 // TODO documentation

@@ -1,12 +1,11 @@
-
-use crate::{FPV, Pinned};
+use crate::{Pinned, FPV};
 use std::any::TypeId;
 
-use bevy::{prelude::{
-    Resource, Entity,
-    Commands, Component, Query}, ecs::{component::TableStorage, system::SystemParam}};
+use bevy::{
+    ecs::{component::TableStorage, system::SystemParam},
+    prelude::{Commands, Component, Entity, Query, Resource},
+};
 use bevy_dolly::prelude::Rig;
-
 
 pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'static {
     fn get_id(&self) -> TypeId;
@@ -16,33 +15,32 @@ pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'stati
 }
 
 #[derive(Resource)]
-pub struct Drivers{
+pub struct Drivers {
     // access must happen in this folder or children
-    pub (super) marker: Vec<Box<dyn DriverMarker>>,
-} 
+    pub(super) marker: Vec<Box<dyn DriverMarker>>,
+}
 
 impl Default for Drivers {
     fn default() -> Self {
         Self {
-            marker: vec![Box::new(Pinned), Box::new(FPV)]
+            marker: vec![Box::new(Pinned), Box::new(FPV)],
         }
     }
 }
 
 impl Drivers {
     pub fn new(marker: Vec<Box<dyn DriverMarker>>) -> Self {
-        Self{marker}
+        Self { marker }
     }
 }
 
 #[derive(Default, Resource)]
 pub struct DriverIndex {
     // access must happen in this folder or children
-    pub (super) index: usize,
-} 
+    pub(super) index: usize,
+}
 
 impl DriverIndex {
-
     /// Goes to next index, loops back to index `0` if already at the last index.
     pub fn next(&mut self, len: usize) {
         if self.index >= len - 1 {
