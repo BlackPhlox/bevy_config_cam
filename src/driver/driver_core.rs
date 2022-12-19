@@ -1,4 +1,4 @@
-use crate::{Pinned, FPV};
+use crate::{Pinned, Fpv};
 use std::any::TypeId;
 
 use bevy::{
