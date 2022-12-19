@@ -85,5 +85,5 @@ fn default_setup(mut commands: Commands) {
     ));
 
     //Missing FPV
-    commands.spawn(FPV);
+    commands.spawn(Fpv);
 }
