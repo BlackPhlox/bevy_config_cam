@@ -7,6 +7,6 @@ use std::any::TypeId;
 use crate::driver::driver_core::DriverMarker;
 
 #[derive(DriverMarker, Component, Clone, Copy, Debug)]
-pub struct FPV;
+pub struct Fpv;
 
 // TODO impl
