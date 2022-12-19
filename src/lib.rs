@@ -1,7 +1,7 @@
 pub mod driver;
 pub mod drivers;
 
-use crate::drivers::first_person_view::FPV;
+use crate::drivers::first_person_view::Fpv;
 use crate::drivers::pinned::Pinned;
 use bevy::{
     input::Input,
