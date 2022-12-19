@@ -23,7 +23,7 @@ pub struct Drivers {
 impl Default for Drivers {
     fn default() -> Self {
         Self {
-            marker: vec![Box::new(Pinned), Box::new(FPV)],
+            marker: vec![Box::new(Pinned), Box::new(Fpv)],
         }
     }
 }
