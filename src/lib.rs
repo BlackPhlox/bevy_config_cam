@@ -22,7 +22,7 @@ impl Plugin for ConfigCam {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
             .add_rig_component(Pinned)
-            .add_rig_component(FPV)
+            .add_rig_component(Fpv)
             .add_startup_system(default_setup)
             .add_system(change_driver_system)
             .add_system(update_driver_system)
