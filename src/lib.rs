@@ -1,15 +1,20 @@
+pub mod driver;
+pub mod drivers;
+
+use crate::drivers::first_person_view::Fpv;
+use crate::drivers::pinned::Pinned;
 use bevy::{
-    ecs::{component::TableStorage, system::SystemParam},
     input::Input,
-    prelude::{
-        App, Camera, Commands, Component, Entity, KeyCode, Plugin, Query, Res, ResMut, Resource,
-        Transform, Vec3, With,
-    },
+    prelude::{App, Commands, Component, KeyCode, Plugin, Query, Res, Transform, Vec3, With},
 };
 use bevy_dolly::{dolly::glam, prelude::*};
-use driver_marker_derive::DriverMarker;
-
+use driver::{
+    driver_core::{DriverIndex, DriverRigs, Drivers},
+    driver_resources::{change_driver_system, update_driver_system},
+};
 pub use std::any::TypeId;
+
+// TODO documentation
 
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
@@ -17,7 +22,7 @@ impl Plugin for ConfigCam {
         app.init_resource::<DriverIndex>()
             .init_resource::<Drivers>()
             .add_rig_component(Pinned)
-            .add_rig_component(FPV)
+            .add_rig_component(Fpv)
             .add_startup_system(default_setup)
             .add_system(change_driver_system)
             .add_system(update_driver_system)
@@ -62,15 +67,6 @@ pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs)
 #[derive(Component)]
 pub struct Target;
 
-#[derive(DriverMarker, Component, Clone, Copy, Debug)]
-pub struct Pinned;
-//Substates:
-//Locked Rotation
-//Free
-
-#[derive(DriverMarker, Component, Clone, Copy, Debug)]
-pub struct FPV;
-
 fn default_setup(mut commands: Commands) {
     //Should be default player entity
     //Default player entity : Cone
@@ -89,103 +85,5 @@ fn default_setup(mut commands: Commands) {
     ));
 
     //Missing FPV
-    commands.spawn(FPV);
-}
-
-#[derive(SystemParam)]
-struct DriverRigs<'w, 's> {
-    rigs: Query<'w, 's, &'static mut Rig>,
-}
-
-impl<'w, 's> DriverRigs<'w, 's> {
-    fn try_for_each_driver_mut<T>(&mut self, f: impl FnOnce(&mut T) + std::marker::Copy)
-    where
-        T: bevy_dolly::prelude::RigDriver<bevy_dolly::prelude::RightHanded>,
-    {
-        for mut rig in &mut self.rigs {
-            if let Some(camera_driver) = rig.try_driver_mut::<T>() {
-                f(camera_driver);
-            }
-        }
-    }
-}
-
-#[derive(Resource)]
-pub struct Drivers(Vec<Box<dyn DriverMarker>>);
-
-impl Default for Drivers {
-    fn default() -> Self {
-        Self(vec![Box::new(Pinned), Box::new(FPV)])
-    }
-}
-
-impl Drivers {
-    pub fn new(driver_markers: Vec<Box<dyn DriverMarker>>) -> Self {
-        Self(driver_markers)
-    }
-}
-
-pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'static {
-    fn get_id(&self) -> TypeId;
-    fn get_name(&self) -> &str;
-    fn add_to(&self, commands: &mut Commands, entity: Entity);
-    fn remove_from(&self, commands: &mut Commands, entity: Entity);
-}
-
-#[derive(Default, Resource)]
-pub struct DriverIndex(usize);
-
-impl DriverIndex {
-    pub fn next(&mut self, len: usize) {
-        if self.0 >= len - 1 {
-            self.0 = 0;
-        } else {
-            self.0 += 1;
-        }
-    }
-}
-
-//Use collection with and keeping an index component or the like
-fn change_driver_system(
-    mut index: ResMut<DriverIndex>,
-    drivers: Res<Drivers>,
-    keys: Res<Input<KeyCode>>,
-) {
-    if keys.just_pressed(KeyCode::T) {
-        index.next(drivers.0.len());
-    }
-}
-
-fn update_driver_system(
-    q: Query<(Entity, &Camera)>,
-    mut commands: Commands,
-    index: Res<DriverIndex>,
-    drivers: Res<Drivers>,
-) {
-    if index.is_changed() {
-        for box_component in &drivers.0 {
-            let component = box_component.as_ref();
-            let component_id = component.get_id();
-
-            if let Some(h) = drivers.0.get(index.0) {
-                if component_id.eq(&h.get_id()) {
-                    //Add new driver component
-                    //Remove old driver component
-                    for (entity, camera) in q.iter() {
-                        if camera.is_active {
-                            component.add_to(&mut commands, entity);
-                            println!("Adding {:?} to Camera {:?}", component.get_name(), entity);
-                        }
-                    }
-                } else {
-                    for (entity, camera) in q.iter() {
-                        if camera.is_active {
-                            component.remove_from(&mut commands, entity);
-                            println!("Remove {:?} from Camera {:?}", component.get_name(), entity);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    commands.spawn(Fpv);
 }
