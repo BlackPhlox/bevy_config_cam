@@ -4,9 +4,9 @@ use bevy::{
     pbr::wireframe::{Wireframe, WireframePlugin},
     prelude::*,
 };
+use bevy_config_cam::driver::driver_core::DriverMarker;
 use bevy_config_cam::*;
-use bevy_config_cam::{driver::driver_core::DriverMarker, drivers::fpv::CCFpv};
-use bevy_dolly::prelude::{Fpv, Rig};
+
 use config_cam_derive::DriverMarker;
 
 fn main() {
@@ -93,18 +93,16 @@ fn setup(
 
     commands
         .spawn(PbrBundle {
-            mesh: cam.clone(),
-            material: materials
-                .add(
-                    Color::Rgba {
-                        red: 0.,
-                        green: 0.,
-                        blue: 0.,
-                        alpha: 0.,
-                    }
-                    .into(),
-                )
-                .clone(),
+            mesh: cam,
+            material: materials.add(
+                Color::Rgba {
+                    red: 0.,
+                    green: 0.,
+                    blue: 0.,
+                    alpha: 0.,
+                }
+                .into(),
+            ),
             transform: Transform {
                 translation: Vec3 {
                     x: 0.0,
@@ -207,18 +205,18 @@ fn add_target_system(
 
 fn switch_camera(
     keys: Res<Input<KeyCode>>,
-    mut commands: Commands,
+    _commands: Commands,
     mut q: Query<&Camera>,
     mut q2: Query<&CameraCount>,
 ) {
-    let mut cc = q2.single_mut();
+    let cc = q2.single_mut();
     if keys.just_pressed(KeyCode::V) {
-        for (i, c) in &mut q.iter_mut().enumerate() {
+        for (i, _c) in &mut q.iter_mut().enumerate() {
             if i + 1 > (cc.total - 1).into() {
                 //cc.index = 0;
                 //c.is_active = true;
             }
-            if i.eq(&(cc.index + 1 as usize)) {}
+            if i.eq(&(cc.index + 1_usize)) {}
         }
     }
 }

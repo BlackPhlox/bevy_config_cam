@@ -2,15 +2,12 @@ pub mod driver;
 pub mod drivers;
 
 use bevy::{
-    ecs::component::TableStorage,
-    input::Input,
     prelude::{
-        default, App, Bundle, Camera, Camera2dBundle, Camera3d, Camera3dBundle, Commands,
-        Component, IntoSystemDescriptor, KeyCode, OrthographicProjection, PerspectiveProjection,
-        Plugin, Query, Res, ResMut, Resource, SystemLabel, Transform, Vec3, With,
+        default, App, Camera, Camera2dBundle, Camera3dBundle, Commands, Component,
+        IntoSystemDescriptor, OrthographicProjection, Plugin, Query, Res, Resource, SystemLabel,
+        Transform, Vec3, With,
     },
-    reflect::Reflect,
-    render::camera::{CameraProjection, CameraProjectionPlugin, ScalingMode},
+    render::camera::ScalingMode,
 };
 use bevy_dolly::prelude::*;
 use driver::{
@@ -56,8 +53,6 @@ impl Default for CCConfig {
         }
     }
 }
-
-pub fn bind_perspective<T: Bundle>(bundle: T) {}
 
 fn camera_setup(mut commands: Commands, config: Res<CCConfig>) {
     if !config.init_cameras {
@@ -133,7 +128,7 @@ pub(crate) fn update_look_at(targets: Query<(&Transform, With<Target>)>, mut rig
 }
 
 fn get_center_point(targets: Vec<Vec3>) -> Vec3 {
-    if targets.len() == 0 {
+    if targets.is_empty() {
         Vec3::ONE
     } else if targets.len() == 1 {
         *targets.first().unwrap()

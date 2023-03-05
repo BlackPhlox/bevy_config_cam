@@ -1,4 +1,4 @@
-use crate::{CCSetupLabel, Commands, MainCamera, PerspectiveCamera};
+use crate::{CCSetupLabel, Commands, MainCamera};
 use bevy::ecs::entity::Entity;
 use bevy::prelude::Component;
 use config_cam_derive::DriverMarker;
@@ -86,13 +86,11 @@ fn update_orbit_camera(
             if keys.just_pressed(KeyCode::X) {
                 camera_driver.rotate_yaw_pitch(90.0, 0.0);
             }
-        } else {
-            if !grab_config.visible {
-                camera_driver.rotate_yaw_pitch(
-                    -0.1 * delta.x * sensitivity.x,
-                    -0.1 * delta.y * sensitivity.y,
-                );
-            }
+        } else if !grab_config.visible {
+            camera_driver.rotate_yaw_pitch(
+                -0.1 * delta.x * sensitivity.x,
+                -0.1 * delta.y * sensitivity.y,
+            );
         }
 
         if keys.just_pressed(KeyCode::E) {
@@ -113,10 +111,8 @@ fn update_orbit_camera(
         if config.pin {
             let camera_driver_2 = rig.driver_mut::<Position>();
 
-            for opt_transform in transform.iter() {
-                if let Some(t) = opt_transform {
-                    camera_driver_2.position = t.translation;
-                }
+            for opt_transform in transform.iter().flatten() {
+                camera_driver_2.position = opt_transform.translation;
             }
         }
     }
