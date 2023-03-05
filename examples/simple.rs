@@ -3,14 +3,11 @@ use std::f32::consts::PI;
 use bevy::{
     pbr::wireframe::{Wireframe, WireframePlugin},
     prelude::*,
-    render::{
-        camera::ScalingMode,
-        settings::{WgpuFeatures, WgpuSettings},
-    },
 };
 use bevy_config_cam::*;
-
-use driver_marker_derive::DriverMarker;
+use bevy_config_cam::{driver::driver_core::DriverMarker, drivers::fpv::CCFpv};
+use bevy_dolly::prelude::{Fpv, Rig};
+use config_cam_derive::DriverMarker;
 
 fn main() {
     App::new()
@@ -63,8 +60,26 @@ fn setup(
             ));
         });
 
+    commands
+        .spawn(SpatialBundle::from_transform(Transform {
+            rotation: Quat::IDENTITY,
+            translation: Vec3::new(-2., 0., 0.),
+            ..default()
+        }))
+        .with_children(|cell| {
+            cell.spawn((
+                Target,
+                PbrBundle {
+                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                    transform: Transform::from_xyz(0.0, 0.5, 0.0),
+                    ..Default::default()
+                },
+            ));
+        });
+
     // light
-    commands.spawn_bundle(PointLightBundle {
+    commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
@@ -77,7 +92,7 @@ fn setup(
     }).insert(Wireframe);*/
 
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: cam.clone(),
             material: materials
                 .add(
@@ -103,21 +118,28 @@ fn setup(
         })
         .insert(Wireframe);
 
-    commands.spawn_bundle(Camera3dBundle {
-        camera: Camera {
-            is_active: true,
+    /*
+        commands.spawn((
+            Camera3dBundle {
+            camera: Camera {
+                is_active: true,
+                ..Default::default()
+            },
+            projection: OrthographicProjection {
+                scale: 3.0,
+                scaling_mode: ScalingMode::FixedVertical(1.0),
+                ..default()
+            }
+            .into(),
             ..Default::default()
         },
-        projection: OrthographicProjection {
-            scale: 3.0,
-            scaling_mode: ScalingMode::FixedVertical(1.0),
-            ..default()
-        }
-        .into(),
-        ..Default::default()
-    });
+        Rig::builder()
+        .with(Fpv::from_position_target(Transform::default()))
+        .build(),
+        CCFpv,
+    ));
 
-    commands.spawn_bundle(Camera3dBundle {
+    commands.spawn(Camera3dBundle {
         camera: Camera {
             is_active: false,
             ..Default::default()
@@ -130,6 +152,7 @@ fn setup(
         .into(),
         ..Default::default()
     });
+    */
 
     commands.spawn(CameraCount { total: 2, index: 0 });
 }
@@ -143,6 +166,9 @@ struct CameraCount {
 #[derive(Component)]
 struct Rotates;
 
+#[derive(Component)]
+struct Selected;
+
 fn rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<Rotates>>) {
     for mut transform in query.iter_mut() {
         *transform = Transform::from_rotation(Quat::from_rotation_y(
@@ -154,11 +180,13 @@ fn rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<Rotates
 fn remove_target_system(
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
-    q: Query<Entity, (With<Rotates>, With<Target>)>,
+    q: Query<Entity, (With<Selected>, Without<Target>)>,
 ) {
     if keys.just_pressed(KeyCode::G) {
         for e in &q {
             commands.entity(e).remove::<Target>();
+            commands.entity(e).remove::<Rotates>();
+            println!("Removed Target");
         }
     }
 }
@@ -166,11 +194,13 @@ fn remove_target_system(
 fn add_target_system(
     keys: Res<Input<KeyCode>>,
     mut commands: Commands,
-    q: Query<Entity, (With<Rotates>, Without<Target>)>,
+    q: Query<Entity, (Without<Selected>, With<Target>)>,
 ) {
-    if keys.just_pressed(KeyCode::G) {
+    if keys.just_pressed(KeyCode::H) {
         for e in &q {
             commands.entity(e).insert(Target);
+            commands.entity(e).insert(Rotates);
+            println!("Added Target");
         }
     }
 }

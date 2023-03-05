@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::prelude::*;
 use bevy_config_cam::*;
 
 fn main() {
@@ -33,20 +33,6 @@ fn setup(
     // light
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
-
-    commands.spawn(Camera3dBundle {
-        camera: Camera {
-            is_active: true,
-            ..Default::default()
-        },
-        projection: OrthographicProjection {
-            scale: 3.0,
-            scaling_mode: ScalingMode::FixedVertical(1.0),
-            ..default()
-        }
-        .into(),
         ..Default::default()
     });
 }

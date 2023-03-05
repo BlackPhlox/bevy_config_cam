@@ -1,5 +1,5 @@
 [package]
-name = "driver_marker_derive"
+name = "config_cam_derive"
 version = "0.1.0"
 edition = "2021"
 
