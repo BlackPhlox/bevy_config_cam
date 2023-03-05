@@ -25,7 +25,7 @@ name = "bevy_config_cam"
 rand = "0.8"
 strum = "0.24"
 strum_macros = "0.24"
-bevy_dolly = { path = "../bevy_dolly" }#{ git = "https://github.com/BlackPhlox/bevy_dolly", branch = "map_fork" }
+bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly", branch = "map_fork_v2" }#{ path = "../bevy_dolly" }
 config_cam_derive = { path = "config_cam_derive" }
 
 [dependencies.bevy]
