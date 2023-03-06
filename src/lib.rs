@@ -39,6 +39,32 @@ impl Plugin for ConfigCam {
     }
 }
 
+#[macro_export]
+macro_rules! type_vec {
+    ( $( $x:ident ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push(TypeId::of::<$x>());
+            )*
+            temp_vec
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! driver_vec {
+    ( $( $x:ident ),* ) => {
+        {
+            let mut temp_vec: Vec<Box<dyn DriverMarker>> = Vec::new();
+            $(
+                temp_vec.push(Box::new($x));
+            )*
+            temp_vec
+        }
+    };
+}
+
 #[derive(Resource)]
 pub struct CCConfig {
     pub init_cameras: bool,

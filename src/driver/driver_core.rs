@@ -22,43 +22,56 @@ pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'stati
 pub struct Drivers {
     // access must happen in this folder or children
     pub enabled_drivers: Vec<Box<dyn DriverMarker>>,
-    pub current: TypeId,
-    index: usize,
+    driver_index: usize,
+    pub cameras: Vec<TypeId>,
+    camera_index: usize,
 }
 
 impl Default for Drivers {
     fn default() -> Self {
         Self {
             enabled_drivers: vec![Box::new(CCOrbit), Box::new(CCFpv)],
-            index: Default::default(),
-            current: TypeId::of::<MainCamera>(),
+            cameras: vec![TypeId::of::<MainCamera>()],
+            driver_index: Default::default(),
+            camera_index: Default::default(),
         }
     }
 }
 
 impl Drivers {
-    pub fn new(marker: Vec<Box<dyn DriverMarker>>) -> Self {
+    pub fn new(enabled_drivers: Vec<Box<dyn DriverMarker>>, cameras: Vec<TypeId>) -> Self {
         Self {
-            enabled_drivers: marker,
-            index: Default::default(),
-            current: TypeId::of::<MainCamera>(),
+            enabled_drivers,
+            driver_index: Default::default(),
+            cameras,
+            camera_index: Default::default(),
         }
     }
 
     pub fn next(&mut self) {
-        if self.index >= self.enabled_drivers.len() - 1 {
-            self.index = 0;
+        if self.driver_index >= self.enabled_drivers.len() - 1 {
+            self.driver_index = 0;
         } else {
-            self.index += 1;
+            self.driver_index += 1;
         }
     }
 
     pub fn change_camera<T: 'static>(&mut self) {
-        self.current = TypeId::of::<T>();
+        let type_id = TypeId::of::<T>();
+        self.cameras.push(type_id);
+        self.cameras.dedup();
+        if let Some((x, _)) = self
+            .cameras
+            .iter()
+            .enumerate()
+            .find(|(_, id)| (*id).clone().eq(&type_id))
+        {
+            self.camera_index = x;
+        }
     }
 
     pub fn index(&self) -> usize {
-        self.index
+        self.driver_index
     }
 }
 

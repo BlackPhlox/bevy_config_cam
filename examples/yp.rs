@@ -5,6 +5,7 @@ use bevy_config_cam::{
     drivers::{fpv::CCFpv, orbit::CCOrbit},
     ConfigCam,
 };
+use bevy_config_cam::{driver_vec, type_vec, MainCamera};
 use bevy_dolly::prelude::*;
 use config_cam_derive::DriverMarker;
 
@@ -15,11 +16,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
         .add_dolly_component(YP)
-        .insert_resource(Drivers::new(vec![
-            Box::new(CCOrbit),
-            Box::new(CCFpv),
-            Box::new(YP),
-        ]))
+        .insert_resource(Drivers::new(
+            driver_vec![CCOrbit, CCFpv, YP],
+            type_vec![MainCamera],
+        ))
         .add_startup_system(setup)
         .add_system(update_yaw_driver)
         .run();
