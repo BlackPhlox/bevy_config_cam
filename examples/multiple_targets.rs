@@ -5,7 +5,7 @@ use config_cam_derive::DriverMarker;
 
 fn main() {
     App::new()
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa::default())
         .add_plugins(DefaultPlugins)
         .add_plugin(ConfigCam)
         .add_rig_component(T1)
@@ -39,7 +39,7 @@ fn setup(
 ) {
     // plane
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 11.0 })),
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 11.0, ..Default::default() })),
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
     });

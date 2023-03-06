@@ -14,7 +14,7 @@ pub struct CCOrbit;
 impl Plugin for CCOrbit {
     fn build(&self, app: &mut App) {
         app.add_rig_component(CCOrbit)
-            .add_state(Pan::Mouse)
+            .add_state::<Pan>()
             .add_startup_system(setup_orbit.after(CCSetupLabel))
             .add_system(handle_mouse_scroll)
             .add_system(update_orbit_camera);
@@ -34,8 +34,9 @@ fn setup_orbit(mut commands: Commands) {
     ));
 }
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
+#[derive(States, Default, PartialEq, Eq, Debug, Clone, Copy, Hash)]
 enum Pan {
+    #[default]
     Mouse,
     Keys,
 }
@@ -79,7 +80,7 @@ fn update_orbit_camera(
 
         config.rotation = Quat::from_rotation_y(delta.x);
 
-        if pan.current().eq(&Pan::Keys) {
+        if pan.0.eq(&Pan::Keys) {
             if keys.just_pressed(KeyCode::Z) {
                 camera_driver.rotate_yaw_pitch(-90.0, 0.0);
             }
@@ -94,12 +95,12 @@ fn update_orbit_camera(
         }
 
         if keys.just_pressed(KeyCode::E) {
-            let result = if pan.current().eq(&Pan::Keys) {
+            let result = if pan.0.eq(&Pan::Keys) {
                 Pan::Mouse
             } else {
                 Pan::Keys
             };
-            pan.overwrite_set(result);
+            pan.0 = result;
             println!("State:{result:?}");
         }
 

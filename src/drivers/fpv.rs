@@ -1,6 +1,7 @@
 use crate::Commands;
 use bevy::ecs::entity::Entity;
 use bevy::prelude::Component;
+use bevy::window::PrimaryWindow;
 use config_cam_derive::DriverMarker;
 use std::any::TypeId;
 
@@ -15,7 +16,7 @@ impl Plugin for CCFpv {
     fn build(&self, app: &mut App) {
         app.add_rig_component(CCFpv)
             .add_startup_system(setup_fpv)
-            .add_state(MovementType::FirstPerson)
+            .add_state::<MovementType>()
             .add_system(update_fpv_camera);
     }
 }
@@ -31,8 +32,9 @@ fn setup_fpv(mut commands: Commands) {
     ));
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(States, Default, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum MovementType {
+    #[default]
     FirstPerson,
     Free,
 }
@@ -54,7 +56,7 @@ commands.spawn((
 pub fn update_fpv_camera(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
-    windows: Res<Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     fps_state: Res<State<MovementType>>,
     mut mouse_motion_events: EventReader<MouseMotion>,
     mut rigs: DriverRigs,
@@ -102,13 +104,14 @@ pub fn update_fpv_camera(
             move_vec,
             boost,
             boost_mult,
-            fps_state.current().eq(&MovementType::FirstPerson),
+            fps_state.0.eq(&MovementType::FirstPerson),
         );
 
-        let window = windows.get_primary();
-
-        if window.is_some() && !window.unwrap().cursor_visible() {
-            r.set_rotation(delta, sensitivity, move_vec, time_delta_seconds);
+        if let Ok(window) = windows.get_single() {
+            if !window.cursor.visible {
+                r.driver_mut::<Fpv>()
+                    .set_rotation(delta, sensitivity, move_vec, time_delta_seconds);
+            }
         }
     });
 }

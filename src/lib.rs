@@ -4,8 +4,8 @@ pub mod drivers;
 use bevy::{
     prelude::{
         default, App, Camera, Camera2dBundle, Camera3dBundle, Commands, Component,
-        IntoSystemDescriptor, OrthographicProjection, Plugin, Query, Res, Resource, SystemLabel,
-        Transform, Vec3, With,
+        OrthographicProjection, Plugin, Query, Res, Resource,
+        Transform, Vec3, With, SystemSet, IntoSystemConfig,
     },
     render::camera::ScalingMode,
 };
@@ -30,7 +30,7 @@ impl Plugin for ConfigCam {
                 default_player: false,
                 ..Default::default()
             })
-            .add_startup_system(camera_setup.label(CCSetupLabel))
+            .add_startup_system(camera_setup.in_set(CCSetupLabel))
             .add_plugin(CCFpv)
             .add_plugin(CCOrbit)
             .add_system(change_driver_system)
@@ -120,7 +120,7 @@ fn camera_setup(mut commands: Commands, config: Res<CCConfig>) {
     ));
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemLabel)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 pub struct CCSetupLabel;
 
 #[derive(Component)]
