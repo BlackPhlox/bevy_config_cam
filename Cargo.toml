@@ -37,6 +37,3 @@ default-features = false
 version = "0.10"
 features = ["bevy_core_pipeline", "bevy_asset", "bevy_scene", "bevy_pbr", "bevy_gltf", "x11", "wayland"]
 default-features = false
-
-[patch.crates-io]
-leafwing-input-manager = { git = "https://github.com/TimJentzsch/leafwing-input-manager", branch = "bevy-0.10" }

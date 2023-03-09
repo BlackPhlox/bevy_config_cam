@@ -109,8 +109,9 @@ pub fn update_fpv_camera(
 
         if let Ok(window) = windows.get_single() {
             if !window.cursor.visible {
-                r.driver_mut::<Fpv>()
-                    .set_rotation(delta, sensitivity, move_vec, time_delta_seconds);
+                if let Some(fpv) = r.try_driver_mut::<Fpv>() {
+                    fpv.set_rotation(delta, sensitivity, move_vec, time_delta_seconds);
+                }   
             }
         }
     });
