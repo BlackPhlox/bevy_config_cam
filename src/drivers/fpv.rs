@@ -111,7 +111,7 @@ pub fn update_fpv_camera(
             if !window.cursor.visible {
                 if let Some(fpv) = r.try_driver_mut::<Fpv>() {
                     fpv.set_rotation(delta, sensitivity, move_vec, time_delta_seconds);
-                }   
+                }
             }
         }
     });

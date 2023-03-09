@@ -1,4 +1,4 @@
-use bevy::prelude::{Camera, Commands, Entity, Input, KeyCode, Query, Res, ResMut, DetectChanges};
+use bevy::prelude::{Camera, Commands, DetectChanges, Entity, Input, KeyCode, Query, Res, ResMut};
 
 use super::driver_core::Drivers;
 

@@ -3,9 +3,9 @@ pub mod drivers;
 
 use bevy::{
     prelude::{
-        default, App, Camera, Camera2dBundle, Camera3dBundle, Commands, Component,
-        OrthographicProjection, Plugin, Query, Res, Resource,
-        Transform, Vec3, With, SystemSet, IntoSystemConfig,
+        default, App, Camera, Commands, Component,
+        IntoSystemConfig, OrthographicProjection, Plugin, Query, Res, Resource, SystemSet,
+        Transform, Vec3, With, Camera3dBundle, Camera2dBundle,
     },
     render::camera::ScalingMode,
 };
