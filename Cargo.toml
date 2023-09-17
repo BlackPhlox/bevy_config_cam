@@ -23,17 +23,17 @@ name = "bevy_config_cam"
 
 [dependencies]
 rand = "0.8"
-strum = "0.24"
-strum_macros = "0.24"
-bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly", branch = "map_fork_v2" }#{ path = "../bevy_dolly" }
+strum = "0.25"
+strum_macros = "0.25"
+bevy_dolly = "0.0.1"
 config_cam_derive = { path = "config_cam_derive" }
 
 [dependencies.bevy]
-version = "0.10"
+version = "0.11"
 features = ["bevy_render","bevy_pbr"]
 default-features = false
 
 [dev-dependencies.bevy]
-version = "0.10"
+version = "0.11"
 features = ["bevy_core_pipeline", "bevy_asset", "bevy_scene", "bevy_pbr", "bevy_gltf", "x11", "wayland"]
 default-features = false

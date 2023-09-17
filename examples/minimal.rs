@@ -4,8 +4,8 @@ use bevy_config_cam::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ConfigCam)
-        .add_startup_system(setup)
+        .add_plugins(ConfigCam)
+        .add_systems(Startup, setup)
         .run();
 }
 

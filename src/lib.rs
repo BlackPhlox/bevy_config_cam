@@ -4,8 +4,8 @@ pub mod drivers;
 use bevy::{
     prelude::{
         default, App, Camera, Commands, Component,
-        IntoSystemConfig, OrthographicProjection, Plugin, Query, Res, Resource, SystemSet,
-        Transform, Vec3, With, Camera3dBundle, Camera2dBundle,
+        OrthographicProjection, Plugin, Query, Res, Resource, SystemSet,
+        Transform, Vec3, With, Camera3dBundle, Camera2dBundle, Update, Startup, IntoSystemConfigs,
     },
     render::camera::ScalingMode,
 };
@@ -24,18 +24,18 @@ impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
         app.init_resource::<Drivers>()
             .init_resource::<CCConfig>()
-            .add_plugin(DollyPosCtrl)
-            .add_plugin(DollyCursorGrab)
+            .add_plugins(DollyPosCtrl)
+            .add_plugins(DollyCursorGrab)
             .insert_resource(DollyPosCtrlConfig {
-                default_player: false,
+                player: Player::None,
                 ..Default::default()
             })
-            .add_startup_system(camera_setup.in_set(CCSetupLabel))
-            .add_plugin(CCFpv)
-            .add_plugin(CCOrbit)
-            .add_system(change_driver_system)
-            .add_system(update_driver_system)
-            .add_system(update_look_at);
+            .add_systems(Startup, camera_setup.run_if(is_init_cameras).in_set(CCSetupLabel))
+            .add_plugins(CCFpv)
+            .add_plugins(CCOrbit)
+            .add_systems(Update, change_driver_system)
+            .add_systems(Update, update_driver_system)
+            .add_systems(Update, update_look_at);
     }
 }
 
@@ -80,10 +80,11 @@ impl Default for CCConfig {
     }
 }
 
+fn is_init_cameras(config: Res<CCConfig>) -> bool {
+    config.init_cameras
+}
+
 fn camera_setup(mut commands: Commands, config: Res<CCConfig>) {
-    if !config.init_cameras {
-        return;
-    }
     commands.spawn((
         MainCamera,
         PerspectiveCamera,

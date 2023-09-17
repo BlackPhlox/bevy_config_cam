@@ -78,9 +78,9 @@ fn update_orbit_camera(
             delta += event.delta;
         }
 
-        config.rotation = Quat::from_rotation_y(delta.x);
+        config.transform.rotation = Quat::from_rotation_y(delta.x);
 
-        if pan.0.eq(&Pan::Keys) {
+        if pan.get().eq(&Pan::Keys) {
             if keys.just_pressed(KeyCode::Z) {
                 camera_driver.rotate_yaw_pitch(-90.0, 0.0);
             }
@@ -95,12 +95,12 @@ fn update_orbit_camera(
         }
 
         if keys.just_pressed(KeyCode::E) {
-            let result = if pan.0.eq(&Pan::Keys) {
+            let result = if pan.get().eq(&Pan::Keys) {
                 Pan::Mouse
             } else {
                 Pan::Keys
             };
-            pan.0 = result;
+            *pan = State::new(result);
             println!("State:{result:?}");
         }
 

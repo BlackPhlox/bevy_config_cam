@@ -88,7 +88,7 @@ pub fn update_fpv_camera(
         move_vec.y -= 1.0;
     }
 
-    let boost: f32 = if keys.pressed(KeyCode::LShift) {
+    let boost: f32 = if keys.pressed(KeyCode::ShiftLeft) {
         1.
     } else {
         0.
@@ -104,13 +104,13 @@ pub fn update_fpv_camera(
             move_vec,
             boost,
             boost_mult,
-            fps_state.0.eq(&MovementType::FirstPerson),
+            fps_state.get().eq(&MovementType::FirstPerson),
         );
 
         if let Ok(window) = windows.get_single() {
             if !window.cursor.visible {
                 if let Some(fpv) = r.try_driver_mut::<Fpv>() {
-                    fpv.set_rotation(delta, sensitivity, move_vec, time_delta_seconds);
+                    fpv.set_rotation(delta, move_vec, time_delta_seconds);
                 }
             }
         }
