@@ -1,31 +1,35 @@
-//Base
 use bevy::prelude::*;
-use bevy_config_cam::*;
+use bevy_config_cam::{driver::driver_core::DriverMarker, *};
+use bevy_dolly::prelude::*;
+use config_cam_derive::DriverMarker;
 
 fn main() {
     App::new()
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa::default())
         .add_plugins(DefaultPlugins)
-        .add_plugin(ConfigCam)
-        .insert_resource(MovementSettings {
+        .add_plugins(ConfigCam)
+        .add_rig_component(T1)
+        .add_dolly_component(MainCamera)
+        /*.insert_resource(MovementSettings {
             sensitivity: 0.00015, // default: 0.00012
             speed: 12.0,          // default: 12.0
             ..Default::default()
-        })
-        .insert_resource(PlayerSettings {
+        })*/
+        /*.insert_resource(PlayerSettings {
             pos: Vec3::new(2., 0., 0.),
             player_asset: "models/craft_speederA.glb#Scene0",
             ..Default::default()
-        })
+        })*/
         .add_startup_system(setup)
-        .add_system(set_closest_target)
+        //.add_system(set_closest_target)
         .run();
 }
 
 #[derive(Component)]
+struct MainCamera;
+
+#[derive(DriverMarker, Component, Clone, Copy, Debug)]
 struct T1;
-#[derive(Component)]
-struct T2;
 
 /// set up a simple 3D scene
 fn setup(
@@ -34,39 +38,45 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // plane
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 11.0 })),
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Plane {
+            size: 11.0,
+            ..Default::default()
+        })),
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
     });
 
     //Target 1
-    commands
-        .spawn_bundle(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             transform: Transform::from_xyz(-5.0, 0.5, 0.0),
             ..Default::default()
-        })
-        .insert(T1);
+        },
+        Target,
+    ));
 
     //Target 2
-    commands
-        .spawn_bundle(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
             transform: Transform::from_xyz(5.0, 0.5, 0.0),
             ..Default::default()
-        })
-        .insert(T2);
+        },
+        Target,
+    ));
 
     // light
-    commands.spawn_bundle(PointLightBundle {
+    commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
 }
 
+/*
 fn set_closest_target(
     mut cl: ResMut<CamLogic>,
     mut transforms: Query<(&PlayerMove, &Transform)>,
@@ -97,3 +107,4 @@ fn set_closest_target(
         cl.target = None;
     }
 }
+*/

@@ -1,0 +1,16 @@
+[package]
+name = "config_cam_derive"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1.0"
+quote = "1.0"
+#bevy_ecs = "0.8"
+#bevy_ecs_macros = "0.8"
+#macro_rules_attribute = "0.1.2"
