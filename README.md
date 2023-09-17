@@ -150,7 +150,7 @@ Note: That some of them are overwritten by accessing the settings or the changin
 |0.5|0.1.X|
 |0.6|0.2.X|
 |0.7|0.3.X|
-|0.8|0.4.X|
+|0.11|0.4.X|
 
 # Licensing
 The project is under dual license MIT and Apache-2.0, so yoink to your hearts content, just remember the license agreements.
