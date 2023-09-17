@@ -1,17 +1,20 @@
 pub mod driver;
 pub mod drivers;
 
-use crate::drivers::first_person_view::Fpv;
-use crate::drivers::pinned::Pinned;
 use bevy::{
-    input::Input,
-    prelude::{App, Commands, Component, KeyCode, Plugin, Query, Res, Transform, Vec3, With},
+    prelude::{
+        default, App, Camera, Camera2dBundle, Camera3dBundle, Commands, Component,
+        IntoSystemConfigs, OrthographicProjection, Plugin, Query, Res, Resource, Startup,
+        SystemSet, Transform, Update, Vec3, With,
+    },
+    render::camera::ScalingMode,
 };
-use bevy_dolly::{dolly::glam, prelude::*};
+use bevy_dolly::prelude::*;
 use driver::{
-    driver_core::{DriverIndex, DriverRigs, Drivers},
+    driver_core::{DriverRigs, Drivers},
     driver_resources::{change_driver_system, update_driver_system},
 };
+use drivers::{fpv::CCFpv, orbit::CCOrbit};
 pub use std::any::TypeId;
 
 // TODO documentation
@@ -19,47 +22,122 @@ pub use std::any::TypeId;
 pub struct ConfigCam;
 impl Plugin for ConfigCam {
     fn build(&self, app: &mut App) {
-        app.init_resource::<DriverIndex>()
-            .init_resource::<Drivers>()
-            .add_rig_component(Pinned)
-            .add_rig_component(Fpv)
-            .add_startup_system(default_setup)
-            .add_system(change_driver_system)
-            .add_system(update_driver_system)
-            .add_system(update_look_at)
-            .add_system(update_yaw_driver);
+        app.init_resource::<Drivers>()
+            .init_resource::<CCConfig>()
+            .add_plugins(DollyPosCtrl)
+            .add_plugins(DollyCursorGrab)
+            .insert_resource(DollyPosCtrlConfig {
+                player: Player::None,
+                ..Default::default()
+            })
+            .add_systems(
+                Startup,
+                camera_setup.run_if(is_init_cameras).in_set(CCSetupLabel),
+            )
+            .add_plugins(CCFpv)
+            .add_plugins(CCOrbit)
+            .add_systems(Update, change_driver_system)
+            .add_systems(Update, update_driver_system)
+            .add_systems(Update, update_look_at);
     }
 }
 
-pub(crate) fn update_look_at(
-    mut targets: Query<(&mut Transform, With<Target>)>,
-    mut rigs: DriverRigs,
-) {
-    let mut avg = Vec3::ZERO;
+#[macro_export]
+macro_rules! type_vec {
+    ( $( $x:ident ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push(TypeId::of::<$x>());
+            )*
+            temp_vec
+        }
+    };
+}
 
-    for (t, _b) in &mut targets {
-        avg += t.translation;
+#[macro_export]
+macro_rules! driver_vec {
+    ( $( $x:ident ),* ) => {
+        {
+            let mut temp_vec: Vec<Box<dyn DriverMarker>> = Vec::new();
+            $(
+                temp_vec.push(Box::new($x));
+            )*
+            temp_vec
+        }
+    };
+}
+
+#[derive(Resource)]
+pub struct CCConfig {
+    pub init_cameras: bool,
+    pub features: Vec<String>,
+}
+
+impl Default for CCConfig {
+    fn default() -> Self {
+        Self {
+            init_cameras: true,
+            features: vec![],
+        }
     }
-
-    //https://math.stackexchange.com/questions/80923/average-of-multiple-vectors
-    //let total_targets = targets.iter().count();
-    //avg /= total_targets as f32;
-
-    rigs.try_for_each_driver_mut::<bevy_dolly::prelude::LookAt>(|la| {
-        la.target = avg;
-    });
 }
 
-pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs) {
-    rigs.try_for_each_driver_mut::<YawPitch>(|yp| {
-        if keys.just_pressed(KeyCode::Z) {
-            yp.rotate_yaw_pitch(-90.0, 0.0);
-        }
-        if keys.just_pressed(KeyCode::X) {
-            yp.rotate_yaw_pitch(90.0, 0.0);
-        }
-    });
+fn is_init_cameras(config: Res<CCConfig>) -> bool {
+    config.init_cameras
 }
+
+fn camera_setup(mut commands: Commands, _config: Res<CCConfig>) {
+    commands.spawn((
+        MainCamera,
+        PerspectiveCamera,
+        Camera3dBundle {
+            transform: Transform::from_xyz(2.0, 2.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        },
+    ));
+    commands.spawn((
+        OrthographicCamera,
+        Camera3dBundle {
+            projection: OrthographicProjection {
+                scale: 3.0,
+                scaling_mode: ScalingMode::FixedVertical(2.0),
+                ..default()
+            }
+            .into(),
+            camera: Camera {
+                is_active: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    ));
+    commands.spawn((
+        TwoDimensionalCamera,
+        Camera2dBundle {
+            camera: Camera {
+                is_active: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    ));
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+pub struct CCSetupLabel;
+
+#[derive(Component)]
+pub struct MainCamera;
+
+#[derive(Component)]
+pub struct PerspectiveCamera;
+
+#[derive(Component)]
+pub struct OrthographicCamera;
+
+#[derive(Component)]
+pub struct TwoDimensionalCamera;
 
 // Target at is just a valid option for Follow, Orbit and FPV
 // Have the camera point at one or the summed vector direction
@@ -67,23 +145,28 @@ pub(crate) fn update_yaw_driver(keys: Res<Input<KeyCode>>, mut rigs: DriverRigs)
 #[derive(Component)]
 pub struct Target;
 
-fn default_setup(mut commands: Commands) {
-    //Should be default player entity
-    //Default player entity : Cone
-    //commands.spawn().insert(Target);
+pub(crate) fn update_look_at(targets: Query<(&Transform, With<Target>)>, mut rigs: DriverRigs) {
+    rigs.try_for_each_driver_mut::<LookAt>(|la| {
+        let it = targets.iter();
+        if it.len().eq(&0) {
+        } else if it.len().eq(&1) {
+            la.target = it.last().unwrap().0.translation;
+        } else {
+            la.target = get_center_point(it.map(|f| f.0.translation).collect());
+        }
+    });
+}
 
-    commands.spawn((
-        Pinned,
-        Rig::builder()
-            .with(YawPitch::new().yaw_degrees(45.0).pitch_degrees(-45.0))
-            .with(Smooth::new_rotation(1.5))
-            .with(Arm::new(glam::Vec3::Z * 4.0))
-            .with(bevy_dolly::prelude::LookAt::new(glam::Vec3::new(
-                0., 0., 0.,
-            )))
-            .build(),
-    ));
-
-    //Missing FPV
-    commands.spawn(Fpv);
+fn get_center_point(targets: Vec<Vec3>) -> Vec3 {
+    if targets.is_empty() {
+        Vec3::ONE
+    } else if targets.len() == 1 {
+        *targets.first().unwrap()
+    } else {
+        let mut a = Vec3::ONE;
+        for t in targets {
+            a += t
+        }
+        a * 0.5
+    }
 }

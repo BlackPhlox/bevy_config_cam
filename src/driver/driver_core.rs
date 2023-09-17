@@ -1,11 +1,15 @@
-use crate::{Fpv, Pinned};
 use std::any::TypeId;
 
 use bevy::{
     ecs::{component::TableStorage, system::SystemParam},
     prelude::{Commands, Component, Entity, Query, Resource},
 };
-use bevy_dolly::prelude::Rig;
+use bevy_dolly::prelude::*;
+
+use crate::{
+    drivers::{fpv::CCFpv, orbit::CCOrbit},
+    MainCamera,
+};
 
 pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'static {
     fn get_id(&self) -> TypeId;
@@ -17,37 +21,57 @@ pub trait DriverMarker: Component<Storage = TableStorage> + Sync + Send + 'stati
 #[derive(Resource)]
 pub struct Drivers {
     // access must happen in this folder or children
-    pub(super) marker: Vec<Box<dyn DriverMarker>>,
+    pub enabled_drivers: Vec<Box<dyn DriverMarker>>,
+    driver_index: usize,
+    pub cameras: Vec<TypeId>,
+    camera_index: usize,
 }
 
 impl Default for Drivers {
     fn default() -> Self {
         Self {
-            marker: vec![Box::new(Pinned), Box::new(Fpv)],
+            enabled_drivers: vec![Box::new(CCOrbit), Box::new(CCFpv)],
+            cameras: vec![TypeId::of::<MainCamera>()],
+            driver_index: Default::default(),
+            camera_index: Default::default(),
         }
     }
 }
 
 impl Drivers {
-    pub fn new(marker: Vec<Box<dyn DriverMarker>>) -> Self {
-        Self { marker }
-    }
-}
-
-#[derive(Default, Resource)]
-pub struct DriverIndex {
-    // access must happen in this folder or children
-    pub(super) index: usize,
-}
-
-impl DriverIndex {
-    /// Goes to next index, loops back to index `0` if already at the last index.
-    pub fn next(&mut self, len: usize) {
-        if self.index >= len - 1 {
-            self.index = 0;
-        } else {
-            self.index += 1;
+    pub fn new(enabled_drivers: Vec<Box<dyn DriverMarker>>, cameras: Vec<TypeId>) -> Self {
+        Self {
+            enabled_drivers,
+            driver_index: Default::default(),
+            cameras,
+            camera_index: Default::default(),
         }
+    }
+
+    pub fn next(&mut self) {
+        if self.driver_index >= self.enabled_drivers.len() - 1 {
+            self.driver_index = 0;
+        } else {
+            self.driver_index += 1;
+        }
+    }
+
+    pub fn change_camera<T: 'static>(&mut self) {
+        let type_id = TypeId::of::<T>();
+        self.cameras.push(type_id);
+        self.cameras.dedup();
+        if let Some((x, _)) = self
+            .cameras
+            .iter()
+            .enumerate()
+            .find(|(_, id)| (*id).clone().eq(&type_id))
+        {
+            self.camera_index = x;
+        }
+    }
+
+    pub fn index(&self) -> usize {
+        self.driver_index
     }
 }
 
@@ -59,12 +83,24 @@ pub struct DriverRigs<'w, 's> {
 impl<'w, 's> DriverRigs<'w, 's> {
     pub fn try_for_each_driver_mut<T>(&mut self, f: impl FnOnce(&mut T) + std::marker::Copy)
     where
-        T: bevy_dolly::prelude::RigDriver<bevy_dolly::prelude::RightHanded>,
+        T: RigDriver,
     {
         for mut rig in &mut self.rigs {
             if let Some(camera_driver) = rig.try_driver_mut::<T>() {
                 f(camera_driver);
             }
         }
+    }
+
+    pub fn driver_exists<T>(self) -> bool
+    where
+        T: RigDriver,
+    {
+        for rig in &self.rigs {
+            if rig.try_driver::<T>().is_some() {
+                return true;
+            }
+        }
+        false
     }
 }

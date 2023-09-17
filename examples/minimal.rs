@@ -1,11 +1,11 @@
-use bevy::{prelude::*, render::camera::ScalingMode};
+use bevy::prelude::*;
 use bevy_config_cam::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ConfigCam)
-        .add_startup_system(setup)
+        .add_plugins(ConfigCam)
+        .add_systems(Startup, setup)
         .run();
 }
 
@@ -17,7 +17,10 @@ fn setup(
 ) {
     // plane
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+        mesh: meshes.add(Mesh::from(shape::Plane {
+            size: 5.0,
+            ..Default::default()
+        })),
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
         ..Default::default()
     });
@@ -33,20 +36,6 @@ fn setup(
     // light
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
-
-    commands.spawn(Camera3dBundle {
-        camera: Camera {
-            is_active: true,
-            ..Default::default()
-        },
-        projection: OrthographicProjection {
-            scale: 3.0,
-            scaling_mode: ScalingMode::FixedVertical(1.0),
-            ..default()
-        }
-        .into(),
         ..Default::default()
     });
 }
