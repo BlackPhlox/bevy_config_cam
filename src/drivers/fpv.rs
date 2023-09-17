@@ -15,9 +15,9 @@ pub struct CCFpv;
 impl Plugin for CCFpv {
     fn build(&self, app: &mut App) {
         app.add_rig_component(CCFpv)
-            .add_startup_system(setup_fpv)
+            .add_systems(Startup, setup_fpv)
             .add_state::<MovementType>()
-            .add_system(update_fpv_camera);
+            .add_systems(Update, update_fpv_camera);
     }
 }
 
@@ -63,7 +63,7 @@ pub fn update_fpv_camera(
 ) {
     let time_delta_seconds: f32 = time.delta_seconds();
     let boost_mult = 5.0f32;
-    let sensitivity = Vec2::splat(1.0);
+    let _sensitivity = Vec2::splat(1.0);
 
     let mut move_vec = Vec3::ZERO;
 

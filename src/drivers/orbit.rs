@@ -15,9 +15,9 @@ impl Plugin for CCOrbit {
     fn build(&self, app: &mut App) {
         app.add_rig_component(CCOrbit)
             .add_state::<Pan>()
-            .add_startup_system(setup_orbit.after(CCSetupLabel))
-            .add_system(handle_mouse_scroll)
-            .add_system(update_orbit_camera);
+            .add_systems(Startup, setup_orbit.after(CCSetupLabel))
+            .add_systems(Update, handle_mouse_scroll)
+            .add_systems(Update, update_orbit_camera);
     }
 }
 

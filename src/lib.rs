@@ -3,9 +3,9 @@ pub mod drivers;
 
 use bevy::{
     prelude::{
-        default, App, Camera, Commands, Component,
-        OrthographicProjection, Plugin, Query, Res, Resource, SystemSet,
-        Transform, Vec3, With, Camera3dBundle, Camera2dBundle, Update, Startup, IntoSystemConfigs,
+        default, App, Camera, Camera2dBundle, Camera3dBundle, Commands, Component,
+        IntoSystemConfigs, OrthographicProjection, Plugin, Query, Res, Resource, Startup,
+        SystemSet, Transform, Update, Vec3, With,
     },
     render::camera::ScalingMode,
 };
@@ -30,7 +30,10 @@ impl Plugin for ConfigCam {
                 player: Player::None,
                 ..Default::default()
             })
-            .add_systems(Startup, camera_setup.run_if(is_init_cameras).in_set(CCSetupLabel))
+            .add_systems(
+                Startup,
+                camera_setup.run_if(is_init_cameras).in_set(CCSetupLabel),
+            )
             .add_plugins(CCFpv)
             .add_plugins(CCOrbit)
             .add_systems(Update, change_driver_system)
@@ -84,7 +87,7 @@ fn is_init_cameras(config: Res<CCConfig>) -> bool {
     config.init_cameras
 }
 
-fn camera_setup(mut commands: Commands, config: Res<CCConfig>) {
+fn camera_setup(mut commands: Commands, _config: Res<CCConfig>) {
     commands.spawn((
         MainCamera,
         PerspectiveCamera,
