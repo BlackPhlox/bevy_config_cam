@@ -7,7 +7,7 @@ fn main() {
     App::new()
         .insert_resource(Msaa::default())
         .add_plugins(DefaultPlugins)
-        .add_plugin(ConfigCam)
+        .add_plugins(ConfigCam)
         .add_rig_component(T1)
         .add_dolly_component(MainCamera)
         /*.insert_resource(MovementSettings {

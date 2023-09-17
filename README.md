@@ -5,7 +5,7 @@
 <a href="https://crates.io/crates/bevy_config_cam"><img src="https://img.shields.io/crates/v/bevy_config_cam" alt="link to crates.io"></a>
 <a href="https://docs.rs/bevy_config_cam"><img src="https://docs.rs/bevy_config_cam/badge.svg" alt="link to docs.rs"></a>
 <a href="https://github.com/BlackPhlox/bevy_config_cam/blob/master/credits/CREDITS.md"><img src="https://img.shields.io/crates/l/bevy_config_cam" alt="link to license"></a>
-<a href="https://crates.io/crates/bevy_config_cam"><img src="https://img.shields.io/crates/d/bevy_config_cam" alt="downloads/link to crates.io"></a>   
+<a href="https://crates.io/crates/bevy_config_cam"><img src="https://img.shields.io/crates/d/bevy_config_cam" alt="downloads/link to crates.io"></a>
 <a href="https://github.com/BlackPhlox/bevy_config_cam"><img src="https://img.shields.io/github/stars/BlackPhlox/bevy_config_cam" alt="stars/github repo"></a>
 <a href="https://github.com/BlackPhlox/bevy_config_cam/actions/workflows/master.yml"><img src="https://github.com/BlackPhlox/bevy_config_cam/actions/workflows/master.yml/badge.svg" alt="github actions"></a>
 <a href="https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking"><img src="https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue" alt="tracking bevy release branch"></a>
@@ -14,14 +14,14 @@
 An easy plug-n-play multifunctional camera controller that allows for easy setup of a camera and player for a scene.
 
 Add a few lines of code to your existing project allows you to test a wide variety of cameras by attaching it to
-your player asset or the default red player entity. 
+your player asset or the default red player entity.
 
 Inspired and extended on [bevy_flycam](https://github.com/sburris0/bevy_flycam), this plugin is fairly simple but should be a neat help for developers looking for a camera implementation without going the hassle of reinventing the wheel.
 
 # Backend
 
-The main goal of this plugin is to first and foremost provide the user with a configurable, extendable and easy-to-use API. [`dolly`](https://github.com/h3r2tic/dolly) by @h3r2tic is a crate that provides an framework for which to create, combine and modify camera positioning, exactly what `bevy_config_cam` is looking for. 
-[bevy_dolly](https://github.com/BlackPhlox/bevy_dolly) is the backend for `bevy_config_cam`. 
+The main goal of this plugin is to first and foremost provide the user with a configurable, extendable and easy-to-use API. [`dolly`](https://github.com/h3r2tic/dolly) by @h3r2tic is a crate that provides an framework for which to create, combine and modify camera positioning, exactly what `bevy_config_cam` is looking for.
+[bevy_dolly](https://github.com/BlackPhlox/bevy_dolly) is the backend for `bevy_config_cam`.
 
 # Showcase
 
@@ -33,13 +33,13 @@ The main goal of this plugin is to first and foremost provide the user with a co
     <th><h2>Static</h2></th>
     <th><h2>Pinned</h2></th>
   </tr>
-    <tr>    
+    <tr>
     <th>FollowStatic</th>
     <th>Fps</th>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/25123512/119991121-6cd28600-bfc9-11eb-9fcd-89fa9d591d4b.png" style="height:350px;" alt="FollowStatic"></td>
-    <td><img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="height:350px;" alt="Fps"></td>    
+    <td><img src="https://user-images.githubusercontent.com/25123512/119991187-7bb93880-bfc9-11eb-9739-598e01ba214f.png" style="height:350px;" alt="Fps"></td>
   </tr>
   <tr>
     <th>LookAt</th>
@@ -82,7 +82,7 @@ The main goal of this plugin is to first and foremost provide the user with a co
 
 ## Test the project
 
-Before I start using a plugin, I all ways like to run the examples prior to setting it up for my own project. Just to see if the plugin satisfy my needs. 
+Before I start using a plugin, I all ways like to run the examples prior to setting it up for my own project. Just to see if the plugin satisfy my needs.
 If you're like me then this is for you.
 
 1. Clone this repo to your local machine
@@ -96,11 +96,12 @@ Settings: <kbd>E</kbd> and use the mouse-scroll to change the selected settings 
 
 ## Add to your own project
 
-Adding this plugin to your project is *very* simple, it only requires you to write 2 lines of code. 
+Adding this plugin to your project is *very* simple, it only requires you to write 2 lines of code.
 
 ### Step 1. - Setup
-    
+
 Add the correct version to your `Cargo.toml`, you can find the version you are looking for under the support section. The thing you should be adding should look like this (only add the line marked by `# <--`):
+
 ```toml
 [dependencies]
 bevy = { version = "0.8"}
@@ -140,9 +141,11 @@ Now, there is a reason for the name `bevy_config_cam`. It is most likely that yo
         ..Default::default()
     })
 ```
+
 Note: That some of them are overwritten by accessing the settings or the changing the camera type. Feedback on this is high appreciated, just create a new issue and I'll look into it when I have the time.
 
 # Support
+
 [![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
 
 |bevy|bevy_config_cam|
@@ -153,7 +156,9 @@ Note: That some of them are overwritten by accessing the settings or the changin
 |0.11|0.4.X|
 
 # Licensing
+
 The project is under dual license MIT and Apache-2.0, so yoink to your hearts content, just remember the license agreements.
 
 # Contributing
+
 Yes this project is still very much WIP, so PRs are very welcome

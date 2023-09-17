@@ -14,14 +14,14 @@ pub use std::any::TypeId;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ConfigCam)
+        .add_plugins(ConfigCam)
         .add_dolly_component(YP)
         .insert_resource(Drivers::new(
             driver_vec![CCOrbit, CCFpv, YP],
             type_vec![MainCamera],
         ))
-        .add_startup_system(setup)
-        .add_system(update_yaw_driver)
+        .add_systems(Startup, setup)
+        .add_systems(Update, update_yaw_driver)
         .run();
 }
 

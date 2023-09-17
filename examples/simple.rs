@@ -12,13 +12,18 @@ use config_cam_derive::DriverMarker;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(WireframePlugin)
-        .add_plugin(ConfigCam)
-        .add_startup_system(setup)
-        .add_system(rotator_system)
-        .add_system(add_target_system)
-        .add_system(remove_target_system)
-        .add_system(switch_camera)
+        .add_plugins(WireframePlugin)
+        .add_plugins(ConfigCam)
+        .add_systems(Startup, setup)
+        .add_systems(
+            Update,
+            (
+                rotator_system,
+                add_target_system,
+                remove_target_system,
+                switch_camera,
+            ),
+        )
         .run();
 }
 
